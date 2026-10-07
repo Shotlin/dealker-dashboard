@@ -1,0 +1,609 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { Search, X, Loader2 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useCreateCoupon, useUpdateCoupon } from "@/hooks/useCoupons"
+import { useCustomerSegments } from "@/hooks/useCustomerSegments"
+import { useDebounce } from "@/hooks/useDebounce"
+import { getCustomers } from "@/services/customers.service"
+import { getCouponTargetUsers } from "@/services/coupons.service"
+import { getProductDetail } from "@/services/products.service"
+import { CategoryScopePicker, ProductScopePicker } from "@/components/coupons/CouponScopePicker"
+import type { Coupon, CreateCouponPayload, CouponTargetType } from "@/types/coupon.types"
+
+type ScopeMode = "ALL" | "CATEGORY" | "PRODUCT"
+
+interface CouponDialogProps {
+  open: boolean
+  onClose: () => void
+  coupon?: Coupon | null
+}
+
+const INITIAL: CreateCouponPayload & { isActive: boolean } = {
+  code: "",
+  description: "",
+  discountType: "PERCENTAGE",
+  discountValue: 0,
+  minOrderAmount: 0,
+  maxDiscount: undefined,
+  usageLimit: undefined,
+  perUserLimit: 1,
+  validFrom: "",
+  validUntil: "",
+  isActive: true,
+  targetType: "ALL",
+  targetSegmentId: undefined,
+  targetUserIds: [],
+  cashbackCreditTrigger: "ORDER_DELIVERED",
+  applicableCategoryIds: [],
+  applicableProductIds: [],
+  grantsFreeDelivery: false,
+}
+
+const CASHBACK_TRIGGER_LABELS: Record<"PAYMENT_SUCCESS" | "ORDER_CONFIRMED" | "ORDER_DELIVERED", string> = {
+  PAYMENT_SUCCESS: "After payment success",
+  ORDER_CONFIRMED: "After order confirmed",
+  ORDER_DELIVERED: "After order delivered (safest)",
+}
+
+const TARGET_TYPE_LABELS: Record<CouponTargetType, string> = {
+  ALL: "All users",
+  SEGMENT: "A customer segment",
+  INDIVIDUAL: "Specific customers",
+  FIRST_TIME: "First-time users only",
+}
+
+/** Search + multi-select picker for "Specific customers" targeting. */
+function CustomerTargetPicker({
+  selected,
+  onChange,
+}: {
+  selected: { id: string; name: string | null; phone: string }[]
+  onChange: (next: { id: string; name: string | null; phone: string }[]) => void
+}) {
+  const [search, setSearch] = useState("")
+  const debouncedSearch = useDebounce(search, 400)
+
+  const { data, isFetching } = useQuery({
+    queryKey: ["coupon-target-customer-search", debouncedSearch],
+    queryFn: () => getCustomers({ search: debouncedSearch, limit: 10 }),
+    enabled: debouncedSearch.length >= 2,
+  })
+
+  const selectedIds = new Set(selected.map((c) => c.id))
+  const results = (data?.customers ?? []).filter((c) => !selectedIds.has(c.id))
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search customers by name or phone..."
+          className="pl-9"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {debouncedSearch.length >= 2 && (
+        <div className="rounded-md border bg-card max-h-40 overflow-y-auto">
+          {isFetching ? (
+            <div className="p-2.5 flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Searching...
+            </div>
+          ) : results.length === 0 ? (
+            <p className="p-2.5 text-sm text-muted-foreground">No matching customers</p>
+          ) : (
+            results.map((c) => (
+              <button
+                type="button"
+                key={c.id}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 flex items-center justify-between"
+                onClick={() => {
+                  onChange([...selected, { id: c.id, name: c.name, phone: c.phone }])
+                  setSearch("")
+                }}
+              >
+                <span>{c.name ?? "Unnamed"}</span>
+                <span className="text-xs text-muted-foreground">{c.phone}</span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selected.map((c) => (
+            <Badge key={c.id} variant="secondary" className="gap-1 pr-1">
+              {c.name ?? c.phone}
+              <button
+                type="button"
+                onClick={() => onChange(selected.filter((s) => s.id !== c.id))}
+                className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function CouponDialog({ open, onClose, coupon }: CouponDialogProps) {
+  const [form, setForm] = useState(INITIAL)
+  const [targetCustomers, setTargetCustomers] = useState<{ id: string; name: string | null; phone: string }[]>([])
+  const [scopeMode, setScopeMode] = useState<ScopeMode>("ALL")
+  const [scopeProducts, setScopeProducts] = useState<{ id: string; name: string }[]>([])
+  const createMutation = useCreateCoupon()
+  const updateMutation = useUpdateCoupon()
+  const { data: segments } = useCustomerSegments()
+  const isEdit = !!coupon
+
+  useEffect(() => {
+    if (coupon) {
+      setForm({
+        code: coupon.code,
+        description: coupon.description ?? "",
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue,
+        minOrderAmount: coupon.minOrderAmount,
+        maxDiscount: coupon.maxDiscount ?? undefined,
+        usageLimit: coupon.usageLimit ?? undefined,
+        perUserLimit: coupon.perUserLimit,
+        validFrom: coupon.validFrom ? coupon.validFrom.slice(0, 16) : "",
+        validUntil: coupon.validUntil ? coupon.validUntil.slice(0, 16) : "",
+        isActive: coupon.isActive,
+        targetType: coupon.targetType ?? "ALL",
+        targetSegmentId: coupon.targetSegmentId ?? undefined,
+        targetUserIds: [],
+        cashbackCreditTrigger: coupon.cashbackCreditTrigger ?? "ORDER_DELIVERED",
+        applicableCategoryIds: coupon.applicableCategoryIds ?? [],
+        applicableProductIds: coupon.applicableProductIds ?? [],
+        grantsFreeDelivery: coupon.grantsFreeDelivery ?? false,
+      })
+      setTargetCustomers([])
+      if (coupon.targetType === "INDIVIDUAL") {
+        getCouponTargetUsers(coupon.id).then((users) => {
+          setTargetCustomers(users)
+          setForm((f) => ({ ...f, targetUserIds: users.map((u) => u.id) }))
+        })
+      }
+      setScopeProducts([])
+      if (coupon.applicableCategoryIds?.length) {
+        setScopeMode("CATEGORY")
+      } else if (coupon.applicableProductIds?.length) {
+        setScopeMode("PRODUCT")
+        Promise.all(coupon.applicableProductIds.map((id) => getProductDetail(id))).then((products) =>
+          setScopeProducts(products.map((p) => ({ id: p.id, name: p.name })))
+        )
+      } else {
+        setScopeMode("ALL")
+      }
+    } else {
+      setForm(INITIAL)
+      setTargetCustomers([])
+      setScopeMode("ALL")
+      setScopeProducts([])
+    }
+  }, [coupon, open])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const { isActive, ...rest } = form
+    // null = "clear the scope" (accepted by the update schema); the create
+    // schema doesn't accept null for these two fields, so createMutation
+    // below swaps null back to undefined (= omit entirely, same effect).
+    const scopeCategoryIds = scopeMode === "CATEGORY" && rest.applicableCategoryIds?.length ? rest.applicableCategoryIds : null
+    const scopeProductIds = scopeMode === "PRODUCT" && rest.applicableProductIds?.length ? rest.applicableProductIds : null
+    const payload = {
+      ...rest,
+      code: rest.code.toUpperCase().trim(),
+      // datetime-local gives "2026-07-13T15:53" (no seconds/timezone) —
+      // the backend requires a full RFC3339 date-time, which rejects that
+      // with "must match format \"date-time\"".
+      validFrom: rest.validFrom ? new Date(rest.validFrom).toISOString() : undefined,
+      validUntil: rest.validUntil ? new Date(rest.validUntil).toISOString() : undefined,
+      maxDiscount: rest.maxDiscount || undefined,
+      usageLimit: rest.usageLimit || undefined,
+      targetSegmentId: rest.targetType === "SEGMENT" ? rest.targetSegmentId : undefined,
+      targetUserIds: rest.targetType === "INDIVIDUAL" ? rest.targetUserIds : undefined,
+      applicableCategoryIds: scopeCategoryIds,
+      applicableProductIds: scopeProductIds,
+    }
+
+    if (isEdit && coupon) {
+      updateMutation.mutate(
+        { id: coupon.id, payload: { ...payload, isActive } },
+        { onSuccess: onClose }
+      )
+    } else {
+      createMutation.mutate(
+        {
+          ...payload,
+          couponType: scopeMode === "CATEGORY" ? "CATEGORY_COUPON" : scopeMode === "PRODUCT" ? "PRODUCT_COUPON" : "PLATFORM_COUPON",
+          applicableCategoryIds: scopeCategoryIds ?? undefined,
+          applicableProductIds: scopeProductIds ?? undefined,
+        },
+        { onSuccess: onClose }
+      )
+    }
+  }
+
+  const isPending = createMutation.isPending || updateMutation.isPending
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? "Edit Coupon" : "Create Coupon"}</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Code */}
+          <div className="space-y-1.5">
+            <Label htmlFor="code">Coupon Code *</Label>
+            <Input
+              id="code"
+              placeholder="e.g. SAVE20"
+              value={form.code}
+              onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+              required
+              maxLength={50}
+              className="font-mono uppercase"
+            />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-1.5">
+            <Label htmlFor="desc">Description</Label>
+            <Textarea
+              id="desc"
+              placeholder="Optional description..."
+              value={form.description ?? ""}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={2}
+              maxLength={500}
+            />
+          </div>
+
+          {/* Discount Type + Value */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Discount Type *</Label>
+              <Select
+                value={form.discountType}
+                onValueChange={(v) =>
+                  setForm({ ...form, discountType: v as "PERCENTAGE" | "FLAT" | "FREE_DELIVERY" | "CASHBACK" })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PERCENTAGE">Percentage (%)</SelectItem>
+                  <SelectItem value="FLAT">Flat (₹)</SelectItem>
+                  <SelectItem value="FREE_DELIVERY">Free Delivery</SelectItem>
+                  <SelectItem value="CASHBACK">Cashback</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {form.discountType !== "FREE_DELIVERY" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="value">
+                  {form.discountType === "CASHBACK" ? "Cashback Amount (₹)" : "Discount Value"} *
+                </Label>
+                <Input
+                  id="value"
+                  type="number"
+                  min={0.01}
+                  step={0.01}
+                  value={form.discountValue || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, discountValue: parseFloat(e.target.value) || 0 })
+                  }
+                  required
+                />
+                {form.discountType === "CASHBACK" && (
+                  <p className="text-xs text-muted-foreground">
+                    Credited to the customer&apos;s wallet — capped at the order total, never reduces it.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {form.discountType === "CASHBACK" && (
+            <div className="space-y-1.5">
+              <Label>Cashback Credit Timing</Label>
+              <Select
+                value={form.cashbackCreditTrigger}
+                onValueChange={(v) =>
+                  setForm({ ...form, cashbackCreditTrigger: v as "PAYMENT_SUCCESS" | "ORDER_CONFIRMED" | "ORDER_DELIVERED" })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(CASHBACK_TRIGGER_LABELS) as Array<"PAYMENT_SUCCESS" | "ORDER_CONFIRMED" | "ORDER_DELIVERED">).map((trigger) => (
+                    <SelectItem key={trigger} value={trigger}>
+                      {CASHBACK_TRIGGER_LABELS[trigger]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Free delivery — independent of discount type. Can stack with a
+              real discount (PERCENTAGE/FLAT/CASHBACK) instead of forcing a
+              choice between the two, and — because it's checked separately
+              from the store's standard "free delivery above ₹X" setting —
+              still waives the fee below that threshold whenever this
+              coupon is applied and its own Min Order Amount is met. */}
+          <div className="rounded-lg border p-3 space-y-1">
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={form.grantsFreeDelivery}
+                onCheckedChange={(v) => setForm({ ...form, grantsFreeDelivery: v })}
+              />
+              <Label>Also grants free delivery</Label>
+            </div>
+            <p className="text-xs text-muted-foreground pl-[52px]">
+              When on, applying this coupon waives the delivery fee — on top of any discount above, not
+              instead of it — as long as the order meets this coupon&apos;s own Min Order Amount below. This
+              works even if the order is under the store&apos;s regular free-delivery threshold; the two
+              don&apos;t conflict, whichever unlocks free delivery first just applies.
+            </p>
+          </div>
+
+          {/* Applies to — category/bundle/product scope. Empty scope
+              (Whole Order) is the existing default: nothing here changes
+              for a coupon that doesn't set this. */}
+          <div className="rounded-lg border p-3 space-y-2">
+            <Label>Applies to</Label>
+            <Select
+              value={scopeMode}
+              onValueChange={(v) => {
+                const next = v as ScopeMode
+                setScopeMode(next)
+                setForm({ ...form, applicableCategoryIds: [], applicableProductIds: [] })
+                setScopeProducts([])
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Whole order — every product</SelectItem>
+                <SelectItem value="CATEGORY">Specific categories or bundles</SelectItem>
+                <SelectItem value="PRODUCT">Specific products</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {scopeMode === "CATEGORY" && (
+              <CategoryScopePicker
+                selectedIds={form.applicableCategoryIds ?? []}
+                onChange={(ids) => setForm({ ...form, applicableCategoryIds: ids })}
+              />
+            )}
+            {scopeMode === "PRODUCT" && (
+              <ProductScopePicker
+                selected={scopeProducts}
+                onChange={(next) => {
+                  setScopeProducts(next)
+                  setForm({ ...form, applicableProductIds: next.map((p) => p.id) })
+                }}
+              />
+            )}
+
+            <p className="text-xs text-muted-foreground">
+              {scopeMode === "ALL"
+                ? "The discount (and Min Order Amount below) applies to the customer's entire cart."
+                : "The discount, and the Min Order Amount below, only ever count the products in the picked categories/bundles/products above — other items in the same order don't get discounted and don't count toward the minimum."}
+            </p>
+          </div>
+
+          {/* Min Order + Max Discount */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="min">Min Order Amount</Label>
+              <Input
+                id="min"
+                type="number"
+                min={0}
+                step={0.01}
+                value={form.minOrderAmount || ""}
+                onChange={(e) =>
+                  setForm({ ...form, minOrderAmount: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="max">Max Discount</Label>
+              <Input
+                id="max"
+                type="number"
+                min={0}
+                step={0.01}
+                value={form.maxDiscount ?? ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    maxDiscount: e.target.value ? parseFloat(e.target.value) : undefined,
+                  })
+                }
+                placeholder="No limit"
+              />
+            </div>
+          </div>
+
+          {/* Usage Limit + Per-User Limit */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="usage">Total Usage Limit</Label>
+              <Input
+                id="usage"
+                type="number"
+                min={1}
+                value={form.usageLimit ?? ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    usageLimit: e.target.value ? parseInt(e.target.value) : undefined,
+                  })
+                }
+                placeholder="Unlimited"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="perUser">Per User Limit</Label>
+              <Input
+                id="perUser"
+                type="number"
+                min={1}
+                value={form.perUserLimit || ""}
+                onChange={(e) =>
+                  setForm({ ...form, perUserLimit: parseInt(e.target.value) || 1 })
+                }
+              />
+            </div>
+          </div>
+
+          {/* Validity dates */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="from">Valid From</Label>
+              <Input
+                id="from"
+                type="datetime-local"
+                value={form.validFrom ?? ""}
+                onChange={(e) => setForm({ ...form, validFrom: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="until">Valid Until</Label>
+              <Input
+                id="until"
+                type="datetime-local"
+                value={form.validUntil ?? ""}
+                onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* Target audience */}
+          <div className="space-y-1.5 rounded-lg border p-3">
+            <Label>Who can use this coupon?</Label>
+            <Select
+              value={form.targetType}
+              onValueChange={(v) => {
+                const targetType = v as CouponTargetType
+                setForm({ ...form, targetType, targetSegmentId: undefined, targetUserIds: [] })
+                setTargetCustomers([])
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(TARGET_TYPE_LABELS) as CouponTargetType[]).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {TARGET_TYPE_LABELS[type]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {form.targetType === "SEGMENT" && (
+              <div className="pt-2">
+                <Select
+                  value={form.targetSegmentId ?? ""}
+                  onValueChange={(v) => setForm({ ...form, targetSegmentId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a segment..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(segments ?? []).map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name} ({s.member_count})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {segments?.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    No segments yet — create one under Customer Segments first.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {form.targetType === "INDIVIDUAL" && (
+              <div className="pt-2">
+                <CustomerTargetPicker
+                  selected={targetCustomers}
+                  onChange={(next) => {
+                    setTargetCustomers(next)
+                    setForm({ ...form, targetUserIds: next.map((c) => c.id) })
+                  }}
+                />
+              </div>
+            )}
+
+            {form.targetType === "FIRST_TIME" && (
+              <p className="text-xs text-muted-foreground pt-1">
+                Only customers placing their first order can redeem this coupon.
+              </p>
+            )}
+          </div>
+
+          {/* Active toggle (edit only) */}
+          {isEdit && (
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={form.isActive}
+                onCheckedChange={(v) => setForm({ ...form, isActive: v })}
+              />
+              <Label>Active</Label>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Saving..." : isEdit ? "Update" : "Create"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}

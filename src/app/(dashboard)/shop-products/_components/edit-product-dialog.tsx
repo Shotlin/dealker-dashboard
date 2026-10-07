@@ -1,0 +1,551 @@
+"use client"
+
+/**
+ * Edit_Product_Dialog (`<EditProductDialog />`) — task 8.6.
+ *
+ * Single-step Radix `Dialog` for editing the per-shop fields of an
+ * existing `ShopProduct` row. Mirrors `<AddProductDialog />` step 2 minus
+ * the catalog typeahead — the master-catalog product is fixed for an
+ * existing inventory row, so we only surface the per-shop slots:
+ *
+ *   `price`, `sale_price`, `cost_price`, `stock_quantity`,
+ *   `low_stock_threshold`, `max_order_qty`, `is_available`, `is_featured`
+ *
+ * Validation runs through the canonical `shopProductSchema`
+ * (`lib/shop-validations.ts`), the same single source of truth that the
+ * Add dialog uses (Req 7.5). Field primitives (`NumberField`,
+ * `NullableNumberField`, `ToggleRow`) are reused from
+ * `./product-form-fields.tsx`.
+ *
+ * Visibility (Req 7.4 / 7.9): the parent shop-products page only mounts
+ * the row-level Edit affordance when the user holds `shop-products.write`,
+ * so this dialog is implicitly permission-gated. We do not re-check
+ * inside the dialog.
+ *
+ * On submit (Req 7.9, design §8 — Property 8: round-trip rollback):
+ *   - Calls `useUpdateShopProduct(shopId).mutateAsync({ id: product.id,
+ *     body })` for every field except stock. The hook owns the optimistic
+ *     update — it patches every matching `["shop-products", shopId, …]`
+ *     cache entry in place before the request lands and rolls back on
+ *     error.
+ *   - `stock_quantity` goes through a second, separate call —
+ *     `useUpdateShopProductStock(shopId).mutateAsync(...)` — only when it
+ *     actually changed, since the backend guards that column with its own
+ *     row-locked endpoint (`PATCH /:id/stock`) instead of the general
+ *     PATCH. Both requests fire concurrently; the dialog only closes once
+ *     both have succeeded.
+ *   - On success: closes the dialog. Each hook's `onSettled` invalidation
+ *     reconciles with server truth (e.g. server-derived `is_available`
+ *     flips when stock crosses zero).
+ *   - On error: leaves the dialog open so the operator can retry. Whichever
+ *     hook(s) failed already restored their own cache snapshot and
+ *     surfaced their own destructive toast; a field that did succeed is
+ *     not resubmitted redundantly since only its own PATCH already landed.
+ *
+ * Responsiveness (Req 12.5): single-column form with
+ * `max-h-[90vh] overflow-y-auto` so it scrolls cleanly at the 360 × 640
+ * baseline; the responsive grid collapses to one column under sm.
+ *
+ * Requirements: 7.5, 7.9, 12.5
+ */
+
+import { useEffect } from "react"
+import { Controller, useForm, useWatch, type Resolver } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2, Package } from "lucide-react"
+import Image from "next/image"
+
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
+import {
+  useUpdateShopProduct,
+  useUpdateShopProductStock,
+} from "@/hooks/useShopProducts"
+import { useShopContext } from "@/hooks/useShopContext"
+import { t } from "@/lib/i18n"
+import {
+  shopProductSchema,
+  type ShopProductInput,
+} from "@/lib/shop-validations"
+import type { ShopProduct } from "@/types"
+
+import {
+  NullableDateTimeField,
+  NullableNumberField,
+  NumberField,
+  ToggleRow,
+} from "./product-form-fields"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EditProductDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  /** The shop-product row whose per-shop fields are being edited. */
+  product: ShopProduct
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Defaults
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Build RHF default values from the row being edited. Every form slot
+ * gets its current persisted value so the dialog opens "ready" — the
+ * operator can submit immediately after toggling one field without being
+ * asked to re-enter the rest.
+ *
+ * `stock_quantity` defaults to the row's current value so the submit
+ * handler's change-detection (see file header) doesn't fire a spurious
+ * stock PATCH when the operator only touched an unrelated field.
+ */
+function buildDefaultsFromProduct(product: ShopProduct): ShopProductInput {
+  return {
+    product_id: product.product_id,
+    price: product.price,
+    sale_price: product.sale_price,
+    cost_price: product.cost_price,
+    wholesale_price: product.wholesale_price,
+    stock_quantity: product.stock_quantity,
+    low_stock_threshold: product.low_stock_threshold,
+    max_order_qty: product.max_order_qty,
+    is_available: product.is_available,
+    is_featured: product.is_featured,
+    bulk_order_eligible: product.bulk_order_eligible,
+    bulk_min_quantity: product.bulk_min_quantity,
+    bulk_max_quantity: product.bulk_max_quantity,
+    bulk_sale_start_at: toDateTimeLocal(product.bulk_sale_start_at),
+    bulk_sale_end_at: toDateTimeLocal(product.bulk_sale_end_at),
+  }
+}
+
+/** ISO date-time -> "YYYY-MM-DDTHH:mm" for a datetime-local input's value,
+ *  same truncation convention as CouponDialog.tsx. */
+function toDateTimeLocal(iso: string | null): string | null {
+  return iso ? iso.slice(0, 16) : null
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function EditProductDialog({
+  open,
+  onOpenChange,
+  product,
+}: EditProductDialogProps) {
+  // Read the active shop so the mutation hook keys its optimistic
+  // updates and invalidations against the right cache prefix. The shop
+  // products page (which mounts this dialog) is gated on
+  // `mode === "STORE_MODE"` so `activeShopId` is always populated;
+  // the submit handler still defends against the null case so no
+  // misuse posts an unscoped PATCH.
+  const { activeShopId } = useShopContext()
+
+  // Mutation — bound to the active shop (or a sentinel "" when null,
+  // which is unreachable at runtime because the parent gates the CTA).
+  // The hook owns optimistic update + rollback (design §8); this
+  // component only triggers it.
+  const updateMutation = useUpdateShopProduct(activeShopId ?? "")
+  const updateStockMutation = useUpdateShopProductStock(activeShopId ?? "")
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ShopProductInput>({
+    // The shopProductSchema's `.refine` produces an effects-wrapped schema
+    // whose inferred input/output diverge slightly from `ShopProductInput`;
+    // cast through the shared resolver type so the rest of the form code
+    // stays strictly typed (matches the Add dialog).
+    resolver: zodResolver(
+      shopProductSchema,
+    ) as unknown as Resolver<ShopProductInput>,
+    defaultValues: buildDefaultsFromProduct(product),
+    mode: "onSubmit",
+  })
+
+  // Re-seed defaults whenever the dialog (re)opens or the row reference
+  // changes. Without this, opening the dialog on a different row after
+  // closing the first one would show the previous row's values.
+  useEffect(() => {
+    if (!open) return
+    reset(buildDefaultsFromProduct(product))
+  }, [open, product, reset])
+
+  // Greys out the minimum-quantity/sale-window fields when the eligibility
+  // toggle itself is off — they're meaningless without it.
+  const bulkOrderEligible = useWatch({ control, name: "bulk_order_eligible" })
+
+  // The product's package size as set at creation time (e.g. "250 gm") —
+  // shown near the top of the form for reference so a bulk-quantity count
+  // (below) is never mistaken for a raw weight. `unit` alone is a bare
+  // keyword ("gm", "piece"), not a size, so it's only the last-resort
+  // fallback when no actual package-size field came back.
+  const packageSize =
+    product.product?.net_quantity?.trim() ||
+    (product.product as { netQuantity?: string } | undefined)?.netQuantity?.trim() ||
+    product.product?.unit?.trim() ||
+    null
+
+  // ─── Submit handler ──────────────────────────────────────────────────────
+
+  async function onSubmit(values: ShopProductInput) {
+    if (!activeShopId) return
+
+    try {
+      const requests: Promise<unknown>[] = [
+        updateMutation.mutateAsync({
+          id: product.id,
+          body: {
+            price: values.price,
+            sale_price: values.sale_price,
+            cost_price: values.cost_price,
+            wholesale_price: values.wholesale_price,
+            low_stock_threshold: values.low_stock_threshold,
+            max_order_qty: values.max_order_qty,
+            is_available: values.is_available,
+            is_featured: values.is_featured,
+            bulk_order_eligible: values.bulk_order_eligible,
+            bulk_min_quantity: values.bulk_min_quantity,
+            bulk_max_quantity: values.bulk_max_quantity,
+            // datetime-local gives "2026-07-13T15:53" (no seconds/timezone)
+            // — the backend requires a full RFC3339 date-time (see
+            // CouponDialog.tsx's identical conversion).
+            bulk_sale_start_at: values.bulk_sale_start_at
+              ? new Date(values.bulk_sale_start_at).toISOString()
+              : null,
+            bulk_sale_end_at: values.bulk_sale_end_at
+              ? new Date(values.bulk_sale_end_at).toISOString()
+              : null,
+          },
+        }),
+      ]
+
+      // Stock is only resubmitted when it actually changed — it flows
+      // through its own row-locked endpoint (see file header), so there's
+      // no reason to hit it on every save.
+      if (values.stock_quantity !== product.stock_quantity) {
+        requests.push(
+          updateStockMutation.mutateAsync({
+            id: product.id,
+            stock_quantity: values.stock_quantity,
+          }),
+        )
+      }
+
+      await Promise.all(requests)
+      // Close on success. Each hook's `onSettled` invalidation will
+      // refetch the list so server-derived fields (e.g. `is_available`
+      // flipping when stock crosses zero) reconcile with the cache.
+      onOpenChange(false)
+    } catch {
+      // Whichever hook's mutation failed already rolled its cache back
+      // and surfaced its own destructive toast. Stay open so the operator
+      // can retry — any field whose PATCH already landed keeps that value
+      // rather than being silently lost.
+    }
+  }
+
+  const submitting =
+    isSubmitting || updateMutation.isPending || updateStockMutation.isPending
+  const canSubmit = Boolean(activeShopId) && !submitting
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {product.product?.name ?? t("shopProducts.list.column.name")}
+          </DialogTitle>
+          <DialogDescription>
+            {product.product?.sku
+              ? `SKU ${product.product.sku}`
+              : t("shopProducts.list.column.name")}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+          noValidate
+          data-testid="edit-product-form"
+        >
+          {/* ── Product summary header ────────────────────────────── */}
+          <div className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
+            <ProductThumb product={product} />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-sm font-medium">
+                {product.product?.name ?? "—"}
+              </span>
+              <span className="truncate text-xs text-muted-foreground">
+                {[
+                  packageSize ? `Package size: ${packageSize}` : null,
+                  product.product?.sku ? `SKU ${product.product.sku}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </div>
+          </div>
+
+          {/* ── B2C · Retail ──────────────────────────────────────── */}
+          <div className="space-y-3 rounded-md border p-3">
+            <p className="text-sm font-semibold">B2C · Retail</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <NumberField
+                id="edit-product-price"
+                label={t("shopProducts.list.column.price")}
+                step="0.01"
+                min={0}
+                required
+                error={errors.price?.message}
+                {...register("price", { valueAsNumber: true })}
+              />
+              <NullableNumberField
+                id="edit-product-sale-price"
+                label={t("shopProducts.list.column.salePrice")}
+                step="0.01"
+                min={0}
+                control={control}
+                name="sale_price"
+                error={errors.sale_price?.message}
+              />
+              <NullableNumberField
+                id="edit-product-cost-price"
+                label="Cost price"
+                step="0.01"
+                min={0}
+                control={control}
+                name="cost_price"
+                error={errors.cost_price?.message}
+              />
+              <NumberField
+                id="edit-product-max-qty"
+                label="Max order qty (retail)"
+                step="1"
+                min={1}
+                max={10000}
+                required
+                error={errors.max_order_qty?.message}
+                {...register("max_order_qty", { valueAsNumber: true })}
+              />
+            </div>
+          </div>
+
+          {/* ── Inventory (shared stock pool — not channel-specific) ─ */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <NumberField
+              id="edit-product-stock"
+              label={t("shopProducts.list.column.stockQuantity")}
+              step="1"
+              min={0}
+              required
+              error={errors.stock_quantity?.message}
+              // Submitted separately via `useUpdateShopProductStock` (see
+              // file header) when it differs from the row's current value
+              // — the dedicated `PATCH /:id/stock` endpoint this hits is
+              // row-locked, unlike the general shop-product PATCH.
+              {...register("stock_quantity", { valueAsNumber: true })}
+            />
+            <NumberField
+              id="edit-product-low-stock"
+              label={t("shopProducts.list.column.lowStockThreshold")}
+              step="1"
+              min={0}
+              error={errors.low_stock_threshold?.message}
+              {...register("low_stock_threshold", { valueAsNumber: true })}
+            />
+          </div>
+
+          {/* ── Toggles (retail) ──────────────────────────────────── */}
+          <div className="space-y-2">
+            <Controller
+              control={control}
+              name="is_available"
+              render={({ field }) => (
+                <ToggleRow
+                  id="edit-product-is-available"
+                  label={t("shopProducts.list.column.isAvailable")}
+                  checked={Boolean(field.value)}
+                  onCheckedChange={field.onChange}
+                  testId="edit-product-is-available"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="is_featured"
+              render={({ field }) => (
+                <ToggleRow
+                  id="edit-product-is-featured"
+                  label={t("shopProducts.list.column.isFeatured")}
+                  checked={Boolean(field.value)}
+                  onCheckedChange={field.onChange}
+                  testId="edit-product-is-featured"
+                />
+              )}
+            />
+          </div>
+
+          {/* ── B2B · Wholesale ───────────────────────────────────── */}
+          <div className="space-y-3 rounded-md border border-violet-200 bg-violet-50/50 p-3 dark:border-violet-900 dark:bg-violet-950/20">
+            <p className="text-sm font-semibold text-violet-900 dark:text-violet-200">
+              B2B · Wholesale
+            </p>
+            <Controller
+              control={control}
+              name="bulk_order_eligible"
+              render={({ field }) => (
+                <ToggleRow
+                  id="edit-product-bulk-order-eligible"
+                  label="Enable B2B / bulk ordering for this listing"
+                  checked={Boolean(field.value)}
+                  onCheckedChange={field.onChange}
+                  testId="edit-product-bulk-order-eligible"
+                />
+              )}
+            />
+            {bulkOrderEligible ? (
+              <div className="space-y-3">
+                <NullableNumberField
+                  id="edit-product-wholesale-price"
+                  label="Wholesale price"
+                  step="0.01"
+                  min={0}
+                  control={control}
+                  name="wholesale_price"
+                  error={errors.wholesale_price?.message}
+                />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <NullableNumberField
+                    id="edit-product-bulk-min-quantity"
+                    label="Minimum bulk quantity"
+                    step="1"
+                    min={1}
+                    max={10000}
+                    control={control}
+                    name="bulk_min_quantity"
+                    error={errors.bulk_min_quantity?.message}
+                  />
+                  <NullableNumberField
+                    id="edit-product-bulk-max-quantity"
+                    label="Maximum bulk quantity"
+                    step="1"
+                    min={1}
+                    max={10000}
+                    control={control}
+                    name="bulk_max_quantity"
+                    error={errors.bulk_max_quantity?.message}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <NullableDateTimeField
+                    id="edit-product-bulk-sale-start"
+                    label="Bulk sale starts (optional)"
+                    control={control}
+                    name="bulk_sale_start_at"
+                    error={errors.bulk_sale_start_at?.message}
+                  />
+                  <NullableDateTimeField
+                    id="edit-product-bulk-sale-end"
+                    label="Bulk sale ends (optional)"
+                    control={control}
+                    name="bulk_sale_end_at"
+                    error={errors.bulk_sale_end_at?.message}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Wholesale price is per listing — this product&apos;s
+                  package size is shown above, next to its name. Minimum
+                  and maximum bulk quantity are a plain count of how many
+                  of that same package a bulk order line must request (not
+                  a weight): leave either blank for no per-listing limit,
+                  and the window blank to keep bulk ordering open whenever
+                  the toggle above is on.
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={submitting}
+            >
+              {t("shopStaff.invite.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              disabled={!canSubmit}
+              data-testid="edit-product-submit"
+            >
+              {submitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2
+                    className="h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                  {t("shops.edit.submitting")}
+                </span>
+              ) : (
+                t("shops.edit.submit")
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export default EditProductDialog
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Internal helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Thumbnail for the row being edited with a graceful fallback when the
+ * master-catalog product has no `image_url`. Mirrors the `CatalogThumb`
+ * helper in `<AddProductDialog />` but reads from `ShopProduct.product`
+ * (the embedded catalog ref) instead of a top-level `Product`.
+ */
+function ProductThumb({ product }: { product: ShopProduct }) {
+  const url = product.product?.image_url
+  if (!url) {
+    return (
+      <div
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted"
+        aria-hidden="true"
+      >
+        <Package className="h-4 w-4 text-muted-foreground" />
+      </div>
+    )
+  }
+  return (
+    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
+      <Image
+        src={url}
+        alt={product.product?.name ?? ""}
+        fill
+        sizes="40px"
+        className="object-cover"
+      />
+    </div>
+  )
+}
