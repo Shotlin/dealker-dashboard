@@ -7,6 +7,7 @@ import {
   CreditCard,
   FileSpreadsheet,
   FileText,
+  Gavel,
   Gift,
   History,
   Image,
@@ -74,6 +75,12 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "All Orders", href: "/orders", icon: ClipboardList, badgeKey: "pendingOrders" },
       { label: "Seller Orders", href: "/seller-orders", icon: Package },
       { label: "Returns & Refunds", href: "/refund-requests", icon: Undo2 },
+    ],
+  },
+  {
+    section: "Auctions",
+    items: [
+      { label: "Auctions", href: "/auctions", icon: Gavel },
     ],
   },
   {
@@ -154,6 +161,7 @@ export const NAV_SECTIONS: NavSection[] = [
 
 /** Human labels for breadcrumb segments that don't title-case cleanly. */
 export const ROUTE_LABELS: Record<string, string> = {
+  auctions: "Auctions",
   "seller-orders": "Seller Orders",
   "seller-listings": "Seller Listings",
   products: "Products",
