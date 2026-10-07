@@ -22,6 +22,7 @@ export interface AbandonedCart {
 export interface AbandonedCartItem {
   productId: string | null
   shopId: string | null
+  shopName?: string | null
   productName: string
   thumbnailUrl: string | null
   unit: string | null
@@ -70,11 +71,36 @@ export interface AbandonedCartDetail extends Omit<AbandonedCart, "userName" | "u
     email: string | null
     walletBalance: number
     loyaltyPoints: number
+    orderCount: number
+    deliveredCount: number
+    lifetimeValue: number
+    lastOrderAt: string | null
   }
+  /** The customer's OTHER abandonment episodes — shows whether this is a habit. */
+  history: AbandonedCartHistory
+  /** ms until another plain reminder may be sent (0 = can send now). */
+  reminderCooldownMs: number
   items: AbandonedCartItem[]
   events: AbandonedCartEvent[]
   notificationsSent: AbandonedCartNotificationEntry[]
   couponsIssued: AbandonedCartCouponEntry[]
+}
+
+export interface AbandonedCartHistory {
+  totalEpisodes: number
+  recoveredCount: number
+  convertedCount: number
+  expiredCount: number
+  totalAbandonedValue: number
+  remindersSent: number
+  previous: {
+    id: string
+    status: AbandonedCartStatus
+    abandonedAt: string
+    cartValue: number
+    itemCount: number
+    reminderCount: number
+  }[]
 }
 
 export interface AbandonedCartFilters {
@@ -97,6 +123,39 @@ export interface AbandonedCartSummary {
   convertedToday: number
   convertedValueToday: number
   recoveryRate7d: number
+  recoveredValue7d: number
+  remindersSent7d: number
+}
+
+export interface QuickCouponPreset {
+  key: string
+  label: string
+  discountType: "PERCENTAGE" | "FLAT" | "FREE_DELIVERY"
+  discountValue: number
+  minOrderAmount: number
+  maxDiscount?: number
+}
+
+export interface QuickCouponMeta {
+  presets: QuickCouponPreset[]
+  defaultValidHours: number
+  maxValidHours: number
+  reminderCooldownMinutes: number
+  placeholders: string[]
+}
+
+export interface BulkReminderResult {
+  requested: number
+  sent: number
+  skipped: { id: string; code: string; message: string }[]
+}
+
+export interface QuickCouponResult {
+  couponId: string
+  code: string
+  validUntil: string
+  notificationId: string | null
+  notifyNote: string | null
 }
 
 export interface SendReminderPayload {

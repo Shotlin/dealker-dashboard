@@ -32,6 +32,7 @@ import {
   Headset,
   Landmark,
   PackageSearch,
+  ShoppingCart,
   type LucideIcon,
 } from "lucide-react"
 
@@ -97,6 +98,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Support Chat", href: "/support", icon: Headset, badgeKey: "supportUnread" },
       { label: "Customers", href: "/customers", icon: Users },
+      { label: "Abandoned Carts", href: "/abandoned-carts", icon: ShoppingCart },
       { label: "Activity", href: "/customer-activity", icon: History },
       { label: "Segments", href: "/customer-segments", icon: Users2 },
     ],
@@ -161,6 +163,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   "catalog-bulk": "Bulk Imports",
   "customer-activity": "Customer Activity",
   "customer-segments": "Customer Segments",
+  "abandoned-carts": "Abandoned Carts",
   "cart-milestones": "Cart Milestones",
   "theme-tabs": "Theme Tabs",
   "activity-log": "Activity Log",
