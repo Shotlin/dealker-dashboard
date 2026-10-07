@@ -8,6 +8,7 @@ import {
   FileSpreadsheet,
   FileText,
   Gavel,
+  Megaphone,
   Gift,
   History,
   Image,
@@ -81,6 +82,14 @@ export const NAV_SECTIONS: NavSection[] = [
     section: "Auctions",
     items: [
       { label: "Auctions", href: "/auctions", icon: Gavel },
+    ],
+  },
+  {
+    section: "Advertising",
+    items: [
+      { label: "Sponsored Ads", href: "/ads", icon: Megaphone },
+      { label: "Ad Wallet & Billing", href: "/ads/wallet", icon: CreditCard },
+      { label: "Ad Pricing Rules", href: "/ads/settings", icon: Settings },
     ],
   },
   {
@@ -162,6 +171,7 @@ export const NAV_SECTIONS: NavSection[] = [
 /** Human labels for breadcrumb segments that don't title-case cleanly. */
 export const ROUTE_LABELS: Record<string, string> = {
   auctions: "Auctions",
+  ads: "Sponsored Ads",
   "seller-orders": "Seller Orders",
   "seller-listings": "Seller Listings",
   products: "Products",
