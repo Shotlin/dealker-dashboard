@@ -11,8 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ConditionPill, DeviceThumb, PersonAvatar, StatusBadge, TYPE_META, fmtDateTime } from "./sell-request-ui"
-import { useLinkOrder, useSellRequest, useSellRequestAction } from "@/hooks/useSellRequests"
-import type { SellRequest, SellRequestAction } from "@/services/sell-requests.service"
+import { useLinkOrder, useRequest, useRequestAction } from "@/hooks/useSellRequests"
+import type { RequestKind, SellRequest, SellRequestAction } from "@/services/sell-requests.service"
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -102,16 +102,17 @@ function Timeline({ events }: { events: SellRequest["timeline"] }) {
 
 type NoteAction = Extract<SellRequestAction, "REJECT" | "REQUEST_INFO">
 
-export function SellRequestDetailPanel({ id }: { id: string | null }) {
-  const { data: r, isLoading } = useSellRequest(id)
-  const act = useSellRequestAction()
+export function SellRequestDetailPanel({ id, kind }: { id: string | null; kind: RequestKind }) {
+  const isExchange = kind === "EXCHANGE"
+  const { data: r, isLoading } = useRequest(kind, id)
+  const act = useRequestAction(kind)
   const [noteFor, setNoteFor] = useState<NoteAction | null>(null)
   const [note, setNote] = useState("")
   const [lightbox, setLightbox] = useState<number | null>(null)
   const [orderNo, setOrderNo] = useState("")
   const link = useLinkOrder()
 
-  if (!id) return <aside className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">Select a request to see its details.</aside>
+  if (!id) return <aside className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">{isExchange ? "Select an exchange to see its details." : "Select a request to see its details."}</aside>
   if (isLoading || !r) return <aside className="space-y-3 rounded-xl border bg-card p-4"><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full" /><Skeleton className="h-64 w-full" /></aside>
 
   const open = r.status === "PENDING" || r.status === "IN_PROGRESS"
@@ -124,10 +125,10 @@ export function SellRequestDetailPanel({ id }: { id: string | null }) {
   }
 
   return (
-    <aside className="rounded-xl border bg-card shadow-sm" aria-label="Sell request details">
+    <aside className="rounded-xl border bg-card shadow-sm" aria-label={isExchange ? "Exchange request details" : "Sell request details"}>
       <header className="flex items-start justify-between gap-2 border-b p-4">
         <div>
-          <h2 className="text-base font-semibold">Sell Request Details</h2>
+          <h2 className="text-base font-semibold">{isExchange ? "Exchange Request Details" : "Sell Request Details"}</h2>
           <p className="mt-1 text-sm font-semibold">{r.code}</p>
           <p className="text-xs text-muted-foreground">Requested on {fmtDateTime(r.createdAt)}</p>
         </div>
@@ -163,30 +164,30 @@ export function SellRequestDetailPanel({ id }: { id: string | null }) {
 
           <TabsContent value="details" className="space-y-4">
             <dl>
-              <Row label="Request Type">{TYPE_META[r.type].label}</Row>
-              <Row label="Expected Price">{formatINR(r.expectedPrice)}</Row>
-              <Row label="System Quote">{formatINR(r.quote)}</Row>
-              <Row label="Device IMEI"><span className="font-mono text-xs">{r.device.imei}</span></Row>
+              {!isExchange && <Row label="Request Type">{TYPE_META[r.type].label}</Row>}
+              <Row label={isExchange ? "Customer expects" : "Expected Price"}>{formatINR(r.expectedPrice)}</Row>
+              <Row label={isExchange ? "Trade-in value" : "System Quote"}>{formatINR(r.quote)}</Row>
+              <Row label={isExchange ? "Old device IMEI" : "Device IMEI"}><span className="font-mono text-xs">{r.device.imei}</span></Row>
               <Row label="Description"><span className="font-normal">{r.description || "—"}</span></Row>
               {r.assignedVendor && <Row label="Vendor">{r.assignedVendor}</Row>}
             </dl>
 
             {r.exchange && (
               <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-3 text-sm dark:bg-violet-950/30">
-                <p className="mb-1 font-semibold">Exchange</p>
+                <p className="mb-1 font-semibold">New purchase</p>
                 <div className="flex justify-between"><span className="text-muted-foreground">New product</span><span>{r.exchange.newProduct}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">New price</span><span>{formatINR(r.exchange.newProductPrice)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Trade-in value</span><span className="text-emerald-600">− {formatINR(r.exchange.tradeInValue)}</span></div>
                 <div className="mt-1 flex justify-between border-t pt-1 font-semibold"><span>Customer pays</span><span>{formatINR(r.exchange.payable)}</span></div>
                 {r.exchangeOrder ? (
                   <p className="mt-2 flex items-center gap-1.5 rounded-md bg-background/70 p-2 text-xs"><Link2 className="h-3.5 w-3.5 text-violet-600" aria-hidden />Order <b>{r.exchangeOrder.orderNumber}</b> · {r.exchangeOrder.status.replace(/_/g, " ").toLowerCase()}{r.exchangeOrder.total != null && <> · {formatINR(r.exchangeOrder.total)}</>}</p>
-                ) : r.status === "APPROVED" ? (
+                ) : open || r.status === "APPROVED" ? (
                   <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (orderNo.trim()) link.mutate({ id: r.id, orderNumber: orderNo.trim() }, { onSuccess: () => setOrderNo("") }) }}>
                     <Input aria-label="Order number" value={orderNo} onChange={(e) => setOrderNo(e.target.value)} placeholder="Order no. of the new product" className="h-8 bg-background text-xs" />
                     <Button type="submit" size="sm" variant="outline" disabled={link.isPending || !orderNo.trim()}><Link2 /> Link</Button>
                   </form>
                 ) : (
-                  <p className="mt-2 text-xs text-muted-foreground">Approve the exchange, then link the new product's order.</p>
+                  <p className="mt-2 text-xs text-muted-foreground">No order can be linked to a {r.status.toLowerCase()} exchange.</p>
                 )}
               </div>
             )}
@@ -235,7 +236,12 @@ export function SellRequestDetailPanel({ id }: { id: string | null }) {
         <div className="space-y-2 rounded-lg border p-3">
           <p className="text-sm font-semibold">Actions</p>
           {open && <Button className="w-full bg-brand-600 hover:bg-brand-700" disabled={act.isPending} onClick={() => run("APPROVE")}><Check /> Approve Request</Button>}
-          {r.status === "APPROVED" && <Button className="w-full bg-brand-600 hover:bg-brand-700" disabled={act.isPending} onClick={() => run("COMPLETE")}><CheckCircle2 /> Mark Completed</Button>}
+          {r.status === "APPROVED" && (
+            <>
+              <Button className="w-full bg-brand-600 hover:bg-brand-700" disabled={act.isPending || (isExchange && !r.exchangeOrder)} onClick={() => run("COMPLETE")}><CheckCircle2 /> Mark Completed</Button>
+              {isExchange && !r.exchangeOrder && <p className="text-xs text-muted-foreground">Link the order for the new product to complete this exchange.</p>}
+            </>
+          )}
           {open && <Button variant="outline" className="w-full border-brand-300 text-brand-700" onClick={() => setNoteFor("REQUEST_INFO")}><MessageSquareMore /> Request More Details</Button>}
           {open && <Button variant="outline" className="w-full border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => setNoteFor("REJECT")}><XCircle /> Reject Request</Button>}
           <Button variant="outline" className="w-full" onClick={() => toast.info("Messaging is not connected yet")}><MessageSquare /> Send Message</Button>

@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   MapPinned,
   Package,
+  Repeat,
   Palette,
   ScrollText,
   Settings,
@@ -80,9 +81,15 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    section: "Sell & Exchange",
+    section: "Sell Requests",
     items: [
       { label: "Sell Requests", href: "/sell-requests", icon: Smartphone },
+    ],
+  },
+  {
+    section: "Exchange Requests",
+    items: [
+      { label: "Exchange Requests", href: "/exchange-requests", icon: Repeat },
     ],
   },
   {
@@ -179,6 +186,7 @@ export const NAV_SECTIONS: NavSection[] = [
 export const ROUTE_LABELS: Record<string, string> = {
   auctions: "Auctions",
   "sell-requests": "Sell Requests",
+  "exchange-requests": "Exchange Requests",
   ads: "Sponsored Ads",
   "seller-orders": "Seller Orders",
   "seller-listings": "Seller Listings",

@@ -12,8 +12,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ConditionPill } from "./sell-request-ui"
 import { ImageUploader } from "./ImageUploader"
 import { apiMessage } from "@/services/sell-requests.service"
-import { useCreateSellRequest, useSellModels, useSellQuote } from "@/hooks/useSellRequests"
-import { DEFAULT_QA, isValidImei, type DeviceQA, type Scratches, type SellRequestType } from "@/services/sell-requests.service"
+import { useCatalogModels, useCreateRequest, useRequestQuote } from "@/hooks/useSellRequests"
+import { DEFAULT_QA, isValidImei, type DeviceQA, type RequestKind, type Scratches, type SellRequestType } from "@/services/sell-requests.service"
 
 const STEPS = ["Device", "Condition", "Valuation"] as const
 
@@ -26,13 +26,14 @@ function Toggle({ id, label, checked, onChange }: { id: string; label: string; c
   )
 }
 
-export function CreateSellRequestDialog({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; onCreated?: (id: string) => void }) {
-  const create = useCreateSellRequest()
+export function CreateSellRequestDialog({ kind, open, onOpenChange, onCreated }: { kind: RequestKind; open: boolean; onOpenChange: (o: boolean) => void; onCreated?: (id: string) => void }) {
+  const isExchange = kind === "EXCHANGE"
+  const create = useCreateRequest(kind)
   const [step, setStep] = useState(0)
-  const [type, setType] = useState<SellRequestType>("SELL_TO_AB")
+  const [type, setType] = useState<SellRequestType>(isExchange ? "EXCHANGE" : "SELL_TO_AB")
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
-  const models = useSellModels()
+  const models = useCatalogModels(kind)
   const catalog = (models.data ?? []).filter((m) => m.isActive !== false)
   const [modelName, setModelName] = useState("")
   const cat = catalog.find((m) => m.name === modelName) ?? catalog[0]
@@ -46,18 +47,19 @@ export function CreateSellRequestDialog({ open, onOpenChange, onCreated }: { ope
   const [expected, setExpected] = useState("")
   const [newProduct, setNewProduct] = useState("")
   const [newPrice, setNewPrice] = useState("")
+  const [orderNo, setOrderNo] = useState("")
   const [images, setImages] = useState<string[]>([])
 
-  const quote = useSellQuote({ model, variant, color, qa }, open && step === 2 && !!cat)
+  const quote = useRequestQuote(kind, { model, variant, color, qa }, open && step === 2 && !!cat)
   const result = quote.data
   const set = <K extends keyof DeviceQA>(k: K, v: DeviceQA[K]) => setQa((p) => ({ ...p, [k]: v }))
 
   const imeiOk = isValidImei(imei)
   const phoneOk = /^\+?\d[\d ]{9,13}$/.test(phone.trim())
-  const exchangeOk = type !== "EXCHANGE" || (newProduct.trim() && Number(newPrice) > 0)
+  const exchangeOk = !isExchange || (newProduct.trim() && Number(newPrice) > 0)
   const step0Ok = name.trim().length > 1 && phoneOk && imeiOk && exchangeOk
 
-  const reset = () => { setStep(0); setImei(""); setQa(DEFAULT_QA); setExpected(""); setName(""); setPhone(""); setNewProduct(""); setNewPrice(""); setType("SELL_TO_AB"); setImages([]) }
+  const reset = () => { setStep(0); setImei(""); setQa(DEFAULT_QA); setExpected(""); setName(""); setPhone(""); setNewProduct(""); setNewPrice(""); setOrderNo(""); setType(isExchange ? "EXCHANGE" : "SELL_TO_AB"); setImages([]) }
 
   const onModel = (v: string) => { setModelName(v); setVariant(""); setColor("") }
 
@@ -66,7 +68,8 @@ export function CreateSellRequestDialog({ open, onOpenChange, onCreated }: { ope
       {
         type, customer: { name: name.trim(), phone: phone.trim() }, model, variant, color, imei, qa,
         expectedPrice: Number(expected) || result?.quote || 0, images,
-        exchange: type === "EXCHANGE" ? { newProduct: newProduct.trim(), newProductPrice: Number(newPrice) } : undefined,
+        exchange: isExchange ? { newProduct: newProduct.trim(), newProductPrice: Number(newPrice) } : undefined,
+        orderNumber: isExchange && orderNo.trim() ? orderNo.trim() : undefined,
       },
       { onSuccess: (r) => { onOpenChange(false); reset(); onCreated?.(r.id) } },
     )
@@ -75,8 +78,8 @@ export function CreateSellRequestDialog({ open, onOpenChange, onCreated }: { ope
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create Sell Request</DialogTitle>
-          <DialogDescription>Capture the device, ask the condition questions, and get an instant valuation.</DialogDescription>
+          <DialogTitle>{isExchange ? "Create Exchange Request" : "Create Sell Request"}</DialogTitle>
+          <DialogDescription>{isExchange ? "The customer is buying a new device and trading in the old one. Capture the old device, ask the condition questions, and get its trade-in value." : "Capture the device, ask the condition questions, and get an instant valuation."}</DialogDescription>
         </DialogHeader>
 
         <ol className="flex items-center gap-2 text-sm" aria-label="Progress">
@@ -93,15 +96,17 @@ export function CreateSellRequestDialog({ open, onOpenChange, onCreated }: { ope
 
         {step === 0 && (
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label>Request type</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {([["SELL_TO_AB", "Sell to AB"], ["BUY_NOW", "Buy Now"], ["EXCHANGE", "Exchange"]] as const).map(([v, l]) => (
-                  <button key={v} type="button" onClick={() => setType(v)} aria-pressed={type === v}
-                    className={cn("rounded-lg border px-3 py-2 text-sm font-medium", type === v ? "border-brand-500 bg-brand-50 text-brand-700" : "hover:bg-muted")}>{l}</button>
-                ))}
+            {!isExchange && (
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label>Request type</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([["SELL_TO_AB", "Sell to AB"], ["BUY_NOW", "Buy Now"]] as const).map(([v, l]) => (
+                    <button key={v} type="button" onClick={() => setType(v)} aria-pressed={type === v}
+                      className={cn("rounded-lg border px-3 py-2 text-sm font-medium", type === v ? "border-brand-500 bg-brand-50 text-brand-700" : "hover:bg-muted")}>{l}</button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             <div className="space-y-1.5"><Label htmlFor="cn">Customer name</Label><Input id="cn" value={name} onChange={(e) => setName(e.target.value)} /></div>
             <div className="space-y-1.5"><Label htmlFor="cp">Phone</Label><Input id="cp" inputMode="tel" placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} aria-invalid={!!phone && !phoneOk} /></div>
             <div className="space-y-1.5">
@@ -125,11 +130,13 @@ export function CreateSellRequestDialog({ open, onOpenChange, onCreated }: { ope
               {imei.length === 15 && !imeiOk && <p className="text-xs text-red-600">This IMEI fails the checksum — re-check the number.</p>}
               {imeiOk && <p className="text-xs text-emerald-600">IMEI looks valid.</p>}
             </div>
-            {type === "EXCHANGE" && (
-              <>
-                <div className="space-y-1.5"><Label htmlFor="np">New product being bought</Label><Input id="np" value={newProduct} onChange={(e) => setNewProduct(e.target.value)} /></div>
+            {isExchange && (
+              <fieldset className="grid gap-4 rounded-lg border border-violet-200 bg-violet-50/40 p-3 sm:col-span-2 sm:grid-cols-2 dark:bg-violet-950/20">
+                <legend className="px-1 text-xs font-semibold text-violet-700">New device being purchased</legend>
+                <div className="space-y-1.5"><Label htmlFor="np">New product</Label><Input id="np" value={newProduct} onChange={(e) => setNewProduct(e.target.value)} placeholder="iPhone 15 (128GB)" /></div>
                 <div className="space-y-1.5"><Label htmlFor="npp">New product price (₹)</Label><Input id="npp" inputMode="numeric" value={newPrice} onChange={(e) => setNewPrice(e.target.value.replace(/\D/g, ""))} /></div>
-              </>
+                <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="ord">Order number (if already placed) — optional</Label><Input id="ord" value={orderNo} onChange={(e) => setOrderNo(e.target.value)} placeholder="Linked now, or later from the request" /></div>
+              </fieldset>
             )}
           </div>
         )}
@@ -182,7 +189,7 @@ export function CreateSellRequestDialog({ open, onOpenChange, onCreated }: { ope
                     {result.deductions.map((d) => (<li key={d.label} className="flex justify-between px-3 py-1.5"><span>{d.label}</span><span className="text-red-600">− {d.pct}%</span></li>))}
                   </ul>
                 ) : <p className="text-sm text-emerald-600">No deductions — device is in mint condition.</p>}
-                {type === "EXCHANGE" && <p className="rounded-lg border border-violet-200 bg-violet-50/60 p-3 text-sm dark:bg-violet-950/30">Customer pays <b>{formatINR(Math.max(0, Number(newPrice) - result.quote))}</b> for {newProduct} after trade-in.</p>}
+                {isExchange && <p className="rounded-lg border border-violet-200 bg-violet-50/60 p-3 text-sm dark:bg-violet-950/30">Customer pays <b>{formatINR(Math.max(0, Number(newPrice) - result.quote))}</b> for {newProduct} after trade-in.</p>}
               </>
             )}
             <div className="space-y-1.5">
