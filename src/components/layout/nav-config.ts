@@ -19,6 +19,7 @@ import {
   ScrollText,
   Settings,
   Shield,
+  Smartphone,
   Sparkles,
   Star,
   Store,
@@ -76,6 +77,12 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "All Orders", href: "/orders", icon: ClipboardList, badgeKey: "pendingOrders" },
       { label: "Seller Orders", href: "/seller-orders", icon: Package },
       { label: "Returns & Refunds", href: "/refund-requests", icon: Undo2 },
+    ],
+  },
+  {
+    section: "Sell & Exchange",
+    items: [
+      { label: "Sell Requests", href: "/sell-requests", icon: Smartphone },
     ],
   },
   {
@@ -171,6 +178,7 @@ export const NAV_SECTIONS: NavSection[] = [
 /** Human labels for breadcrumb segments that don't title-case cleanly. */
 export const ROUTE_LABELS: Record<string, string> = {
   auctions: "Auctions",
+  "sell-requests": "Sell Requests",
   ads: "Sponsored Ads",
   "seller-orders": "Seller Orders",
   "seller-listings": "Seller Listings",
