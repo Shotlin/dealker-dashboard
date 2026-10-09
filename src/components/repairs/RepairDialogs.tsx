@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import { formatINR } from "@/lib/utils"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -146,7 +146,7 @@ export function QuoteDialog({ repair, open, pending, onClose, onSubmit }: {
                 <p className="text-sm font-semibold">{item.lineNo}. {item.brand} {item.model} <span className="font-normal text-muted-foreground">{item.imeiSerial ?? ""}</span></p>
                 <Select value="" onValueChange={(c) => addFromService(item.id, c)}>
                   <SelectTrigger className="h-8 w-52" aria-label={`Add service for ${item.model}`}><SelectValue placeholder="Add from price list" /></SelectTrigger>
-                  <SelectContent>{(services.data ?? []).filter((s) => s.isActive).map((s) => <SelectItem key={s.code} value={s.code}>{s.name} · {formatINR(s.labourPrice)}</SelectItem>)}</SelectContent>
+                  <SelectContent>{(services.data ?? []).filter((s) => s.isActive).map((s) => <SelectItem key={s.code} value={s.code}>{s.name} · {formatMoney(s.labourPrice)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
@@ -168,10 +168,10 @@ export function QuoteDialog({ repair, open, pending, onClose, onSubmit }: {
           ))}
           <div className="space-y-1.5"><Label htmlFor="qn">Note to customer (optional)</Label><Textarea id="qn" rows={2} value={note} onChange={(e) => setNote(e.target.value)} /></div>
           <dl className="ml-auto grid max-w-xs grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-sm" aria-label="Estimate preview">
-            <dt className="text-muted-foreground">Subtotal</dt><dd className="text-right tabular-nums">{formatINR(preview.sub)}</dd>
-            {discountPct > 0 && <><dt className="text-muted-foreground">Contract discount ({discountPct}%)</dt><dd className="text-right tabular-nums text-emerald-600">− {formatINR(preview.disc)}</dd></>}
-            <dt className="text-muted-foreground">GST ({taxPct}%)</dt><dd className="text-right tabular-nums">{formatINR(preview.tax)}</dd>
-            <dt className="border-t pt-1 font-semibold">Total</dt><dd className="border-t pt-1 text-right font-semibold tabular-nums">{formatINR(preview.total)}</dd>
+            <dt className="text-muted-foreground">Subtotal</dt><dd className="text-right tabular-nums">{formatMoney(preview.sub)}</dd>
+            {discountPct > 0 && <><dt className="text-muted-foreground">Contract discount ({discountPct}%)</dt><dd className="text-right tabular-nums text-emerald-600">− {formatMoney(preview.disc)}</dd></>}
+            <dt className="text-muted-foreground">GST ({taxPct}%)</dt><dd className="text-right tabular-nums">{formatMoney(preview.tax)}</dd>
+            <dt className="border-t pt-1 font-semibold">Total</dt><dd className="border-t pt-1 text-right font-semibold tabular-nums">{formatMoney(preview.total)}</dd>
           </dl>
         </div>
         <DialogFooter>
@@ -248,7 +248,7 @@ export function PaymentDialog({ repair, open, pending, onClose, onSubmit }: {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Record payment</DialogTitle>
-          <DialogDescription>Total {formatINR(m.approvedTotal)} · paid {formatINR(m.amountPaid)} · due {formatINR(m.amountDue)}{m.refundable > 0 && ` · refundable ${formatINR(m.refundable)}`}</DialogDescription>
+          <DialogDescription>Total {formatMoney(m.approvedTotal)} · paid {formatMoney(m.amountPaid)} · due {formatMoney(m.amountDue)}{m.refundable > 0 && ` · refundable ${formatMoney(m.refundable)}`}</DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5"><Label>Type</Label>

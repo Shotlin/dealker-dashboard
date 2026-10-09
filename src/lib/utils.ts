@@ -20,6 +20,11 @@ export function formatINR(amount: number): string {
   }).format(amount)
 }
 
+/** Exact rupees and paise (₹1,181.40). Use wherever the amount is a legal or payable figure — invoices, balances, refunds. */
+export function formatMoney(amount: number): string {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)
+}
+
 /** Short Indian format: ₹1.24L, ₹1.24Cr */
 export function formatShort(n: number): string {
   if (n >= 10000000) return `₹${(n / 10000000).toFixed(2)}Cr`

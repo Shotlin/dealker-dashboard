@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { AlertTriangle, ChevronLeft, ChevronRight, Plus, Search, Settings2 } from "lucide-react"
-import { cn, formatINR } from "@/lib/utils"
+import { cn, formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -61,8 +61,8 @@ export default function RepairsPage() {
           <Kpi label="Awaiting approval" value={s.awaitingApproval} tone={s.awaitingApproval > 0 ? "warn" : undefined} />
           <Kpi label="Failed / rework" value={s.problems} tone={s.problems > 0 ? "warn" : undefined} />
           <Kpi label="SLA breached" value={s.slaBreached} tone={s.slaBreached > 0 ? "bad" : undefined} />
-          <Kpi label="Outstanding" value={formatINR(s.outstanding)} hint={s.overdue ? `${s.overdue} overdue` : undefined} tone={s.overdue ? "bad" : undefined} />
-          <Kpi label="Completed this month" value={formatINR(s.completedValueMonth)} />
+          <Kpi label="Outstanding" value={formatMoney(s.outstanding)} hint={s.overdue ? `${s.overdue} overdue` : undefined} tone={s.overdue ? "bad" : undefined} />
+          <Kpi label="Completed this month" value={formatMoney(s.completedValueMonth)} />
         </>}
       </section>
 
@@ -108,8 +108,8 @@ export default function RepairsPage() {
                   <td className="px-3 py-2.5"><p>{r.firstDevice}</p><p className="text-xs text-muted-foreground">{r.deviceCount > 1 ? `+${r.deviceCount - 1} more` : "1 device"}</p></td>
                   <td className="px-3 py-2.5"><RepairStatusBadge status={r.status} /></td>
                   <td className="px-3 py-2.5 text-muted-foreground">{r.serviceCenter ?? <span className="text-amber-700">Unassigned</span>}</td>
-                  <td className="px-3 py-2.5 tabular-nums">{r.money.approvedTotal > 0 ? <><p>{formatINR(r.money.approvedTotal)}</p>
-                    {r.money.amountDue > 0 && <p className={cn("text-xs", r.money.overdue ? "font-medium text-red-700" : "text-amber-700")}>{formatINR(r.money.amountDue)} due{r.money.overdue && " · overdue"}</p>}</> : <span className="text-muted-foreground">—</span>}</td>
+                  <td className="px-3 py-2.5 tabular-nums">{r.money.approvedTotal > 0 ? <><p>{formatMoney(r.money.approvedTotal)}</p>
+                    {r.money.amountDue > 0 && <p className={cn("text-xs", r.money.overdue ? "font-medium text-red-700" : "text-amber-700")}>{formatMoney(r.money.amountDue)} due{r.money.overdue && " · overdue"}</p>}</> : <span className="text-muted-foreground">—</span>}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{fmtDay(r.createdAt)}</td>
                 </tr>
               ))}

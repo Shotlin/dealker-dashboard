@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { AlertTriangle, Banknote, Check, ClipboardCheck, PackageCheck, Play, Plus, Receipt, RotateCcw, Send, Stethoscope, Truck, UserCheck, Wrench, XCircle } from "lucide-react"
 import { toast } from "sonner"
-import { cn, formatINR } from "@/lib/utils"
+import { cn, formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -12,6 +12,8 @@ import { EvidenceUploader } from "@/components/sell-requests/EvidenceUploader"
 import { usePermissions } from "@/hooks/usePermissions"
 import { useRepair, useRepairAction, useRepairSettings } from "@/hooks/useRepairs"
 import { mediaSrc, type EvidenceMedia } from "@/services/sell-requests.service"
+import { useSalesAction } from "@/hooks/useSalesInvoices"
+import { downloadPdf, viewPdf } from "@/services/sales-invoices.service"
 import { PROBLEM_LABEL, repairsApi, type Repair, type RepairItem } from "@/services/repairs.service"
 import { AssignDialog, DiagnosisDialog, NoteDialog, PaymentDialog, QcDialog, QuoteDialog } from "./RepairDialogs"
 import { ChannelPill, RepairStatusBadge, fmtDate, fmtDay } from "./repair-ui"
@@ -105,6 +107,7 @@ function RepairDetail({ id }: { id: string }) {
   const { data: r, isLoading, isError } = useRepair(id)
   const { can } = usePermissions()
   const act = useRepairAction()
+  const billing = useSalesAction("Invoice issued")
   const [note, setNote] = useState<Pending>(null)
   const [assign, setAssign] = useState<"accept" | "assign" | null>(null)
   const [quote, setQuote] = useState(false)
@@ -185,14 +188,14 @@ function RepairDetail({ id }: { id: string }) {
         <Section title={`Estimate v${sent.version}`} action={<span className={cn("text-xs font-medium", sent.expired ? "text-red-700" : "text-muted-foreground")}>{sent.status === "APPROVED" ? "Approved" : sent.status === "SENT" ? (sent.expired ? "Expired" : `Valid until ${fmtDay(sent.validUntil)}`) : sent.status.toLowerCase()}</span>}>
           <ul className="divide-y text-sm">
             {sent.lines.map((l, n) => (
-              <li key={n} className="flex justify-between gap-3 py-1.5"><span className="min-w-0 truncate">{l.description}{l.qty > 1 && <span className="text-muted-foreground"> × {l.qty}</span>}</span><span className="tabular-nums">{formatINR(l.amount ?? l.qty * l.unitPrice)}</span></li>
+              <li key={n} className="flex justify-between gap-3 py-1.5"><span className="min-w-0 truncate">{l.description}{l.qty > 1 && <span className="text-muted-foreground"> × {l.qty}</span>}</span><span className="tabular-nums">{formatMoney(l.amount ?? l.qty * l.unitPrice)}</span></li>
             ))}
           </ul>
           <dl className="ml-auto grid max-w-xs grid-cols-[1fr_auto] gap-x-6 gap-y-0.5 text-sm">
-            <dt className="text-muted-foreground">Subtotal</dt><dd className="text-right tabular-nums">{formatINR(sent.subtotal)}</dd>
-            {sent.discountAmount > 0 && <><dt className="text-muted-foreground">Discount ({sent.discountPct}%)</dt><dd className="text-right tabular-nums text-emerald-600">− {formatINR(sent.discountAmount)}</dd></>}
-            <dt className="text-muted-foreground">GST ({sent.taxPct}%)</dt><dd className="text-right tabular-nums">{formatINR(sent.taxAmount)}</dd>
-            <dt className="border-t pt-1 font-semibold">Total</dt><dd className="border-t pt-1 text-right font-semibold tabular-nums">{formatINR(sent.total)}</dd>
+            <dt className="text-muted-foreground">Subtotal</dt><dd className="text-right tabular-nums">{formatMoney(sent.subtotal)}</dd>
+            {sent.discountAmount > 0 && <><dt className="text-muted-foreground">Discount ({sent.discountPct}%)</dt><dd className="text-right tabular-nums text-emerald-600">− {formatMoney(sent.discountAmount)}</dd></>}
+            <dt className="text-muted-foreground">GST ({sent.taxPct}%)</dt><dd className="text-right tabular-nums">{formatMoney(sent.taxAmount)}</dd>
+            <dt className="border-t pt-1 font-semibold">Total</dt><dd className="border-t pt-1 text-right font-semibold tabular-nums">{formatMoney(sent.total)}</dd>
           </dl>
           {sent.note && <p className="text-xs text-muted-foreground">Note: {sent.note}</p>}
         </Section>
@@ -202,20 +205,39 @@ function RepairDetail({ id }: { id: string }) {
         <Section title="Payments" action={finance && !closed && <Button size="sm" variant="outline" className="h-7" onClick={() => setPay(true)}><Banknote /> Record</Button>}>
           <dl className="grid grid-cols-2 gap-x-6 sm:grid-cols-4">
             {([["Total", r.money.approvedTotal], ["Paid", r.money.amountPaid], ["Due", r.money.amountDue], ["Advance needed", r.money.advanceRequired]] as const).map(([l, v]) => (
-              <div key={l}><dt className="text-xs text-muted-foreground">{l}</dt><dd className={cn("font-semibold tabular-nums", l === "Due" && v > 0 && "text-amber-700")}>{formatINR(v)}</dd></div>
+              <div key={l}><dt className="text-xs text-muted-foreground">{l}</dt><dd className={cn("font-semibold tabular-nums", l === "Due" && v > 0 && "text-amber-700")}>{formatMoney(v)}</dd></div>
             ))}
           </dl>
           {r.money.dueDate && <p className={cn("text-xs", r.money.overdue ? "font-medium text-red-700" : "text-muted-foreground")}>Due by {fmtDay(r.money.dueDate)}{r.money.overdue && " — overdue"}</p>}
-          {r.money.refundable > 0 && <p className="text-xs font-medium text-amber-700">{formatINR(r.money.refundable)} was paid in excess and must be refunded.</p>}
+          {r.money.refundable > 0 && <p className="text-xs font-medium text-amber-700">{formatMoney(r.money.refundable)} was paid in excess and must be refunded.</p>}
           {r.payments.length > 0 && (
             <ul className="divide-y text-sm">
               {r.payments.map((p) => (
                 <li key={p.id} className="flex justify-between gap-3 py-1.5"><span>{p.kind[0] + p.kind.slice(1).toLowerCase()} · {p.method}{p.reference ? ` · ${p.reference}` : ""}<span className="text-xs text-muted-foreground"> · {fmtDate(p.at)}</span></span>
-                  <span className={cn("tabular-nums", p.kind === "REFUND" && "text-red-700")}>{p.kind === "REFUND" ? "− " : ""}{formatINR(p.amount)}</span></li>
+                  <span className={cn("tabular-nums", p.kind === "REFUND" && "text-red-700")}>{p.kind === "REFUND" ? "− " : ""}{formatMoney(p.amount)}</span></li>
               ))}
             </ul>
           )}
-          {r.settlement && <p className="rounded bg-muted px-2 py-1 text-xs">Platform commission {formatINR(r.settlement.commission)} ({r.settlement.commissionPct}%) · service centre payable {formatINR(r.settlement.vendorPayable)}</p>}
+          {r.settlement && <p className="rounded bg-muted px-2 py-1 text-xs">Platform commission {formatMoney(r.settlement.commission)} ({r.settlement.commissionPct}%) · service centre payable {formatMoney(r.settlement.vendorPayable)}</p>}
+        </Section>
+      )}
+
+      {(r.invoice || (done && can("sales_invoices.issue"))) && (
+        <Section title="Invoice">
+          {r.invoice ? (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm"><span className="font-semibold">{r.invoice.number}</span> <span className="text-muted-foreground">· {r.invoice.docType === "BILL_OF_SUPPLY" ? "Bill of supply" : "Tax invoice"}</span></p>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="h-7" onClick={() => viewPdf((r.invoice as { id: string }).id).catch((e) => toast.error(e?.response?.data?.message || "Could not open the invoice"))}>View</Button>
+                <Button size="sm" variant="outline" className="h-7" onClick={() => downloadPdf((r.invoice as { id: string }).id, (r.invoice as { number: string }).number).catch((e) => toast.error(e?.response?.data?.message || "Could not download the invoice"))}>Download</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">No invoice yet. It is issued automatically on delivery; issue it now if that did not happen (the reason is shown if the seller’s legal profile is incomplete).</p>
+              <Button size="sm" disabled={billing.isPending} onClick={() => billing.mutate({ type: "repair", id: r.id })}><Receipt /> Issue invoice</Button>
+            </div>
+          )}
         </Section>
       )}
 
@@ -240,8 +262,8 @@ function RepairDetail({ id }: { id: string }) {
             {r.status === "READY_FOR_DELIVERY" && <Button disabled={act.isPending} onClick={startDeliver}><PackageCheck /> Deliver{undelivered.length < r.items.length ? ` (${undelivered.length} left)` : ""}</Button>}
             {finance && r.money.refundable > 0 && <Button variant="outline" onClick={() => setPay(true)}><Receipt /> Refund excess</Button>}
           </div>
-          {r.status === "ESTIMATE_APPROVED" && r.money.amountPaid < r.money.advanceRequired && <p className="text-xs text-amber-700">Advance of {formatINR(r.money.advanceRequired)} is required before repair can start (paid {formatINR(r.money.amountPaid)}).</p>}
-          {r.status === "READY_FOR_DELIVERY" && r.money.amountDue > 0 && !(r.business && r.business.paymentTermsDays > 0) && <p className="text-xs text-amber-700">{formatINR(r.money.amountDue)} is due — record the payment (or COD collection) before delivery.</p>}
+          {r.status === "ESTIMATE_APPROVED" && r.money.amountPaid < r.money.advanceRequired && <p className="text-xs text-amber-700">Advance of {formatMoney(r.money.advanceRequired)} is required before repair can start (paid {formatMoney(r.money.amountPaid)}).</p>}
+          {r.status === "READY_FOR_DELIVERY" && r.money.amountDue > 0 && !(r.business && r.business.paymentTermsDays > 0) && <p className="text-xs text-amber-700">{formatMoney(r.money.amountDue)} is due — record the payment (or COD collection) before delivery.</p>}
         </Section>
       )}
       {manage && done && <Section title="Actions"><Button variant="outline" onClick={() => setNote("reopen")}><RotateCcw /> Warranty claim — reopen</Button></Section>}

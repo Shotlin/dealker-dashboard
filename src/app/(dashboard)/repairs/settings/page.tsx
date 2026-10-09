@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Pencil, Plus } from "lucide-react"
-import { formatINR } from "@/lib/utils"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -113,7 +113,7 @@ function Services() {
             {q.data?.map((s) => (
               <tr key={s.id} className="border-b last:border-0">
                 <td className="px-3 py-2.5 font-medium">{s.name}<p className="font-mono text-[11px] font-normal text-muted-foreground">{s.code}</p></td>
-                <td className="px-3 py-2.5">{PROBLEM_LABEL[s.category]}</td><td className="px-3 py-2.5 tabular-nums">{formatINR(s.labourPrice)}</td>
+                <td className="px-3 py-2.5">{PROBLEM_LABEL[s.category]}</td><td className="px-3 py-2.5 tabular-nums">{formatMoney(s.labourPrice)}</td>
                 <td className="px-3 py-2.5 tabular-nums">{s.estHours}</td><td className="px-3 py-2.5">{s.warrantyDays == null ? "Default" : `${s.warrantyDays} d`}</td>
                 <td className="px-3 py-2.5"><Switch aria-label={`Offer ${s.name}`} checked={s.isActive} disabled={save.isPending} onCheckedChange={(v) => save.mutate({ id: s.id, body: { isActive: v } })} /></td>
                 <td className="px-3 py-2.5 text-right"><Button variant="ghost" size="icon" aria-label={`Edit ${s.name}`} onClick={() => { setEdit(s); setOpen(true) }}><Pencil /></Button></td>
@@ -149,7 +149,7 @@ function Terms() {
             {q.data?.map((t) => (
               <tr key={t.id} className="border-b last:border-0"><td className="px-3 py-2.5 font-medium">{t.businessName}</td><td className="px-3 py-2.5 font-mono text-xs">{t.gstin}</td>
                 <td className="px-3 py-2.5">{t.discountPct}%</td><td className="px-3 py-2.5">{t.paymentTermsDays > 0 ? `${t.paymentTermsDays} days` : "Pay first"}</td>
-                <td className="px-3 py-2.5 tabular-nums">{formatINR(t.creditLimit)}</td><td className="px-3 py-2.5">{t.isActive ? "Active" : "Inactive"}</td>
+                <td className="px-3 py-2.5 tabular-nums">{formatMoney(t.creditLimit)}</td><td className="px-3 py-2.5">{t.isActive ? "Active" : "Inactive"}</td>
                 <td className="px-3 py-2.5 text-right"><Button variant="ghost" size="icon" aria-label={`Edit ${t.businessName}`} onClick={() => edit(t)}><Pencil /></Button></td></tr>
             ))}
             {!q.data?.length && <tr><td colSpan={7} className="px-3 py-10 text-center text-muted-foreground">No business contracts yet.</td></tr>}

@@ -106,6 +106,8 @@ export interface Repair {
   timeline: Array<{ kind: string; label: string; at: string; from: string | null; to: string | null }>
   media: Array<EvidenceMedia & { itemId?: string | null }>
   settlement?: { commissionPct: number; commission: number; vendorPayable: number } | null
+  /** Sales invoice issued for this repair, if any. */
+  invoice?: { id: string; number: string; docType: string } | null
 }
 
 export interface RepairList { items: Repair[]; total: number; page: number; pages: number; counts: Record<string, number> }
