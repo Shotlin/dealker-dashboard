@@ -51,6 +51,11 @@ const STORE_LABELS: Record<ThemeStoreKey, string> = {
   deals: "Mega Deals",
   brand_store: "Brand Store",
   new_arrivals: "New Arrivals",
+  mobile: "Mobile",
+  mobile_part: "Mobile Part",
+  accessories: "Accessories",
+  electronics: "Electronics",
+  repellents: "Repellents & Fresheners",
 }
 
 interface TabSettingsCardProps extends ThemeEditorRenderProps {

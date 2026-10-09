@@ -85,7 +85,7 @@ export interface ThemeData {
 
 export type ThemeStatus = "draft" | "active" | "scheduled" | "archived"
 export type ABVariant = "A" | "B"
-export type ThemeStoreKey = "marketplace" | "deals" | "brand_store" | "new_arrivals"
+export type ThemeStoreKey = "mobile" | "mobile_part" | "accessories" | "electronics" | "repellents" | "marketplace" | "deals" | "brand_store" | "new_arrivals"
 export type ThemeTabStatus = "active" | "archived"
 /** B2C/B2B storefront split — one active theme per audience, per (tab, variant). */
 export type ThemeAudience = "B2C" | "B2B"

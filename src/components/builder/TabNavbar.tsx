@@ -22,6 +22,16 @@ interface TabNavbarProps {
 
 function formatStoreKey(storeKey: ThemeTab["store_key"]) {
   switch (storeKey) {
+    case "mobile":
+      return "Mobile"
+    case "mobile_part":
+      return "Mobile Part"
+    case "accessories":
+      return "Accessories"
+    case "electronics":
+      return "Electronics"
+    case "repellents":
+      return "Repellents"
     case "deals":
       return "Deals"
     case "brand_store":

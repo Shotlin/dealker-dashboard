@@ -83,6 +83,11 @@ import type {
 } from "@/types/theme.types"
 
 const STORE_OPTIONS: Array<{ value: ThemeStoreKey; label: string }> = [
+  { value: "mobile", label: "Mobile" },
+  { value: "mobile_part", label: "Mobile Part" },
+  { value: "accessories", label: "Accessories" },
+  { value: "electronics", label: "Electronics" },
+  { value: "repellents", label: "Repellents & Fresheners" },
   { value: "marketplace", label: "Marketplace" },
   { value: "deals", label: "Mega Deals" },
   { value: "brand_store", label: "Brand Store" },

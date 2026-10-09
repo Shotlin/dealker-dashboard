@@ -42,9 +42,64 @@ export interface StoreContextValue {
   isSwitching: boolean
 }
 
-export const ALL_STORE_KEYS: ThemeStoreKey[] = ["marketplace", "deals", "brand_store", "new_arrivals"]
+export const ALL_STORE_KEYS: ThemeStoreKey[] = ["mobile", "mobile_part", "accessories", "electronics", "repellents", "marketplace", "deals", "brand_store", "new_arrivals"]
 
 export const STORE_CONFIGS: Record<ThemeStoreKey, StoreConfig> = {
+  mobile: {
+    label: "Mobile",
+    chipImage: "",
+    bg: "#F7DC4E",
+    chipActive: "#FDE68A",
+    text: "#111827",
+    gradient: ["#F7DC4E", "#FDE68A", "#FFFFFF"],
+    bottomNav: ["Home", "Categories", "Auction", "Order"],
+    categories: ["All", "Smartphones", "Tablets", "Wearables", "Deals"],
+    categoryIcons: ["📱", "•", "•", "•", "•"],
+  },
+  mobile_part: {
+    label: "Mobile Part",
+    chipImage: "",
+    bg: "#F7DC4E",
+    chipActive: "#FDE68A",
+    text: "#111827",
+    gradient: ["#F7DC4E", "#FDE68A", "#FFFFFF"],
+    bottomNav: ["Home", "Categories", "Auction", "Order"],
+    categories: ["All", "Screens", "Batteries", "Chargers", "Tools"],
+    categoryIcons: ["🔧", "•", "•", "•", "•"],
+  },
+  accessories: {
+    label: "Accessories",
+    chipImage: "",
+    bg: "#F7DC4E",
+    chipActive: "#FDE68A",
+    text: "#111827",
+    gradient: ["#F7DC4E", "#FDE68A", "#FFFFFF"],
+    bottomNav: ["Home", "Categories", "Auction", "Order"],
+    categories: ["All", "Earbuds", "Cables", "Cases", "Power Banks"],
+    categoryIcons: ["🎧", "•", "•", "•", "•"],
+  },
+  electronics: {
+    label: "Electronics",
+    chipImage: "",
+    bg: "#F7DC4E",
+    chipActive: "#FDE68A",
+    text: "#111827",
+    gradient: ["#F7DC4E", "#FDE68A", "#FFFFFF"],
+    bottomNav: ["Home", "Categories", "Auction", "Order"],
+    categories: ["All", "Laptops", "TV", "Audio", "Appliances"],
+    categoryIcons: ["💻", "•", "•", "•", "•"],
+  },
+  repellents: {
+    label: "Repellents & Fresheners",
+    chipImage: "",
+    bg: "#F7DC4E",
+    chipActive: "#FDE68A",
+    text: "#111827",
+    gradient: ["#F7DC4E", "#FDE68A", "#FFFFFF"],
+    bottomNav: ["Home", "Categories", "Auction", "Order"],
+    categories: ["All", "Repellents", "Fresheners", "Cleaning", "Home Care"],
+    categoryIcons: ["🧴", "•", "•", "•", "•"],
+  },
   marketplace: {
     label: "Marketplace",
     chipImage: "",

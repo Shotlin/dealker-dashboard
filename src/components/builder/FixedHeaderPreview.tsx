@@ -28,6 +28,11 @@ interface FixedHeaderPreviewProps {
 }
 
 const STORE_CHIPS = [
+  { key: "mobile", label: "Mobile" },
+  { key: "mobile_part", label: "Mobile Part" },
+  { key: "accessories", label: "Accessories" },
+  { key: "electronics", label: "Electronics" },
+  { key: "repellents", label: "Repellents & Fresheners" },
   { key: "marketplace", label: "Marketplace" },
   { key: "deals", label: "Mega Deals" },
   { key: "brand_store", label: "Brand Store" },
