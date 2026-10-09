@@ -80,6 +80,10 @@ export interface HomeLookTheme {
   feeCardColor?: string
   feeCardTextColor?: string
   feeCardCheckColor?: string
+  mosaicTitleColor?: string
+  mosaicBarColor?: string
+  mosaicBarTextColor?: string
+  mosaicHeroTitleColor?: string
 }
 
 export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
@@ -97,6 +101,10 @@ export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
   feeCardColor: "#FFFFFF",
   feeCardTextColor: "#111111",
   feeCardCheckColor: "#111111",
+  mosaicTitleColor: "#111111",
+  mosaicBarColor: "#111111",
+  mosaicBarTextColor: "#FFFFFF",
+  mosaicHeroTitleColor: "#111111",
 }
 
 export interface ThemeMeta {

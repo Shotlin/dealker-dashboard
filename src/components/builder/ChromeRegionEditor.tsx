@@ -320,6 +320,18 @@ function RegionFields({
           <LookColor label="Check mark color" field="feeCardCheckColor" look={look} patchLook={patchLook} />
         </div>
       )
+    case "mosaic":
+      return (
+        <div className="space-y-4">
+          <LookColor label="Tile title color" field="mosaicTitleColor" look={look} patchLook={patchLook} />
+          <LookColor label="Caption bar background" field="mosaicBarColor" look={look} patchLook={patchLook} />
+          <LookColor label="Caption bar text" field="mosaicBarTextColor" look={look} patchLook={patchLook} />
+          <LookColor label="Hero tile title color" field="mosaicHeroTitleColor" look={look} patchLook={patchLook} />
+          <p className="text-xs text-slate-500">
+            Tile background colours, images, titles and captions are set per tile in the Deal Mosaic section.
+          </p>
+        </div>
+      )
     case "category_tabs":
       return (
         <div className="space-y-4">

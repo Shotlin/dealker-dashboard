@@ -3,6 +3,7 @@
 import { memo, type CSSProperties } from "react"
 import { cn } from "@/lib/utils"
 import type { PreviewProps } from "./index"
+import { DEFAULT_HOME_LOOK } from "@/types/theme.types"
 import styles from "../MobilePreviewFrame.module.css"
 import {
   DEFAULT_CONTAINER_COLOR,
@@ -12,7 +13,7 @@ import {
   type MosaicTile,
 } from "../editors/mosaic-model"
 
-function MosaicPreview({ section, isSelected, onClick }: PreviewProps) {
+function MosaicPreview({ section, isSelected, onClick, themeData, onChromeRegionClick }: PreviewProps) {
   const config = section.config as Record<string, unknown>
   const layout = normalizeLayout(config.layout_variant)
   const containerColor =
@@ -21,6 +22,39 @@ function MosaicPreview({ section, isSelected, onClick }: PreviewProps) {
       : DEFAULT_CONTAINER_COLOR
 
   const { hero, mini } = readMosaicTiles(config, layout)
+  const look = { ...DEFAULT_HOME_LOOK, ...(themeData?.sections.homeLook ?? {}) }
+
+  // Dealker layout (matches the app's DealMosaicBoard): no container, cream tiles, caption bars.
+  if (layout === "hero_plus_four") {
+    return (
+      <button
+        type="button"
+        className={cn(styles.sectionSlot, styles.sectionSlotHover, isSelected && styles.sectionSlotSelected)}
+        onClick={onClick}
+        aria-pressed={isSelected}
+        style={{ position: "relative" }}
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "0.3fr 0.7fr", gap: 6, height: 176, padding: "6px 8px" }}>
+          {hero && dealerHero(hero, look)}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 6 }}>
+            {mini.slice(0, 4).map((tile, i) => dealerMini(tile, i, look))}
+          </div>
+        </div>
+        {onChromeRegionClick && (
+          <span
+            role="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onChromeRegionClick("mosaic")
+            }}
+            style={{ position: "absolute", top: 0, right: 12, background: "rgba(59,130,246,0.92)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 999, cursor: "pointer" }}
+          >
+            Tile colors
+          </span>
+        )}
+      </button>
+    )
+  }
 
   return (
     <button
@@ -38,10 +72,10 @@ function MosaicPreview({ section, isSelected, onClick }: PreviewProps) {
           backgroundColor: containerColor,
           borderRadius: 24,
           overflow: "hidden",
-          padding: layout === "hero_plus_four" ? "3px 0 4px" : "4px 0 5px",
+          padding: "4px 0 5px",
         }}
       >
-        <div style={{ padding: layout === "hero_plus_four" ? "0 5px" : "0 5px 2px" }}>
+        <div style={{ padding: "0 5px 2px" }}>
           {renderLayout(layout, hero, mini)}
         </div>
       </div>
@@ -205,6 +239,92 @@ function renderTile(
           }}
         >
           {tile.badgeText}
+        </div>
+      )}
+    </div>
+  )
+}
+
+type Look = typeof DEFAULT_HOME_LOOK
+
+function dealerHero(tile: MosaicTile, look: Look) {
+  return (
+    <div
+      style={{
+        borderRadius: 12,
+        overflow: "hidden",
+        position: "relative",
+        background: `linear-gradient(180deg, ${tile.gradient[0]}, ${tile.gradient[1]})`,
+      }}
+    >
+      {tile.imageUrl && (
+        <img
+          src={tile.imageUrl}
+          alt={tile.title}
+          style={{ position: "absolute", left: 4, right: 4, bottom: 0, height: "62%", width: "calc(100% - 8px)", objectFit: "contain", objectPosition: "bottom center" }}
+        />
+      )}
+      <div style={{ position: "relative", textAlign: "center", paddingTop: 6 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: look.mosaicHeroTitleColor, lineHeight: 1 }}>{tile.title}</div>
+        {tile.badgeText && (
+          <div
+            style={{
+              display: "inline-block",
+              marginTop: 5,
+              padding: "3px 9px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 800,
+              color: "#fff",
+              lineHeight: 1.05,
+              whiteSpace: "pre-line",
+              background: `linear-gradient(180deg, ${tile.badgeGradient?.[0] ?? "#111"}, ${tile.badgeGradient?.[1] ?? "#111"})`,
+            }}
+          >
+            {tile.badgeText}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function dealerMini(tile: MosaicTile, index: number, look: Look) {
+  const caption = tile.caption?.trim()
+  return (
+    <div
+      key={`mini-${index}`}
+      style={{
+        borderRadius: 10,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        background: `linear-gradient(180deg, ${tile.gradient[0]}, ${tile.gradient[1]})`,
+      }}
+    >
+      <div style={{ textAlign: "center", fontSize: 9.5, fontWeight: 700, color: look.mosaicTitleColor, padding: "4px 4px 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        {tile.title.replace(/\n/g, " ")}
+      </div>
+      <div style={{ flex: 1, minHeight: 0, padding: "1px 6px 3px", display: "flex", justifyContent: "center" }}>
+        {tile.imageUrl && <img src={tile.imageUrl} alt={tile.title} style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }} />}
+      </div>
+      {caption && (
+        <div
+          style={{
+            margin: "0 2px 2px",
+            padding: "3px 4px",
+            textAlign: "center",
+            fontSize: 8.5,
+            fontWeight: 600,
+            color: look.mosaicBarTextColor,
+            background: look.mosaicBarColor,
+            borderRadius: "4px 4px 9px 9px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {caption}
         </div>
       )}
     </div>

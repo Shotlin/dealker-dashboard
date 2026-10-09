@@ -110,6 +110,19 @@ export default function TileEditor({
             onChange={(gradient) => patch({ gradient })}
           />
 
+          {!isHero && (
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-slate-600">
+                Caption bar text
+              </Label>
+              <Input
+                value={tile.caption ?? ""}
+                onChange={(e) => patch({ caption: e.target.value })}
+                placeholder="e.g. Starting at ₹199 (leave empty to hide the bar)"
+              />
+            </div>
+          )}
+
           {isHero && (
             <div className="space-y-2">
               <Label className="text-xs font-medium text-slate-600">
