@@ -17,6 +17,7 @@ export type ChromeRegion =
   | "store_chips"
   | "hero_frame"
   | "fee_card"
+  | "product_box"
 
 export interface ChromeRegionMeta {
   region: ChromeRegion
@@ -59,6 +60,11 @@ export const CHROME_REGION_META: Record<ChromeRegion, ChromeRegionMeta> = {
     region: "fee_card",
     label: "Fee Card",
     description: "The white ₹0 FEES card (colours here; wording in the section).",
+  },
+  product_box: {
+    region: "product_box",
+    label: "Product Box",
+    description: "Colours of the marketplace product box (box, border, text, badge, stock). Pick the style per section.",
   },
 }
 

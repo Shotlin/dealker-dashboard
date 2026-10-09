@@ -32,7 +32,7 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   seasonal_mosaic: MosaicPreview,
   round_category_icons: CategoryIconsPreview,
   category_product_grid: ProductGridPreview,
-  product_carousel: CarouselPreview,
+  product_carousel: TrendingPreview,
   trending_products: TrendingPreview,
   promo_carousel: CarouselPreview,
   bank_offers: FeeStripPreview,

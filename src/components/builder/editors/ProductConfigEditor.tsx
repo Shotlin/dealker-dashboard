@@ -34,7 +34,12 @@ const PRODUCT_CARD_STYLES = [
     description: "Premium reference card — price sticker, discount line, rating & delivery.",
   },
   {
-    value: "BAKALOO_LEGACY_CLEAN",
+    value: "DEALKER_MARKETPLACE_BOX",
+    label: "Dealker Marketplace Box",
+    description: "Home design box — badge, name, variant, price + MRP, rating, stock. Colours in Product Box.",
+  },
+  {
+    value: "DEALKER_LEGACY_CLEAN",
     label: "Dealker Legacy (Clean)",
     description: "Classic simpler card — plain price, minimal chrome.",
   },

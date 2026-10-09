@@ -87,6 +87,11 @@ export interface HomeLookTheme {
   repairPillTextColor?: string
   /** Footer pill text (use a line break for two lines); empty hides the pill. */
   repairLabel?: string
+  productBoxColor?: string
+  productBoxBorderColor?: string
+  productTextColor?: string
+  productBadgeColor?: string
+  productStockColor?: string
 }
 
 export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
@@ -110,6 +115,11 @@ export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
   repairPillColor: "#FBE36B",
   repairPillTextColor: "#111111",
   repairLabel: "Repair\nMobile etc.",
+  productBoxColor: "#FFFFFF",
+  productBoxBorderColor: "#EFE3B5",
+  productTextColor: "#111111",
+  productBadgeColor: "#1FB454",
+  productStockColor: "#1FB454",
 }
 
 export interface ThemeMeta {

@@ -321,6 +321,19 @@ function RegionFields({
           <LookColor label="Check mark color" field="feeCardCheckColor" look={look} patchLook={patchLook} />
         </div>
       )
+    case "product_box":
+      return (
+        <div className="space-y-4">
+          <LookColor label="Box background" field="productBoxColor" look={look} patchLook={patchLook} />
+          <LookColor label="Box border" field="productBoxBorderColor" look={look} patchLook={patchLook} />
+          <LookColor label="Name / price text" field="productTextColor" look={look} patchLook={patchLook} />
+          <LookColor label="Badge color (NEW…)" field="productBadgeColor" look={look} patchLook={patchLook} />
+          <LookColor label="In-stock color" field="productStockColor" look={look} patchLook={patchLook} />
+          <p className="text-xs text-slate-500">
+            Applies to sections whose Card style is “Dealker Marketplace Box”.
+          </p>
+        </div>
+      )
     case "category_tabs":
       return (
         <div className="space-y-4">
