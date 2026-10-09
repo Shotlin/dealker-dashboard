@@ -18,7 +18,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useConnectionStatus } from "@/hooks/useSocket"
-import { useNotificationStore } from "@/store/notifications.store"
+import { useAlertUnread } from "@/hooks/useAlerts"
 import { GlobalSearch } from "./GlobalSearch"
 import { NotificationPanel } from "./NotificationPanel"
 import { ReconnectingIndicator } from "./reconnecting-indicator"
@@ -42,7 +42,7 @@ const STATUS = {
 export function Header() {
   const pathname = usePathname()
   const segments = pathname.split("/").filter(Boolean)
-  const unread = useNotificationStore((s) => s.unreadCount)
+  const unread = useAlertUnread().data?.total ?? 0
   const conn = STATUS[useConnectionStatus()]
 
   return (

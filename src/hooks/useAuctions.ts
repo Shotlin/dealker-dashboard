@@ -196,3 +196,6 @@ export function useCountdown(endsAt: string | null | undefined, serverTime?: str
   if (!endsAt) return null
   return Math.max(0, new Date(endsAt).getTime() - (now + offset))
 }
+
+export const useAuctionOrders = (filters: Record<string, unknown>) =>
+  useQuery({ queryKey: ["auctions", "orders", filters], queryFn: () => auctionsApi.orders(filters), placeholderData: (prev) => prev, refetchInterval: 20_000 })

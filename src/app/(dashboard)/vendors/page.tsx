@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Building2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -67,11 +68,11 @@ export default function VendorsPage() {
         <Table>
           <TableHeader><TableRow className="hover:bg-transparent">
             <TableHead>Vendor</TableHead><TableHead>Location</TableHead><TableHead>GSTIN</TableHead><TableHead>Documents</TableHead>
-            <TableHead className="text-right">Listings</TableHead><TableHead>Applied</TableHead><TableHead>Status</TableHead>
+            <TableHead className="text-right">Listings</TableHead><TableHead>Applied</TableHead><TableHead>Status</TableHead><TableHead />
           </TableRow></TableHeader>
           <TableBody>
-            {list.isLoading ? Array.from({ length: 6 }).map((_, i) => <TableRow key={i}><TableCell colSpan={7}><Skeleton className="h-11" /></TableCell></TableRow>)
-              : rows.length === 0 ? <TableRow><TableCell colSpan={7} className="h-44 text-center text-muted-foreground"><Building2 className="mx-auto mb-2 h-8 w-8 opacity-40" />No vendors in this view.</TableCell></TableRow>
+            {list.isLoading ? Array.from({ length: 6 }).map((_, i) => <TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-11" /></TableCell></TableRow>)
+              : rows.length === 0 ? <TableRow><TableCell colSpan={8} className="h-44 text-center text-muted-foreground"><Building2 className="mx-auto mb-2 h-8 w-8 opacity-40" />No vendors in this view.</TableCell></TableRow>
               : rows.map((r) => (
                 <TableRow key={r.id} className="cursor-pointer" onClick={() => setOpenId(r.id)}>
                   <TableCell>
@@ -91,6 +92,9 @@ export default function VendorsPage() {
                   <TableCell className="text-right tabular-nums text-sm">{r.listings}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{new Date(r.submitted_at ?? r.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</TableCell>
                   <TableCell><VendorStatusBadge status={r.status} /></TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs" asChild><Link href={`/subscriptions?vendor=${r.id}&name=${encodeURIComponent(r.name)}`}>Timeline</Link></Button>
+                  </TableCell>
                 </TableRow>
               ))}
           </TableBody>

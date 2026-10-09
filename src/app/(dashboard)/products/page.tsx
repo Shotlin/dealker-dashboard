@@ -3,19 +3,23 @@
 import { Suspense, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ImageOff, MoreHorizontal, Package, Pause, Play, Plus, Search, Trash2 } from "lucide-react"
+import { CheckCircle2, Copy, FolderInput, ImageOff, MoreHorizontal, Package, Pause, Play, Plus, Search, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { QcBadge } from "@/components/qc/QcBadge"
+import { MoveSectionDialog } from "@/components/merch/MoveSectionDialog"
+import { SectionBadge } from "@/components/merch/SectionBadge"
 import { ApprovalBadge, ConditionBadge, OwnerBadge, StockCell } from "@/components/listings/badges"
 import { ListingDetailSheet } from "@/components/listings/ListingDetailSheet"
 import { useCategories } from "@/hooks/useCategories"
 import { useDebounce } from "@/hooks/useDebounce"
+import { useMerchActions } from "@/hooks/useMerchandising"
 import { useListingActions, useListingStats, useListingVendors, useListings } from "@/hooks/useListings"
 import { cn, formatINR } from "@/lib/utils"
 import type { ListingFilters } from "@/types/listing.types"
@@ -45,11 +49,20 @@ function ProductsInner() {
   const vendors = useListingVendors()
   const cats = useCategories()
   const actions = useListingActions()
+  const merch = useMerchActions()
+  const [picked, setPicked] = useState<string[]>([])
+  const [moving, setMoving] = useState(false)
   const set = (patch: Partial<ListingFilters>) => setFilters((f) => ({ ...f, ...patch, page: 1 }))
   const s = stats.data
   const rows = list.data?.data ?? []
   const total = list.data?.pagination.total ?? 0
   const page = filters.page ?? 1
+  const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
+  const allOn = rows.length > 0 && rows.every((r) => picked.includes(r.id))
+  const bulk = (action: "APPROVE" | "PAUSE" | "RESUME" | "DELETE") => {
+    if (action === "DELETE" && !confirm(`Delete ${picked.length} product${picked.length === 1 ? "" : "s"}?`)) return
+    merch.bulk.mutate({ ids: picked, action }, { onSuccess: () => setPicked([]) })
+  }
   const hasFilters = Object.entries(filters).some(([k, v]) => k !== "page" && k !== "sort" && v)
 
   return (
@@ -123,6 +136,29 @@ function ProductsInner() {
               <SelectItem value="REJECTED">Changes needed</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={filters.section || ALL} onValueChange={(v) => set({ section: v === ALL ? "" : v })}>
+            <SelectTrigger className="lg:w-[160px]"><SelectValue placeholder="Section" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Any section</SelectItem>
+              <SelectItem value="NEW_ARRIVAL">New Arrival</SelectItem>
+              <SelectItem value="DEAL_OF_THE_DAY">Deal of the Day</SelectItem>
+              <SelectItem value="CLEARANCE_SALE">Clearance Sale</SelectItem>
+              <SelectItem value="FLASH_SALE">Flash Sale</SelectItem>
+              <SelectItem value="FEATURED">Featured</SelectItem>
+              <SelectItem value="BEST_SELLER">Best Seller</SelectItem>
+              <SelectItem value="NONE">Not in a section</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filters.qc || ALL} onValueChange={(v) => set({ qc: v === ALL ? "" : v })}>
+            <SelectTrigger className="lg:w-[140px]"><SelectValue placeholder="QC" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Any QC status</SelectItem>
+              <SelectItem value="QC_PENDING">QC pending</SelectItem>
+              <SelectItem value="QC_PASSED">QC passed</SelectItem>
+              <SelectItem value="QC_RECHECK">QC recheck</SelectItem>
+              <SelectItem value="QC_FAILED">QC failed</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={filters.sort || "newest"} onValueChange={(v) => setFilters((f) => ({ ...f, sort: v }))}>
             <SelectTrigger className="lg:w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -136,9 +172,21 @@ function ProductsInner() {
           {hasFilters && <Button variant="ghost" onClick={() => setFilters({})}>Clear</Button>}
         </div>
 
+        {picked.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 border-b bg-primary/5 px-4 py-2" data-testid="bulk-bar">
+            <span className="text-sm font-medium">{picked.length} selected</span>
+            <Button size="sm" variant="outline" disabled={merch.bulk.isPending} onClick={() => bulk("APPROVE")}><CheckCircle2 className="mr-1.5 h-4 w-4" />Approve</Button>
+            <Button size="sm" variant="outline" disabled={merch.bulk.isPending} onClick={() => bulk("PAUSE")}><Pause className="mr-1.5 h-4 w-4" />Disable</Button>
+            <Button size="sm" variant="outline" disabled={merch.bulk.isPending} onClick={() => bulk("RESUME")}><Play className="mr-1.5 h-4 w-4" />Enable</Button>
+            <Button size="sm" variant="outline" onClick={() => setMoving(true)}><FolderInput className="mr-1.5 h-4 w-4" />Move to section</Button>
+            <Button size="sm" variant="outline" className="text-destructive" disabled={merch.bulk.isPending} onClick={() => bulk("DELETE")}><Trash2 className="mr-1.5 h-4 w-4" />Delete</Button>
+            <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setPicked([])}>Clear</Button>
+          </div>
+        )}
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
+              <TableHead className="w-10"><Checkbox checked={allOn} onCheckedChange={(v) => setPicked(v ? rows.map((r) => r.id) : [])} aria-label="Select all" /></TableHead>
               <TableHead className="w-[340px]">Product</TableHead>
               <TableHead>Listed by</TableHead>
               <TableHead>Condition</TableHead>
@@ -146,20 +194,22 @@ function ProductsInner() {
               <TableHead>Stock</TableHead>
               <TableHead>Review</TableHead>
               <TableHead>QC</TableHead>
+              <TableHead>Section</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {list.isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-12 w-full" /></TableCell></TableRow>
+                <TableRow key={i}><TableCell colSpan={10}><Skeleton className="h-12 w-full" /></TableCell></TableRow>
               ))
             ) : rows.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="h-48 text-center text-muted-foreground">
+              <TableRow><TableCell colSpan={10} className="h-48 text-center text-muted-foreground">
                 <Package className="mx-auto mb-2 h-8 w-8 opacity-40" />No products match these filters.
               </TableCell></TableRow>
             ) : rows.map((r) => (
-              <TableRow key={r.id} className="cursor-pointer" onClick={() => setOpenId(r.id)}>
+              <TableRow key={r.id} className="cursor-pointer" data-state={picked.includes(r.id) ? "selected" : undefined} onClick={() => setOpenId(r.id)}>
+                <TableCell onClick={(e) => e.stopPropagation()}><Checkbox checked={picked.includes(r.id)} onCheckedChange={() => toggle(r.id)} aria-label={`Select ${r.name}`} /></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
@@ -186,12 +236,14 @@ function ProductsInner() {
                 <TableCell><StockCell stock={r.stock} status={r.listing_status} /></TableCell>
                 <TableCell><ApprovalBadge status={r.approval_status} /></TableCell>
                 <TableCell><QcBadge status={r.qc_status} score={r.qc_score} /></TableCell>
+                <TableCell><SectionBadge section={r.merch_section} /></TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setOpenId(r.id)}>View details</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => router.push(`/products/${r.id}/edit`)}>Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => merch.duplicate.mutate(r.id)}><Copy className="mr-2 h-4 w-4" />Duplicate</DropdownMenuItem>
                       {r.approval_status !== "APPROVED" && <DropdownMenuItem onClick={() => actions.approve.mutate(r.id)}>Approve</DropdownMenuItem>}
                       <DropdownMenuItem onClick={() => actions.setStatus.mutate({ id: r.id, status: r.listing_status === "PAUSED" ? "ACTIVE" : "PAUSED" })}>
                         {r.listing_status === "PAUSED" ? <><Play className="mr-2 h-4 w-4" />Resume</> : <><Pause className="mr-2 h-4 w-4" />Pause</>}
@@ -219,6 +271,7 @@ function ProductsInner() {
       </Card>
 
       <ListingDetailSheet id={openId} onClose={() => setOpenId(null)} />
+      <MoveSectionDialog open={moving} ids={picked} onOpenChange={setMoving} onDone={() => setPicked([])} />
     </div>
   )
 }

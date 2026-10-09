@@ -36,6 +36,9 @@ import {
   Headset,
   Landmark,
   Percent,
+  Crown,
+  LayoutGrid,
+  SlidersHorizontal,
   ReceiptText,
   ShieldCheck,
   PiggyBank,
@@ -44,7 +47,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-export type NavBadgeKey = "pendingOrders" | "pendingListings" | "supportUnread"
+export type NavBadgeKey = "pendingOrders" | "pendingListings" | "supportUnread" | "alerts"
 
 export interface NavChild {
   label: string
@@ -74,32 +77,31 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { label: "Analytics", href: "/analytics", icon: BarChart3 },
+      { label: "Notifications & Alerts", href: "/alerts", icon: BellRing, badgeKey: "alerts" },
     ],
   },
   {
     section: "Orders",
     items: [
-      { label: "All Orders", href: "/orders", icon: ClipboardList, badgeKey: "pendingOrders" },
+      { label: "B2C Orders", href: "/orders", icon: ClipboardList, badgeKey: "pendingOrders" },
+      { label: "B2B Orders", href: "/vendors-marketplace", icon: Boxes },
+      { label: "Auction Orders", href: "/orders/auction", icon: Gavel },
+      { label: "Exchange Orders", href: "/exchange-requests", icon: Repeat },
       { label: "Seller Orders", href: "/seller-orders", icon: Package },
       { label: "Returns & Refunds", href: "/refund-requests", icon: Undo2 },
     ],
   },
   {
-    section: "Sell Requests",
+    section: "Sell on Phone",
     items: [
       { label: "Sell Requests", href: "/sell-requests", icon: Smartphone },
     ],
   },
   {
-    section: "Exchange Requests",
-    items: [
-      { label: "Exchange Requests", href: "/exchange-requests", icon: Repeat },
-    ],
-  },
-  {
     section: "Auctions",
     items: [
-      { label: "Auctions", href: "/auctions", icon: Gavel },
+      { label: "B2C & B2B Auctions", href: "/auctions", icon: Gavel },
+      { label: "Auction Orders", href: "/orders/auction", icon: ClipboardList },
     ],
   },
   {
@@ -114,7 +116,9 @@ export const NAV_SECTIONS: NavSection[] = [
     section: "Vendors",
     items: [
       { label: "Vendors & KYC", href: "/vendors", icon: Store },
-      { label: "Vendors Marketplace", href: "/vendors-marketplace", icon: Boxes },
+      { label: "Subscriptions", href: "/subscriptions", icon: Crown },
+      { label: "B2B Marketplace", href: "/vendors-marketplace", icon: Boxes },
+      { label: "Demand / Bulk Requirements", href: "/vendors-marketplace", icon: PackageSearch },
     ],
   },
   {
@@ -122,6 +126,8 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Products", href: "/products", icon: Package, badgeKey: "pendingListings" },
       { label: "Categories", href: "/categories", icon: Tags },
+      { label: "Product Sections", href: "/product-sections", icon: LayoutGrid },
+      { label: "Price & Stock Control", href: "/price-control", icon: SlidersHorizontal },
       { label: "QC Management", href: "/qc", icon: ShieldCheck },
       { label: "Invoices", href: "/invoices", icon: ReceiptText },
       { label: "Bulk Imports", href: "/catalog-bulk", icon: FileSpreadsheet },
@@ -133,7 +139,8 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Support Chat", href: "/support", icon: Headset, badgeKey: "supportUnread" },
       { label: "Customers", href: "/customers", icon: Users },
-      { label: "Abandoned Carts", href: "/abandoned-carts", icon: ShoppingCart },
+      { label: "Abandoned Cart · B2C", href: "/abandoned-carts", icon: ShoppingCart },
+      { label: "Abandoned Cart · B2B", href: "/abandoned-carts/b2b", icon: ShoppingCart },
       { label: "Activity", href: "/customer-activity", icon: History },
       { label: "Segments", href: "/customer-segments", icon: Users2 },
     ],
@@ -141,11 +148,12 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     section: "Marketing",
     items: [
+      { label: "Campaigns", href: "/campaigns", icon: Megaphone },
       { label: "Coupons", href: "/coupons", icon: Ticket },
       { label: "Cart Milestones", href: "/cart-milestones", icon: TrendingUp },
       { label: "Loyalty & Points", href: "/loyalty", icon: Sparkles },
       { label: "Referral Program", href: "/referrals", icon: Gift },
-      { label: "Notifications", href: "/notifications", icon: Bell },
+      { label: "Push Notifications", href: "/notifications", icon: Bell },
     ],
   },
   {
@@ -206,11 +214,12 @@ export const ROUTE_LABELS: Record<string, string> = {
   products: "Products",
   "refund-requests": "Returns & Refunds",
   "b2b-supply": "Vendors Marketplace",
-  "vendors-marketplace": "Vendors Marketplace",
+  "vendors-marketplace": "B2B Marketplace",
   "catalog-bulk": "Bulk Imports",
   "customer-activity": "Customer Activity",
   "customer-segments": "Customer Segments",
   "abandoned-carts": "Abandoned Carts",
+  b2b: "B2B",
   "cart-milestones": "Cart Milestones",
   "theme-tabs": "Theme Tabs",
   "activity-log": "Activity Log",
@@ -222,6 +231,11 @@ export const ROUTE_LABELS: Record<string, string> = {
   shipping: "Providers & Rules",
   "vendor-wallet": "Vendor Wallet",
   qc: "QC Management",
+  subscriptions: "Subscriptions",
+  alerts: "Notifications & Alerts",
+  campaigns: "Campaigns",
+  "price-control": "Price & Stock Control",
+  "product-sections": "Product Sections",
   invoices: "Invoices",
   commission: "Commission & Charges",
   wallet: "Customer Wallet",

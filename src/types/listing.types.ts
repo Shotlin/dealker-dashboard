@@ -1,6 +1,7 @@
 export type ListingCondition = "NEW" | "OPEN_BOX" | "REFURBISHED" | "USED_LIKE_NEW" | "USED_GOOD" | "USED_FAIR"
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED"
 import type { QcStatus } from "@/services/qc.service"
+import type { SectionKey } from "@/services/merchandising.service"
 
 export type ListingStatus = "ACTIVE" | "PAUSED" | "OUT_OF_STOCK"
 
@@ -28,6 +29,9 @@ export interface ListingCard {
   sku: string | null
   qc_status: QcStatus
   qc_score: number | null
+  merch_section: SectionKey | null
+  sell_b2c: boolean
+  sell_b2b: boolean
 }
 
 export interface ListingDetail {
@@ -116,6 +120,9 @@ export interface ListingFilters {
   condition?: string
   categoryId?: string
   approval?: string
+  qc?: string
+  section?: string
+  channel?: string
   stock?: string
   status?: string
   search?: string

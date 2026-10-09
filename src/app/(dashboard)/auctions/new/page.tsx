@@ -7,6 +7,7 @@
  */
 
 import { useMemo, useState } from "react"
+import { useListingVendors } from "@/hooks/useListings"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ChevronDown, Info, Search, ShieldCheck } from "lucide-react"
@@ -69,6 +70,10 @@ export default function NewAuctionPage() {
   const [refundPct, setRefundPct] = useState("")
   const [sharePct, setSharePct] = useState("")
   const [showAdv, setShowAdv] = useState(false)
+  const [audience, setAudience] = useState<"B2C" | "B2B">("B2C")
+  const [quantity, setQuantity] = useState("1")
+  const [invited, setInvited] = useState<string[]>([])
+  const vendorOptions = useListingVendors().data ?? []
 
   const sp = num(startPrice) ?? 0
   const feeN = num(fee) ?? 0
@@ -101,6 +106,8 @@ export default function NewAuctionPage() {
     create.mutate(
       {
         productId: product.id,
+        audience,
+        ...(audience === "B2B" ? { quantity: Math.max(1, Number(quantity) || 1), ...(isPlatform && invited.length ? { eligibleVendorIds: invited } : {}) } : {}),
         title: title || undefined,
         description: description || undefined,
         startPrice: sp,
@@ -171,6 +178,33 @@ export default function NewAuctionPage() {
                   ))}
                 </ul>
               </>
+            )}
+          </section>
+
+          {/* audience */}
+          <section className="rounded-xl border bg-card p-4" aria-labelledby="s-aud">
+            <h2 id="s-aud" className="mb-3 text-sm font-semibold">Who can bid?</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {([["B2C", "Customers (B2C)", "One unit, retail buyers"], ["B2B", "Vendors (B2B)", "A lot of units, verified vendors only"]] as const).map(([k, t, h]) => (
+                <button key={k} type="button" onClick={() => setAudience(k)}
+                  className={cn("rounded-lg border p-3 text-left", audience === k ? "border-primary bg-primary/5" : "hover:bg-muted")}>
+                  <span className="block text-sm font-medium">{t}</span><span className="text-xs text-muted-foreground">{h}</span>
+                </button>
+              ))}
+            </div>
+            {audience === "B2B" && (
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                <Field label="Lot size (units)" hint="Bids and the winning price are for the whole lot">
+                  <Input type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                </Field>
+                {isPlatform && (
+                  <Field label="Invite only (optional)" hint="Leave empty to open it to every verified vendor">
+                    <select multiple value={invited} onChange={(e) => setInvited(Array.from(e.target.selectedOptions).map((o) => o.value))} className="h-24 w-full rounded-md border bg-background p-1 text-sm">
+                      {vendorOptions.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+                    </select>
+                  </Field>
+                )}
+              </div>
             )}
           </section>
 

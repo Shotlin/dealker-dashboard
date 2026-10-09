@@ -3,7 +3,7 @@
 import api from "@/lib/api"
 import type { ApiResponse } from "@/types/api.types"
 
-export type SectionKey = "NEW_ARRIVAL" | "DEAL_OF_THE_DAY" | "CLEARANCE_SALE" | "FEATURED" | "BEST_SELLER"
+export type SectionKey = "NEW_ARRIVAL" | "DEAL_OF_THE_DAY" | "CLEARANCE_SALE" | "FEATURED" | "BEST_SELLER" | "FLASH_SALE"
 
 export const SECTION_LABELS: Record<SectionKey, string> = {
   NEW_ARRIVAL: "New Arrival",
@@ -11,6 +11,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   CLEARANCE_SALE: "Clearance Sale",
   FEATURED: "Featured",
   BEST_SELLER: "Best Seller",
+  FLASH_SALE: "Flash Sale",
 }
 
 export interface SectionOverview {

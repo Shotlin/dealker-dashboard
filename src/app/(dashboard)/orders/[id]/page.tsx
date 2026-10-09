@@ -9,6 +9,7 @@ import { PayoutSection } from "@/components/order-page/PayoutSection"
 import { ReturnsSection } from "@/components/order-page/ReturnsSection"
 import { TrackingSection } from "@/components/order-page/TrackingSection"
 import { ParcelCard } from "@/components/order-page/ParcelCard"
+import { OrderStageCard } from "@/components/order-page/OrderStageCard"
 import { CustomerCard, InvoiceCard, OffersCard, PaymentCard, ProblemsCard, TimelineCard } from "@/components/order-page/SideCards"
 import { StatusPill, dayTime, money, payMethodText } from "@/components/order-page/helpers"
 import { useOrderOverview } from "@/hooks/useOrderOverview"
@@ -84,6 +85,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
         </div>
         <div className="space-y-5">
           <CustomerCard d={d} />
+          <OrderStageCard orderId={d.order.id} />
           <PaymentCard d={d} />
           <OffersCard d={d} />
           <ProblemsCard d={d} />

@@ -1,48 +1,59 @@
-/** Review entity — snake_case (backend returns raw DB rows) */
-export interface Review {
+/** Review moderation — product reviews and vendor (shop) reviews are separate lists. */
+
+export type ReviewKind = "PRODUCT" | "VENDOR"
+export type ReviewStatus = "SUBMITTED" | "APPROVED" | "PUBLISHED" | "REJECTED" | "HIDDEN" | "REMOVED"
+export type ReviewAction = "APPROVE" | "PUBLISH" | "REJECT" | "HIDE" | "REMOVE" | "RESTORE"
+
+export interface ReviewRow {
   id: string
+  kind: ReviewKind
   rating: number
   comment: string | null
-  images?: string[]
+  status: ReviewStatus
+  flagged: boolean
+  flag_reason: string | null
+  moderation_note: string | null
+  moderated_at: string | null
+  admin_reply: string | null
+  replied_at: string | null
   created_at: string
+  order_id: string | null
+  is_verified_purchase: boolean
   user_name: string
-  status?: "pending" | "approved" | "hidden" | "spam"
-  admin_reply?: string | null
-  replied_at?: string | null
-  /**
-   * Shop the underlying product is sold under in the multi-vendor backend.
-   * Optional because the legacy `/reviews/products/:id` endpoint does not
-   * yet emit it; consumers must treat `undefined` as "not enforced" and a
-   * present value as authoritative for the vendor 404 enforcement
-   * (Req 10.9, 10.10). Mirrors the convention used on `Customer`.
-   */
-  shop_id?: string | null
+  user_phone: string | null
+  /** product id (PRODUCT) or vendor id (VENDOR) */
+  subject_id: string
+  /** product name (PRODUCT) or vendor name (VENDOR) */
+  subject_name: string
+  vendor_id: string | null
+  vendor_name: string | null
+  report_count: number
 }
 
-/** Product reviews response shape from backend */
-export interface ProductReviewsResponse {
-  reviews: Review[]
-  averageRating: number
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
+export interface ReviewReport { id: number; reason: string; created_at: string; reporter_name: string }
+export interface ReviewDetail extends ReviewRow { reports: ReviewReport[] }
+
+export interface ReviewQueueSummary {
+  byStatus: Record<ReviewStatus, number>
+  pending: number
+  total: number
+  flagged: number
+  reported: number
+  lowPending: number
+  avgPublished: number
 }
 
-/** Review list filters */
-export interface ReviewFilters {
+export interface ReviewSummary {
+  settings: { auto_publish: boolean; updated_at: string | null }
+  product: ReviewQueueSummary
+  vendor: ReviewQueueSummary
+}
+
+export interface ReviewListParams {
+  status?: string
+  rating?: string
+  flagged?: boolean
+  search?: string
   page?: number
   limit?: number
-  rating?: number | null
-  status?: string
-  /**
-   * Restrict the reviews to those whose underlying product belongs to this
-   * shop. Forwarded as the `shop_id` query param. Set by the
-   * `useProductReviews` hook in `SINGLE_SHOP` mode; omitted in `ALL_SHOPS`
-   * mode (Req 10.9). The backend may currently ignore this param — it is
-   * forward-compatible with the planned multi-vendor backend.
-   */
-  shop_id?: string
 }

@@ -109,9 +109,11 @@ export type {
   ReorderBannersPayload,
 } from "./banner.types"
 export type {
-  Review,
-  ProductReviewsResponse,
-  ReviewFilters,
+  ReviewRow,
+  ReviewDetail,
+  ReviewKind,
+  ReviewStatus,
+  ReviewAction,
 } from "./review.types"
 export type {
   Rider,

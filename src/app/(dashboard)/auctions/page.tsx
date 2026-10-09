@@ -37,13 +37,14 @@ const countFor = (counts: Record<string, number> | undefined, statuses: string) 
 export default function AuctionsPage() {
   const { can } = usePermissions()
   const [filter, setFilter] = useState("all")
+  const [audience, setAudience] = useState("")
   const [q, setQ] = useState("")
   const [page, setPage] = useState(1)
   const statuses = FILTERS.find((f) => f.id === filter)?.statuses ?? ""
 
   const stats = useAuctionStats()
   const attention = useAuctionAttention()
-  const list = useAuctionList({ status: statuses, q, page, limit: 15 })
+  const list = useAuctionList({ status: statuses, q, audience, page, limit: 15 })
   const act = useAuctionAction()
 
   if (stats.isError) return <QueryErrorBlock error={stats.error} onRetry={() => stats.refetch()} />
@@ -139,6 +140,12 @@ export default function AuctionsPage() {
       <section aria-labelledby="list-h" className="space-y-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 id="list-h" className="sr-only">All auctions</h2>
+          <div role="tablist" aria-label="Auction audience" className="flex gap-1 rounded-lg border p-0.5">
+            {[["", "All"], ["B2C", "B2C · customers"], ["B2B", "B2B · vendors"]].map(([v, l]) => (
+              <button key={v || "all"} role="tab" aria-selected={audience === v} onClick={() => { setAudience(v); setPage(1) }}
+                className={cn("rounded-md px-3 py-1 text-xs font-medium", audience === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>{l}</button>
+            ))}
+          </div>
           <div role="tablist" aria-label="Filter auctions" className="flex flex-wrap gap-1.5">
             {FILTERS.map((f) => (
               <button key={f.id} role="tab" aria-selected={filter === f.id}
@@ -167,7 +174,7 @@ export default function AuctionsPage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {r.image_url ? <img src={r.image_url} alt="" className="h-10 w-10 rounded-md object-cover" /> : <div className="h-10 w-10 rounded-md bg-muted" />}
                     <span className="min-w-0"><span className="block max-w-[220px] truncate text-sm font-medium">{r.title}</span>
-                      <span className="text-xs text-muted-foreground">{r.auction_number}</span></span>
+                      <span className="text-xs text-muted-foreground">{r.auction_number}{r.audience === "B2B" ? ` · B2B lot ×${r.quantity}` : ""}</span></span>
                   </Link>) },
                 { id: "s", header: "Seller", cell: (r) => <span className="text-sm">{r.owner_type === "ADMIN" ? "Dealker (own)" : r.seller_name ?? "Vendor"}</span> },
                 { id: "p", header: "Price", cell: (r) => (

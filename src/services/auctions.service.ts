@@ -26,6 +26,9 @@ export interface Auction {
   description?: string | null
   image_url?: string | null
   status: AuctionStatus
+  audience: "B2C" | "B2B"
+  quantity: number
+  eligible_vendor_ids?: string[] | null
   start_price: number
   current_price: number
   reserve_price: number | null
@@ -175,6 +178,9 @@ export interface AuctionRisk {
 
 export interface CreateAuctionInput {
   productId: string
+  audience?: "B2C" | "B2B"
+  quantity?: number
+  eligibleVendorIds?: string[]
   title?: string
   description?: string
   startPrice: number
@@ -192,7 +198,30 @@ export interface CreateAuctionInput {
 
 type Paged<T> = { data: T[]; pagination: { page: number; limit: number; total: number }; counts?: Record<string, number> }
 
+export interface AuctionOrderRow {
+  id: string
+  auction_number: string
+  title: string
+  audience: "B2C" | "B2B"
+  quantity: number
+  unit_price: number | null
+  winning_bid: number
+  amount_due: number
+  auction_status: AuctionStatus
+  winner_name: string | null
+  winner_phone: string | null
+  seller_name: string | null
+  order_id: string | null
+  order_number: string | null
+  order_status: string | null
+  payment_status: string | null
+  stages: Array<{ key: string; label: string; done: boolean }>
+  current: string
+}
+
 export const auctionsApi = {
+  orders: (params: Record<string, unknown> = {}) =>
+    api.get<Paged<AuctionOrderRow>>(`${BASE}/orders`, { params: clean(params) }).then((r) => r.data),
   stats: () => api.get<ApiResponse<AuctionStats>>(`${BASE}/stats`).then((r) => r.data.data),
   attention: () => api.get<ApiResponse<Array<Pick<Auction, "id" | "auction_number" | "title" | "status" | "payment_deadline" | "created_at" | "offer_round"> & { seller_name: string | null }>>>(`${BASE}/attention`).then((r) => r.data.data),
   rules: () => api.get<ApiResponse<AuctionRules>>(`${BASE}/rules`).then((r) => r.data.data),

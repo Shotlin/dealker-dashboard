@@ -1,46 +1,34 @@
+/** Review moderation API — /admin/reviews/:kind (product | vendor). */
+
 import api from "@/lib/api"
-import type { ApiResponse } from "@/types"
+import type { ApiResponse } from "@/types/api.types"
 import type {
-  ProductReviewsResponse,
-  ReviewFilters,
+  ReviewAction, ReviewDetail, ReviewKind, ReviewListParams, ReviewRow, ReviewSummary,
 } from "@/types/review.types"
 
-export async function getProductReviews(
-  productId: string,
-  filters: ReviewFilters = {}
-): Promise<ProductReviewsResponse> {
-  const params: Record<string, unknown> = {}
-  if (filters.page) params.page = filters.page
-  if (filters.limit) params.limit = filters.limit
-  if (filters.rating != null) params.rating = filters.rating
-  if (filters.status) params.status = filters.status
-  // When the dashboard is in SINGLE_SHOP mode the hook forwards the active
-  // shop id here so the backend can restrict the result set to reviews on
-  // products belonging to that shop (Req 10.9). In ALL_SHOPS mode the hook
-  // omits the field so the unscoped super-admin list is returned. The
-  // backend may currently ignore this param — it is forward-compatible
-  // with the planned multi-vendor backend.
-  if (filters.shop_id) params.shop_id = filters.shop_id
+const clean = (p: Record<string, unknown>) =>
+  Object.fromEntries(Object.entries(p).filter(([, v]) => v !== "" && v !== undefined && v !== null && v !== false))
+const seg = (k: ReviewKind) => k.toLowerCase()
 
-  const { data } = await api.get<ApiResponse<ProductReviewsResponse>>(
-    `/reviews/products/${productId}`,
-    { params }
-  )
-
-  return data.data ?? { reviews: [], averageRating: 0, pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } }
+export interface ReviewPage {
+  data: ReviewRow[]
+  pagination: { page: number; limit: number; total: number; totalPages: number }
 }
 
-export async function replyToReview(reviewId: string, reply: string): Promise<void> {
-  await api.put(`/admin/reviews/${reviewId}/reply`, { reply })
-}
-
-export async function moderateReview(
-  reviewId: string,
-  status: "approved" | "hidden" | "spam"
-): Promise<void> {
-  await api.put(`/admin/reviews/${reviewId}/moderate`, { status })
-}
-
-export async function deleteReview(reviewId: string): Promise<void> {
-  await api.delete(`/admin/reviews/${reviewId}`)
+export const reviewsApi = {
+  summary: () => api.get<ApiResponse<ReviewSummary>>("/admin/reviews/summary").then((r) => r.data.data),
+  setAutoPublish: (autoPublish: boolean) =>
+    api.put<ApiResponse<{ auto_publish: boolean }>>("/admin/reviews/settings", { autoPublish }).then((r) => r.data.data),
+  list: (kind: ReviewKind, params: ReviewListParams) =>
+    api.get<ReviewPage>(`/admin/reviews/${seg(kind)}`, { params: clean({ ...params }) }).then((r) => r.data),
+  get: (kind: ReviewKind, id: string) =>
+    api.get<ApiResponse<ReviewDetail>>(`/admin/reviews/${seg(kind)}/${id}`).then((r) => r.data.data),
+  moderate: (kind: ReviewKind, id: string, action: ReviewAction, note?: string) =>
+    api.post<ApiResponse<ReviewDetail>>(`/admin/reviews/${seg(kind)}/${id}/moderate`, { action, note }).then((r) => r.data.data),
+  bulk: (kind: ReviewKind, ids: string[], action: ReviewAction, note?: string) =>
+    api.post<ApiResponse<{ done: string[]; failed: { id: string; reason: string }[] }>>(`/admin/reviews/${seg(kind)}/bulk`, { ids, action, note }).then((r) => r.data.data),
+  reply: (kind: ReviewKind, id: string, text: string) =>
+    api.put<ApiResponse<ReviewDetail>>(`/admin/reviews/${seg(kind)}/${id}/reply`, { text }).then((r) => r.data.data),
+  flag: (kind: ReviewKind, id: string, flagged: boolean, reason?: string) =>
+    api.put<ApiResponse<ReviewDetail>>(`/admin/reviews/${seg(kind)}/${id}/flag`, { flagged, reason }).then((r) => r.data.data),
 }

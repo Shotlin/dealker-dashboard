@@ -38,6 +38,7 @@ import {
 import { usePendingActions } from "@/hooks/useDashboard"
 import { useSupportStats } from "@/hooks/useSupport"
 import { useListingStats } from "@/hooks/useListings"
+import { useAlertUnread } from "@/hooks/useAlerts"
 import { featureForPath, useFeatures } from "@/hooks/useFeatures"
 import { useMenuVisibility } from "@/hooks/useRBAC"
 import { useAuthStore } from "@/store/auth.store"
@@ -183,10 +184,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { data: pending } = usePendingActions()
   const { data: support } = useSupportStats()
   const { data: listingStats } = useListingStats()
+  const { data: alertUnread } = useAlertUnread()
   const badges = {
     supportUnread: support?.unread ?? 0,
     pendingOrders: pending?.pendingOrders ?? 0,
     pendingListings: listingStats?.pending ?? 0,
+    alerts: alertUnread?.total ?? 0,
   }
 
   return (
