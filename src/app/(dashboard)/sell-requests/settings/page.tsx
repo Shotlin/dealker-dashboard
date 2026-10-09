@@ -90,11 +90,13 @@ function RulesPanel() {
   const [maxPct, setMaxPct] = useState(85)
   const [step, setStep] = useState(8)
   const [maxImages, setMaxImages] = useState(8)
+  const [ev, setEv] = useState({ maxVideos: 2, maxImageMb: 12, maxVideoMb: 100, qcRequiredForApproval: false })
 
   useEffect(() => {
     if (!q.data) return
     setRules(q.data.rules); setEnabled(q.data.enabled)
     setMaxPct(q.data.maxTotalDeductionPct); setStep(q.data.variantStepPct); setMaxImages(q.data.maxImages)
+    setEv({ maxVideos: q.data.maxVideos, maxImageMb: q.data.maxImageMb, maxVideoMb: q.data.maxVideoMb, qcRequiredForApproval: q.data.qcRequiredForApproval })
   }, [q.data])
 
   const problems = useMemo(() => {
@@ -104,16 +106,19 @@ function RulesPanel() {
     if (!(rules.excellentMaxPct <= rules.goodMaxPct && rules.goodMaxPct <= rules.fairMaxPct)) p.push("Grade limits must rise: Excellent ≤ Good ≤ Fair.")
     if (maxPct > 100 || step > 50) p.push("Max deduction is at most 100% and variant step at most 50%.")
     if (maxImages > 20) p.push("At most 20 images per request.")
+    if (ev.maxVideos > 5) p.push("At most 5 videos per request.")
+    if (ev.maxImageMb < 1 || ev.maxImageMb > 25) p.push("Photo size limit must be 1–25 MB.")
+    if (ev.maxVideoMb < 5 || ev.maxVideoMb > 500) p.push("Video size limit must be 5–500 MB.")
     return p
-  }, [rules, maxPct, step, maxImages])
+  }, [rules, maxPct, step, maxImages, ev])
 
   if (q.isError) return <QueryErrorBlock error={q.error} onRetry={() => q.refetch()} />
   if (q.isLoading || !q.data) return <LoadingSkeleton variant="stat-card" count={3} />
   const defaults = q.data.defaultRules
-  const dirty = JSON.stringify({ rules, enabled, maxPct, step, maxImages }) !== JSON.stringify({ rules: q.data.rules, enabled: q.data.enabled, maxPct: q.data.maxTotalDeductionPct, step: q.data.variantStepPct, maxImages: q.data.maxImages })
+  const dirty = JSON.stringify({ rules, enabled, maxPct, step, maxImages, ev }) !== JSON.stringify({ rules: q.data.rules, enabled: q.data.enabled, maxPct: q.data.maxTotalDeductionPct, step: q.data.variantStepPct, maxImages: q.data.maxImages, ev: { maxVideos: q.data.maxVideos, maxImageMb: q.data.maxImageMb, maxVideoMb: q.data.maxVideoMb, qcRequiredForApproval: q.data.qcRequiredForApproval } })
 
   return (
-    <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); if (!problems.length) save.mutate({ enabled, rules, maxTotalDeductionPct: maxPct, variantStepPct: step, maxImages }) }}>
+    <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); if (!problems.length) save.mutate({ enabled, rules, maxTotalDeductionPct: maxPct, variantStepPct: step, maxImages, ...ev }) }}>
       <section className="rounded-xl border bg-card p-4">
         <h2 className="mb-3 text-sm font-semibold">General</h2>
         <div className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -122,6 +127,18 @@ function RulesPanel() {
           <NumField id="step" label="Variant step" unit="% per step" hint="Each variant below the top loses this much" value={step} onChange={setStep} />
           <NumField id="maxImages" label="Photos per request" value={maxImages} onChange={setMaxImages} />
         </div>
+      </section>
+
+      <section className="rounded-xl border bg-card p-4">
+        <h2 className="mb-1 text-sm font-semibold">Photos, video &amp; QC</h2>
+        <p className="mb-3 text-xs text-muted-foreground">Limits apply to each evidence stage of a request. The server enforces them; the apps and dashboard read them from here.</p>
+        <div className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <NumField id="maxVideos" label="Videos per request" value={ev.maxVideos} onChange={(n) => setEv((p) => ({ ...p, maxVideos: n }))} />
+          <NumField id="maxImageMb" label="Largest photo" unit="MB" value={ev.maxImageMb} onChange={(n) => setEv((p) => ({ ...p, maxImageMb: n }))} />
+          <NumField id="maxVideoMb" label="Largest video" unit="MB" value={ev.maxVideoMb} onChange={(n) => setEv((p) => ({ ...p, maxVideoMb: n }))} />
+          <div className="flex items-center gap-2 pb-2"><Switch id="qcGate" checked={ev.qcRequiredForApproval} onCheckedChange={(v) => setEv((p) => ({ ...p, qcRequiredForApproval: v }))} /><Label htmlFor="qcGate">Require QC pass before approval</Label></div>
+        </div>
+        {ev.qcRequiredForApproval && <p className="mt-2 text-xs text-amber-700">When on, requests cannot be approved until QC passes, and cannot be completed until the customer accepts the final valuation. Requests already in progress will need QC too.</p>}
       </section>
 
       {RULE_GROUPS.map((g) => (

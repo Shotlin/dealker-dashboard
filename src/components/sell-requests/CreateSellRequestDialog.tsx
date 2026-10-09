@@ -10,12 +10,12 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ConditionPill } from "./sell-request-ui"
-import { ImageUploader } from "./ImageUploader"
-import { apiMessage } from "@/services/sell-requests.service"
+import { EvidenceUploader } from "./EvidenceUploader"
+import { apiMessage, type EvidenceMedia } from "@/services/sell-requests.service"
 import { useCatalogModels, useCreateRequest, useRequestQuote } from "@/hooks/useSellRequests"
 import { DEFAULT_QA, isValidImei, type DeviceQA, type RequestKind, type Scratches, type SellRequestType } from "@/services/sell-requests.service"
 
-const STEPS = ["Device", "Condition", "Valuation"] as const
+const STEPS = ["Device", "Condition", "Photos & video", "Review"] as const
 
 function Toggle({ id, label, checked, onChange }: { id: string; label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -48,9 +48,11 @@ export function CreateSellRequestDialog({ kind, open, onOpenChange, onCreated }:
   const [newProduct, setNewProduct] = useState("")
   const [newPrice, setNewPrice] = useState("")
   const [orderNo, setOrderNo] = useState("")
-  const [images, setImages] = useState<string[]>([])
+  const [evidence, setEvidence] = useState<EvidenceMedia[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [evidenceKey, setEvidenceKey] = useState(0)
 
-  const quote = useRequestQuote(kind, { model, variant, color, qa }, open && step === 2 && !!cat)
+  const quote = useRequestQuote(kind, { model, variant, color, qa }, open && step === 3 && !!cat)
   const result = quote.data
   const set = <K extends keyof DeviceQA>(k: K, v: DeviceQA[K]) => setQa((p) => ({ ...p, [k]: v }))
 
@@ -59,7 +61,7 @@ export function CreateSellRequestDialog({ kind, open, onOpenChange, onCreated }:
   const exchangeOk = !isExchange || (newProduct.trim() && Number(newPrice) > 0)
   const step0Ok = name.trim().length > 1 && phoneOk && imeiOk && exchangeOk
 
-  const reset = () => { setStep(0); setImei(""); setQa(DEFAULT_QA); setExpected(""); setName(""); setPhone(""); setNewProduct(""); setNewPrice(""); setOrderNo(""); setType(isExchange ? "EXCHANGE" : "SELL_TO_AB"); setImages([]) }
+  const reset = () => { setStep(0); setImei(""); setQa(DEFAULT_QA); setExpected(""); setName(""); setPhone(""); setNewProduct(""); setNewPrice(""); setOrderNo(""); setType(isExchange ? "EXCHANGE" : "SELL_TO_AB"); setEvidence([]); setEvidenceKey((k) => k + 1) }
 
   const onModel = (v: string) => { setModelName(v); setVariant(""); setColor("") }
 
@@ -67,7 +69,7 @@ export function CreateSellRequestDialog({ kind, open, onOpenChange, onCreated }:
     create.mutate(
       {
         type, customer: { name: name.trim(), phone: phone.trim() }, model, variant, color, imei, qa,
-        expectedPrice: Number(expected) || result?.quote || 0, images,
+        expectedPrice: Number(expected) || result?.quote || 0, mediaIds: evidence.map((m) => m.id),
         exchange: isExchange ? { newProduct: newProduct.trim(), newProductPrice: Number(newPrice) } : undefined,
         orderNumber: isExchange && orderNo.trim() ? orderNo.trim() : undefined,
       },
@@ -163,14 +165,17 @@ export function CreateSellRequestDialog({ kind, open, onOpenChange, onCreated }:
             <Toggle id="q5" label="Original bill available" checked={qa.billAvailable} onChange={(v) => set("billAvailable", v)} />
             <Toggle id="q6" label="Original box available" checked={qa.boxAvailable} onChange={(v) => set("boxAvailable", v)} />
             <Toggle id="q7" label="Original charger available" checked={qa.chargerAvailable} onChange={(v) => set("chargerAvailable", v)} />
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label>Photos</Label>
-              <ImageUploader value={images} onChange={setImages} />
-            </div>
           </div>
         )}
 
         {step === 2 && (
+          <div className="space-y-2">
+            <Label>Photos and QC video</Label>
+            <EvidenceUploader key={evidenceKey} kind={kind} onChange={setEvidence} onBusyChange={setUploading} />
+          </div>
+        )}
+
+        {step === 3 && (
           <div className="space-y-4">
             {quote.isError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{apiMessage(quote.error, "Could not calculate a valuation")}</p>}
             {quote.isLoading && <p className="text-sm text-muted-foreground">Calculating valuation…</p>}
@@ -196,15 +201,19 @@ export function CreateSellRequestDialog({ kind, open, onOpenChange, onCreated }:
               <Label htmlFor="exp">Customer's expected price (₹) — optional</Label>
               <Input id="exp" inputMode="numeric" placeholder={result ? String(result.quote) : ""} value={expected} onChange={(e) => setExpected(e.target.value.replace(/\D/g, ""))} />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Evidence attached: {evidence.filter((m) => m.mediaType === "IMAGE").length} photo(s), {evidence.filter((m) => m.mediaType === "VIDEO").length} video(s).
+              {evidence.length === 0 && " QC cannot start until at least one photo or video is added."}
+            </p>
             <p className="text-xs text-muted-foreground">On submit, the request opens to vendors, who place their offers.</p>
           </div>
         )}
 
         <DialogFooter className="gap-2 sm:justify-between">
           <Button variant="ghost" onClick={() => (step === 0 ? onOpenChange(false) : setStep(step - 1))}>{step === 0 ? "Cancel" : <><ArrowLeft /> Back</>}</Button>
-          {step < 2
-            ? <Button disabled={step === 0 && !step0Ok} onClick={() => setStep(step + 1)}>Next <ArrowRight /></Button>
-            : <Button disabled={create.isPending || !result} onClick={submit}>{create.isPending ? "Submitting…" : "Submit request"}</Button>}
+          {step < 3
+            ? <Button disabled={(step === 0 && !step0Ok) || (step === 2 && uploading)} onClick={() => setStep(step + 1)}>{step === 2 && uploading ? "Uploading…" : <>Next <ArrowRight /></>}</Button>
+            : <Button disabled={create.isPending || !result || uploading} onClick={submit}>{create.isPending ? "Submitting…" : "Submit request"}</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

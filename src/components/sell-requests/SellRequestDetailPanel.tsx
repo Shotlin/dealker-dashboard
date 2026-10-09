@@ -11,6 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ConditionPill, DeviceThumb, PersonAvatar, StatusBadge, TYPE_META, fmtDateTime } from "./sell-request-ui"
+import { EvidenceSection } from "./EvidenceSection"
+import { QcPanel } from "./QcPanel"
+import { usePermissions } from "@/hooks/usePermissions"
 import { useLinkOrder, useRequest, useRequestAction } from "@/hooks/useSellRequests"
 import type { RequestKind, SellRequest, SellRequestAction } from "@/services/sell-requests.service"
 
@@ -108,13 +111,15 @@ export function SellRequestDetailPanel({ id, kind }: { id: string | null; kind: 
   const act = useRequestAction(kind)
   const [noteFor, setNoteFor] = useState<NoteAction | null>(null)
   const [note, setNote] = useState("")
-  const [lightbox, setLightbox] = useState<number | null>(null)
+  const { can } = usePermissions()
   const [orderNo, setOrderNo] = useState("")
   const link = useLinkOrder()
 
   if (!id) return <aside className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">{isExchange ? "Select an exchange to see its details." : "Select a request to see its details."}</aside>
   if (isLoading || !r) return <aside className="space-y-3 rounded-xl border bg-card p-4"><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full" /><Skeleton className="h-64 w-full" /></aside>
 
+  const P = isExchange ? "exchange_requests" : "sell_requests"
+  const canQc = can(`${P}.qc`) || can(`${P}.manage`)
   const open = r.status === "PENDING" || r.status === "IN_PROGRESS"
   const run = (action: SellRequestAction, extra?: { note?: string; vendorId?: string }) => act.mutate({ id: r.id, action, ...extra })
   const submitNote = () => {
@@ -194,19 +199,9 @@ export function SellRequestDetailPanel({ id, kind }: { id: string | null; kind: 
 
             <QaList r={r} />
 
-            <div>
-              <p className="mb-2 text-sm font-semibold">Uploaded images</p>
-              <div className="flex flex-wrap gap-2">
-                {(r.images ?? []).map((u, i) => (
-                  <button key={u} type="button" onClick={() => setLightbox(i)} aria-label={`View photo ${i + 1} of ${r.images?.length}`}
-                    className="h-14 w-14 overflow-hidden rounded-lg border focus-visible:ring-2 focus-visible:ring-ring">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={u} alt={`${r.device.model} photo ${i + 1}`} loading="lazy" className="h-full w-full object-cover" />
-                  </button>
-                ))}
-                {!r.images?.length && <p className="text-xs text-muted-foreground">No images uploaded.</p>}
-              </div>
-            </div>
+            <EvidenceSection r={r} kind={kind} canAdd={canQc} canReview={canQc} />
+
+            <QcPanel r={r} kind={kind} canAct={canQc} />
 
             <Offers r={r} canAssign={open} busy={act.isPending} onAssign={(vendorId) => run("ASSIGN_VENDOR", { vendorId })} />
 
@@ -263,22 +258,6 @@ export function SellRequestDetailPanel({ id, kind }: { id: string | null; kind: 
         </DialogContent>
       </Dialog>
 
-      <Dialog open={lightbox !== null} onOpenChange={(o) => { if (!o) setLightbox(null) }}>
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{r.device.model} — photo {(lightbox ?? 0) + 1} of {r.images?.length ?? 0}</DialogTitle>
-            <DialogDescription className="sr-only">Uploaded device photo</DialogDescription>
-          </DialogHeader>
-          {lightbox !== null && r.images?.[lightbox] && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={r.images[lightbox]} alt={`${r.device.model} photo ${lightbox + 1}`} className="max-h-[70vh] w-full rounded-lg object-contain" />
-          )}
-          <DialogFooter className="sm:justify-between">
-            <Button variant="outline" disabled={!lightbox} onClick={() => setLightbox((i) => (i ?? 1) - 1)}>Previous</Button>
-            <Button variant="outline" disabled={lightbox === null || lightbox >= (r.images?.length ?? 1) - 1} onClick={() => setLightbox((i) => (i ?? 0) + 1)}>Next</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </aside>
   )
 }

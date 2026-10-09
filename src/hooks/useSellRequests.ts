@@ -9,9 +9,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
   apiMessage,
+  evidenceApi,
   requestsApi,
   sellSettingsApi,
   type CreateSellRequestInput,
+  type EvidenceStage,
+  type InspectionInput,
+  type VerificationStatus,
   type ModelInput,
   type QuoteInput,
   type RequestKind,
@@ -119,5 +123,50 @@ export function useSaveSellModel() {
 export const useSellModels = () =>
   useQuery({ queryKey: [...requestKeys.models, "admin"], queryFn: requestsApi("SELL").models, staleTime: 60_000 })
 
-export const useUploadSellImages = () =>
-  useMutation({ mutationFn: sellSettingsApi.uploadImages, onError: (e) => toast.error(apiMessage(e, "Upload failed")) })
+// ── evidence + QC ───────────────────────────────────────────────────────
+
+function useRefreshRequest(kind: RequestKind) {
+  const qc = useQueryClient()
+  return () => qc.invalidateQueries({ queryKey: requestKeys.section(kind) })
+}
+
+export function useAttachEvidence(kind: RequestKind) {
+  const refresh = useRefreshRequest(kind)
+  return useMutation({
+    mutationFn: (v: { id: string; mediaIds: string[]; stage: EvidenceStage }) => evidenceApi(kind).attach(v.id, v.mediaIds, v.stage),
+    onSuccess: () => { refresh(); toast.success("Evidence added") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export function useVerifyEvidence(kind: RequestKind) {
+  const refresh = useRefreshRequest(kind)
+  return useMutation({
+    mutationFn: (v: { mediaId: string; status: VerificationStatus; note?: string }) => evidenceApi(kind).verify(v.mediaId, v.status, v.note),
+    onSuccess: () => refresh(),
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export type QcCall =
+  | { type: "start"; id: string }
+  | { type: "inspection"; id: string; body: InspectionInput }
+  | { type: "decision"; id: string; result: "PASSED" | "RECHECK" | "FAILED"; note?: string; finalValuation?: number }
+  | { type: "reopen"; id: string; reason: string }
+
+export function useQcAction(kind: RequestKind) {
+  const refresh = useRefreshRequest(kind)
+  return useMutation({
+    mutationFn: (c: QcCall) => {
+      const api = evidenceApi(kind)
+      switch (c.type) {
+        case "start": return api.qcStart(c.id)
+        case "inspection": return api.qcInspection(c.id, c.body)
+        case "decision": return api.qcDecision(c.id, { result: c.result, note: c.note, finalValuation: c.finalValuation })
+        case "reopen": return api.qcReopen(c.id, c.reason)
+      }
+    },
+    onSuccess: () => { refresh(); toast.success("QC updated") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}

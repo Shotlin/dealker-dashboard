@@ -71,6 +71,73 @@ export interface SellSettings {
   maxTotalDeductionPct: number
   variantStepPct: number
   maxImages: number
+  maxVideos: number
+  maxImageMb: number
+  maxVideoMb: number
+  /** When on, a request needs a passed QC before approval and an accepted valuation before completion. */
+  qcRequiredForApproval: boolean
+}
+
+export type EvidenceStage = "CUSTOMER_SUBMISSION" | "PICKUP_INSPECTION" | "TECHNICIAN_QC" | "FINAL_QC" | "DISPUTE"
+export type VerificationStatus = "PENDING" | "VERIFIED" | "REJECTED"
+
+export interface EvidenceMedia {
+  id: string
+  mediaType: "IMAGE" | "VIDEO"
+  stage: EvidenceStage
+  filename: string
+  mimeType: string
+  size: number
+  checksum: string
+  uploadedAt: string
+  uploadedByRole: "CUSTOMER" | "ADMIN" | "VENDOR"
+  attached: boolean
+  verification: { status: VerificationStatus; note?: string; at: string | null }
+  /** API-relative signed link (valid 30 min). Resolve with `mediaSrc()`. */
+  url: string
+}
+
+export type QcStatus =
+  | "NOT_STARTED" | "AWAITING_EVIDENCE" | "EVIDENCE_UPLOADED" | "INSPECTION_PENDING"
+  | "INSPECTION_COMPLETE" | "PASSED" | "RECHECK" | "FAILED"
+export type CustomerDecision = "NONE" | "PENDING" | "ACCEPTED" | "DECLINED"
+
+export interface QcHistoryItem {
+  at: string
+  action: string
+  from: string | null
+  to: string | null
+  note?: string
+  actorRole: string | null
+  actorName?: string
+}
+
+export interface RequestQc {
+  status: QcStatus
+  inspectorName?: string | null
+  physicalCondition?: DeviceCondition | null
+  imeiVerified?: boolean | null
+  imeiObserved?: string | null
+  screenCondition?: ScreenCondition | null
+  batteryHealth?: number | null
+  functionality?: Record<string, boolean>
+  remarks?: string | null
+  finalValuation?: number | null
+  customerDecision: CustomerDecision
+  inspectedAt?: string | null
+  history: QcHistoryItem[]
+}
+
+export type ScreenCondition = "FLAWLESS" | "MINOR_SCRATCHES" | "MAJOR_SCRATCHES" | "CRACKED" | "DEAD_PIXELS"
+
+export interface InspectionInput {
+  physicalCondition: DeviceCondition
+  screenCondition: ScreenCondition
+  imeiVerified: boolean
+  imeiObserved?: string
+  batteryHealth?: number
+  functionality: Record<string, boolean>
+  remarks?: string
 }
 
 export interface ModelInput {
@@ -109,6 +176,10 @@ export interface SellRequest {
   description: string
   imageCount: number
   images?: string[]
+  /** Private evidence (photos + QC video). Historical requests have `[]` and keep using `images`. */
+  media?: EvidenceMedia[]
+  videoCount?: number
+  qc?: RequestQc
   deductions?: Array<{ label: string; pct: number }>
   finalPrice?: number | null
   /** Value the customer expects. */
@@ -171,6 +242,8 @@ export interface CreateSellRequestInput {
   /** EXCHANGE only: order the customer already placed for the new product. */
   orderNumber?: string
   images?: string[]
+  /** Ids of files uploaded through `evidenceApi.upload`. */
+  mediaIds?: string[]
 }
 
 export interface QuoteResult {
@@ -256,20 +329,73 @@ export const exchangeRequestsApi = requestsApi("EXCHANGE")
 const SHARED = BASES.SELL
 export const sellSettingsApi = {
   settings: () => api.get<ApiResponse<SellSettings>>(`${SHARED}/settings`).then((r) => r.data.data),
-  updateSettings: (body: Partial<Pick<SellSettings, "enabled" | "rules" | "maxTotalDeductionPct" | "variantStepPct" | "maxImages">>) =>
+  updateSettings: (body: Partial<Pick<SellSettings, "enabled" | "rules" | "maxTotalDeductionPct" | "variantStepPct" | "maxImages" | "maxVideos" | "maxImageMb" | "maxVideoMb" | "qcRequiredForApproval">>) =>
     api.put<ApiResponse<SellSettings>>(`${SHARED}/settings`, body).then((r) => r.data.data),
   createModel: (body: ModelInput) => api.post<ApiResponse<CatalogModel>>(`${SHARED}/models`, body).then((r) => r.data.data),
   updateModel: (id: string, body: Partial<ModelInput>) => api.put<ApiResponse<CatalogModel>>(`${SHARED}/models/${id}`, body).then((r) => r.data.data),
-  uploadImages: async (files: File[]) => {
-    const fd = new FormData()
-    files.forEach((f) => fd.append("file", f))
-    const r = await api.post<{ data: { urls: string[] } }>("/uploads/local", fd, { headers: { "Content-Type": "multipart/form-data" } })
-    return r.data.data.urls
-  },
 }
 
 /** Pull the backend's human message out of an axios error. */
 export function apiMessage(err: unknown, fallback = "Something went wrong"): string {
   const e = err as { response?: { data?: { message?: string } }; message?: string }
   return e?.response?.data?.message || e?.message || fallback
+}
+
+// ── Evidence (photos + QC video) and request-level QC ───────────────────
+
+/** Turn an API-relative signed link into a URL the browser can load. */
+export function mediaSrc(path: string): string {
+  if (/^https?:\/\//.test(path)) return path
+  const base = process.env.NEXT_PUBLIC_API_URL || ""
+  try {
+    return new URL(path, base || (typeof window !== "undefined" ? window.location.origin : "http://localhost")).toString()
+  } catch {
+    return path
+  }
+}
+
+/** The backend reports per-file problems in `data.files[0]`; fall back to the generic message. */
+export function uploadErrorMessage(err: unknown): string {
+  const e = err as { response?: { status?: number; data?: { message?: string; data?: { files?: Array<{ message?: string }> } } }; code?: string; message?: string }
+  const perFile = e?.response?.data?.data?.files?.[0]?.message
+  if (perFile) return perFile
+  if (e?.response?.status === 413) return "The file is too large for the server. Ask an admin to check the upload limits."
+  if (e?.response?.status === 401) return "Your session expired. Sign in again, then retry."
+  if (e?.code === "ECONNABORTED" || e?.code === "ERR_NETWORK") return "Network problem — the upload did not finish. Retry."
+  return e?.response?.data?.message || e?.message || "Upload failed"
+}
+
+/**
+ * Evidence + QC calls for one section. Uploads are one file per request so each file has its own
+ * progress and can be retried alone. Uploads use no client timeout: the shared axios instance
+ * cancels every request after 15 s, which is shorter than a QC video takes on a mobile network.
+ */
+export function evidenceApi(kind: RequestKind) {
+  const BASE = BASES[kind]
+  return {
+    upload: async (file: File, opts: { onProgress?: (pct: number) => void; signal?: AbortSignal } = {}) => {
+      const fd = new FormData()
+      fd.append("files", file, file.name)
+      const r = await api.post<ApiResponse<{ files: Array<{ ok: boolean; media?: EvidenceMedia; message?: string }> }>>(`${BASE}/media`, fd, {
+        timeout: 0,
+        signal: opts.signal,
+        onUploadProgress: (e) => { if (e.total) opts.onProgress?.(Math.min(99, Math.round((e.loaded / e.total) * 100))) },
+      })
+      const f = r.data.data.files[0]
+      if (!f?.ok || !f.media) throw new Error(f?.message || "Upload failed")
+      opts.onProgress?.(100)
+      return f.media
+    },
+    discard: (mediaId: string) => api.delete(`${BASE}/media/${mediaId}`).then(() => undefined),
+    attach: (id: string, mediaIds: string[], stage: EvidenceStage) =>
+      api.post<ApiResponse<SellRequest>>(`${BASE}/${id}/media`, { mediaIds, stage }).then((r) => r.data.data),
+    verify: (mediaId: string, status: VerificationStatus, note?: string) =>
+      api.post<ApiResponse<EvidenceMedia>>(`${BASE}/media/${mediaId}/verify`, { status, note }).then((r) => r.data.data),
+    link: (mediaId: string) => api.get<ApiResponse<EvidenceMedia>>(`${BASE}/media/${mediaId}/link`).then((r) => r.data.data),
+    qcStart: (id: string, inspectorId?: string) => api.post(`${BASE}/${id}/qc/start`, { inspectorId }).then((r) => r.data.data),
+    qcInspection: (id: string, body: InspectionInput) => api.post(`${BASE}/${id}/qc/inspection`, body).then((r) => r.data.data),
+    qcDecision: (id: string, body: { result: "PASSED" | "RECHECK" | "FAILED"; note?: string; finalValuation?: number }) =>
+      api.post(`${BASE}/${id}/qc/decision`, body).then((r) => r.data.data),
+    qcReopen: (id: string, reason: string) => api.post(`${BASE}/${id}/qc/reopen`, { reason }).then((r) => r.data.data),
+  }
 }
