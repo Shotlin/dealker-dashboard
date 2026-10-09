@@ -11,6 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { useListing, useListingActions } from "@/hooks/useListings"
 import { formatINR } from "@/lib/utils"
+import { QcBadge } from "@/components/qc/QcBadge"
+import { QcPanel } from "@/components/qc/QcPanel"
+import { InvoicePanel } from "@/components/invoices/InvoicePanel"
 import { ApprovalBadge, CONDITION_META, ConditionBadge, OwnerBadge } from "./badges"
 
 function Fact({ label, value }: { label: string; value?: React.ReactNode }) {
@@ -41,6 +44,7 @@ export function ListingDetailSheet({ id, onClose }: { id: string | null; onClose
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <ConditionBadge condition={l.condition} />
               <ApprovalBadge status={l.approval_status} />
+              <QcBadge status={l.qc_status} score={l.qc_score} />
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 Listed by <OwnerBadge type={l.owner_type} name={l.owner_name} />
               </span>
@@ -99,9 +103,21 @@ export function ListingDetailSheet({ id, onClose }: { id: string | null; onClose
                     <Fact label="Battery health" value={l.battery_health ? <span className="flex items-center gap-1"><Battery className="h-3.5 w-3.5" />{l.battery_health}%</span> : null} />
                     <Fact label="Warranty" value={l.warranty_info && <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" />{l.warranty_info}</span>} />
                     <Fact label="In the box" value={l.accessories_included} />
-                    <Fact label="Invoice" value={l.has_invoice ? "Available" : "Not available"} />
-                    <Fact label="Serial / IMEI (private)" value={l.serial_number} />
+                    <Fact label="Serial number (private)" value={l.serial_number} />
+                    <Fact label="IMEI (private)" value={l.imei} />
                   </dl>
+                </section>
+
+                <Separator />
+                <section>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Quality check</h3>
+                  <QcPanel listingId={l.id} />
+                </section>
+
+                <Separator />
+                <section>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Purchase invoice</h3>
+                  <InvoicePanel listingId={l.id} defaultImei={l.imei ?? l.serial_number} />
                 </section>
 
                 <Separator />

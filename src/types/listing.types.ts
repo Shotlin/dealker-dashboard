@@ -1,5 +1,7 @@
 export type ListingCondition = "NEW" | "OPEN_BOX" | "REFURBISHED" | "USED_LIKE_NEW" | "USED_GOOD" | "USED_FAIR"
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED"
+import type { QcStatus } from "@/services/qc.service"
+
 export type ListingStatus = "ACTIVE" | "PAUSED" | "OUT_OF_STOCK"
 
 export interface ListingCard {
@@ -24,6 +26,8 @@ export interface ListingCard {
   sold_count: number
   created_at: string
   sku: string | null
+  qc_status: QcStatus
+  qc_score: number | null
 }
 
 export interface ListingDetail {
@@ -42,7 +46,10 @@ export interface ListingDetail {
   accessories_included: string | null
   battery_health: number | null
   serial_number: string | null
+  imei: string | null
   has_invoice: boolean
+  qc_status: QcStatus
+  qc_score: number | null
   selling_price: number
   mrp: number | null
   stock_quantity: number
@@ -79,6 +86,7 @@ export interface ListingInput {
   accessoriesIncluded?: string
   batteryHealth?: number | null
   serialNumber?: string
+  imei?: string
   hasInvoice?: boolean
   images?: string[]
   price?: number

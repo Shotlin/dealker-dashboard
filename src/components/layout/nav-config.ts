@@ -36,6 +36,8 @@ import {
   Headset,
   Landmark,
   Percent,
+  ReceiptText,
+  ShieldCheck,
   PiggyBank,
   PackageSearch,
   ShoppingCart,
@@ -120,6 +122,8 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Products", href: "/products", icon: Package, badgeKey: "pendingListings" },
       { label: "Categories", href: "/categories", icon: Tags },
+      { label: "QC Management", href: "/qc", icon: ShieldCheck },
+      { label: "Invoices", href: "/invoices", icon: ReceiptText },
       { label: "Bulk Imports", href: "/catalog-bulk", icon: FileSpreadsheet },
       { label: "Reviews", href: "/reviews", icon: Star },
     ],
@@ -217,6 +221,8 @@ export const ROUTE_LABELS: Record<string, string> = {
   settlements: "Vendor Settlements",
   shipping: "Providers & Rules",
   "vendor-wallet": "Vendor Wallet",
+  qc: "QC Management",
+  invoices: "Invoices",
   commission: "Commission & Charges",
   wallet: "Customer Wallet",
 }

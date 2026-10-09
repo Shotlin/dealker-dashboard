@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { QcBadge } from "@/components/qc/QcBadge"
 import { ApprovalBadge, ConditionBadge, OwnerBadge, StockCell } from "@/components/listings/badges"
 import { ListingDetailSheet } from "@/components/listings/ListingDetailSheet"
 import { useCategories } from "@/hooks/useCategories"
@@ -144,16 +145,17 @@ function ProductsInner() {
               <TableHead className="text-right">Price</TableHead>
               <TableHead>Stock</TableHead>
               <TableHead>Review</TableHead>
+              <TableHead>QC</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {list.isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={i}><TableCell colSpan={7}><Skeleton className="h-12 w-full" /></TableCell></TableRow>
+                <TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-12 w-full" /></TableCell></TableRow>
               ))
             ) : rows.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
+              <TableRow><TableCell colSpan={8} className="h-48 text-center text-muted-foreground">
                 <Package className="mx-auto mb-2 h-8 w-8 opacity-40" />No products match these filters.
               </TableCell></TableRow>
             ) : rows.map((r) => (
@@ -183,6 +185,7 @@ function ProductsInner() {
                 </TableCell>
                 <TableCell><StockCell stock={r.stock} status={r.listing_status} /></TableCell>
                 <TableCell><ApprovalBadge status={r.approval_status} /></TableCell>
+                <TableCell><QcBadge status={r.qc_status} score={r.qc_score} /></TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>

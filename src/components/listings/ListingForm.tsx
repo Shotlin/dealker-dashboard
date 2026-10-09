@@ -23,7 +23,7 @@ interface FormState {
   ownerVendorId: string
   name: string; brand: string; categoryId: string; description: string
   condition: ListingCondition; conditionNotes: string; usageDuration: string; warrantyInfo: string
-  accessoriesIncluded: string; batteryHealth: string; serialNumber: string; hasInvoice: boolean
+  accessoriesIncluded: string; batteryHealth: string; serialNumber: string; imei: string; hasInvoice: boolean
   images: string[]; price: string; mrp: string; stock: string; sku: string
   handlingTimeDays: string; codEligible: boolean; nationwide: boolean; localDelivery: boolean
   specs: { k: string; v: string }[]
@@ -31,7 +31,7 @@ interface FormState {
 
 const empty: FormState = {
   ownerVendorId: "", name: "", brand: "", categoryId: "", description: "", condition: "NEW", conditionNotes: "", usageDuration: "", warrantyInfo: "",
-  accessoriesIncluded: "", batteryHealth: "", serialNumber: "", hasInvoice: true, images: [], price: "", mrp: "", stock: "1", sku: "",
+  accessoriesIncluded: "", batteryHealth: "", serialNumber: "", imei: "", hasInvoice: true, images: [], price: "", mrp: "", stock: "1", sku: "",
   handlingTimeDays: "2", codEligible: true, nationwide: true, localDelivery: true, specs: [{ k: "", v: "" }],
 }
 
@@ -39,7 +39,7 @@ const fromDetail = (d: ListingDetail): FormState => ({
   ownerVendorId: d.vendor_id ?? "", name: d.name, brand: d.brand ?? "", categoryId: d.category_id ?? "", description: d.description ?? "", condition: d.condition,
   conditionNotes: d.condition_notes ?? "", usageDuration: d.usage_duration ?? "", warrantyInfo: d.warranty_info ?? "",
   accessoriesIncluded: d.accessories_included ?? "", batteryHealth: d.battery_health ? String(d.battery_health) : "",
-  serialNumber: d.serial_number ?? "", hasInvoice: d.has_invoice, images: d.images, price: String(d.selling_price), mrp: d.mrp ? String(d.mrp) : "",
+  serialNumber: d.serial_number ?? "", imei: d.imei ?? "", hasInvoice: d.has_invoice, images: d.images, price: String(d.selling_price), mrp: d.mrp ? String(d.mrp) : "",
   stock: String(d.stock_quantity), sku: d.seller_sku ?? "", handlingTimeDays: String(d.handling_time_days ?? 2), codEligible: d.cod_eligible,
   nationwide: d.nationwide_shipping_enabled, localDelivery: d.local_delivery_enabled,
   specs: Object.entries(d.specifications ?? {}).map(([k, v]) => ({ k, v: String(v) })).concat([{ k: "", v: "" }]),
@@ -79,7 +79,7 @@ export function ListingForm({ initial }: { initial?: ListingDetail }) {
       name: f.name.trim(), brand: f.brand.trim() || undefined, categoryId: f.categoryId || undefined, description: f.description.trim() || undefined,
       condition: f.condition, conditionNotes: f.conditionNotes.trim() || undefined, usageDuration: f.usageDuration.trim() || undefined,
       warrantyInfo: f.warrantyInfo.trim() || undefined, accessoriesIncluded: f.accessoriesIncluded.trim() || undefined,
-      batteryHealth: f.batteryHealth ? Number(f.batteryHealth) : null, serialNumber: f.serialNumber.trim() || undefined, hasInvoice: f.hasInvoice,
+      batteryHealth: f.batteryHealth ? Number(f.batteryHealth) : null, serialNumber: f.serialNumber.trim() || undefined, imei: f.imei.trim() || undefined, hasInvoice: f.hasInvoice,
       images: f.images, price: Number(f.price), mrp: f.mrp ? Number(f.mrp) : null, stock: used ? Math.min(1, Number(f.stock)) : Number(f.stock),
       sku: f.sku.trim() || undefined, specifications, handlingTimeDays: Number(f.handlingTimeDays || 2), codEligible: f.codEligible,
       nationwide: f.nationwide, localDelivery: f.localDelivery,
@@ -147,7 +147,8 @@ export function ListingForm({ initial }: { initial?: ListingDetail }) {
           {(electronics || f.batteryHealth) && f.condition !== "NEW" && (
             <Field label="Battery health (%)"><Input type="number" min={1} max={100} value={f.batteryHealth} onChange={(e) => set("batteryHealth", e.target.value)} /></Field>
           )}
-          <Field label="Serial / IMEI" hint="Private — only visible to Dealker."><Input value={f.serialNumber} onChange={(e) => set("serialNumber", e.target.value)} /></Field>
+          <Field label="Serial number" hint="Private — only visible to Dealker."><Input value={f.serialNumber} onChange={(e) => set("serialNumber", e.target.value)} /></Field>
+          <Field label="IMEI" hint="15 digits, for phones and tablets. Checked during QC."><Input inputMode="numeric" value={f.imei} onChange={(e) => set("imei", e.target.value)} /></Field>
           <div className="flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
             <div><p className="text-sm font-medium">Purchase invoice available</p><p className="text-xs text-muted-foreground">Buyers trust listings that come with a bill.</p></div>
             <Switch checked={f.hasInvoice} onCheckedChange={(v) => set("hasInvoice", v)} />
