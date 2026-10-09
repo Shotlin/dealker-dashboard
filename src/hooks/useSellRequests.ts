@@ -99,7 +99,7 @@ export const useRequestQuote = (kind: RequestKind, q: QuoteInput, enabled: boole
 
 // ── shared settings + catalogue (edited from the Sell section) ─────────
 
-export const useSellSettings = () => useQuery({ queryKey: requestKeys.settings, queryFn: sellSettingsApi.settings })
+export const useSellSettings = (enabled = true) => useQuery({ queryKey: requestKeys.settings, queryFn: sellSettingsApi.settings, enabled })
 
 export function useUpdateSellSettings() {
   const qc = useQueryClient()

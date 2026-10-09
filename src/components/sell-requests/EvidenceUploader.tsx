@@ -35,13 +35,22 @@ export function EvidenceUploader({
   kind,
   onChange,
   onBusyChange,
+  upload: uploadFn,
+  discard: discardFn,
+  limits: limitsProp,
 }: {
   kind: RequestKind
   onChange: (done: EvidenceMedia[]) => void
   onBusyChange?: (busy: boolean) => void
+  /** Override where files go (e.g. repairs). Defaults to the sell/exchange evidence endpoint. */
+  upload?: (file: File, opts: { onProgress?: (pct: number) => void; signal?: AbortSignal }) => Promise<EvidenceMedia>
+  discard?: (mediaId: string) => Promise<void>
+  limits?: { maxImages: number; maxVideos: number; maxImageMb: number; maxVideoMb: number }
 }) {
-  const settings = useSellSettings()
-  const limits = settings.data ?? FALLBACK
+  const settings = useSellSettings(!limitsProp)
+  const limits = limitsProp ?? settings.data ?? FALLBACK
+  const doUpload = uploadFn ?? evidenceApi(kind).upload
+  const doDiscard = discardFn ?? evidenceApi(kind).discard
   const [items, setItems] = useState<Item[]>([])
   const input = useRef<HTMLInputElement>(null)
   const aborts = useRef(new Map<string, AbortController>())
@@ -54,15 +63,15 @@ export function EvidenceUploader({
     const ctl = new AbortController()
     aborts.current.set(item.key, ctl)
     patch(item.key, { status: "uploading", progress: 0, error: undefined })
-    evidenceApi(kind)
-      .upload(item.file, { signal: ctl.signal, onProgress: (progress) => patch(item.key, { progress }) })
+    doUpload(item.file, { signal: ctl.signal, onProgress: (progress) => patch(item.key, { progress }) })
       .then((result) => patch(item.key, { status: "done", progress: 100, result }))
       .catch((err) => {
         if (ctl.signal.aborted) return
         patch(item.key, { status: "error", error: uploadErrorMessage(err) })
       })
       .finally(() => aborts.current.delete(item.key))
-  }, [kind, patch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, patch, uploadFn])
 
   useEffect(() => {
     onChange(items.filter((i) => i.status === "done" && i.result).map((i) => i.result as EvidenceMedia))
@@ -100,7 +109,7 @@ export function EvidenceUploader({
 
   const remove = (item: Item) => {
     aborts.current.get(item.key)?.abort()
-    if (item.result) evidenceApi(kind).discard(item.result.id).catch(() => { /* swept server-side after 24 h */ })
+    if (item.result) doDiscard(item.result.id).catch(() => { /* swept server-side after 24 h */ })
     URL.revokeObjectURL(item.preview)
     setItems((cur) => cur.filter((i) => i.key !== item.key))
   }

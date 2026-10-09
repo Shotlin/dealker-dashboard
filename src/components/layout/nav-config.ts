@@ -21,6 +21,7 @@ import {
   Settings,
   Shield,
   Smartphone,
+  Wrench,
   Sparkles,
   Star,
   Store,
@@ -89,6 +90,12 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Exchange Orders", href: "/exchange-requests", icon: Repeat },
       { label: "Seller Orders", href: "/seller-orders", icon: Package },
       { label: "Returns & Refunds", href: "/refund-requests", icon: Undo2 },
+    ],
+  },
+  {
+    section: "Repair Service",
+    items: [
+      { label: "Repair Requests", href: "/repairs", icon: Wrench },
     ],
   },
   {
@@ -206,6 +213,7 @@ export const NAV_SECTIONS: NavSection[] = [
 /** Human labels for breadcrumb segments that don't title-case cleanly. */
 export const ROUTE_LABELS: Record<string, string> = {
   auctions: "Auctions",
+  repairs: "Repairs",
   "sell-requests": "Sell Requests",
   "exchange-requests": "Exchange Requests",
   ads: "Sponsored Ads",
