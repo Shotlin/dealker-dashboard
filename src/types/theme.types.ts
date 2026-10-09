@@ -80,6 +80,13 @@ export interface HomeLookTheme {
   feeCardColor?: string
   feeCardTextColor?: string
   feeCardCheckColor?: string
+  navBackgroundColor?: string
+  navActiveColor?: string
+  navLabelColor?: string
+  repairPillColor?: string
+  repairPillTextColor?: string
+  /** Footer pill text (use a line break for two lines); empty hides the pill. */
+  repairLabel?: string
 }
 
 export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
@@ -97,6 +104,12 @@ export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
   feeCardColor: "#FFFFFF",
   feeCardTextColor: "#111111",
   feeCardCheckColor: "#111111",
+  navBackgroundColor: "#FFFFFF",
+  navActiveColor: "#F0245F",
+  navLabelColor: "#1A1A1A",
+  repairPillColor: "#FBE36B",
+  repairPillTextColor: "#111111",
+  repairLabel: "Repair\nMobile etc.",
 }
 
 export interface ThemeMeta {

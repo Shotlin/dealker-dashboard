@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Loader2, RotateCcw, Save } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
@@ -391,16 +392,21 @@ function RegionFields({
     case "bottom_nav":
       return (
         <div className="space-y-4">
-          <p className="text-sm text-slate-700">
-            Bottom nav style is currently driven by the active store config and
-            is not yet stored in <code>theme_data</code>. Editing here is
-            disabled until the dedicated <code>bottomNav</code> theme field is
-            added.
-          </p>
+          <LookColor label="Nav background" field="navBackgroundColor" look={look} patchLook={patchLook} />
+          <LookColor label="Active tab color" field="navActiveColor" look={look} patchLook={patchLook} />
+          <LookColor label="Inactive icon / label color" field="navLabelColor" look={look} patchLook={patchLook} />
+          <LookColor label="Repair pill background" field="repairPillColor" look={look} patchLook={patchLook} />
+          <LookColor label="Repair pill text / icon" field="repairPillTextColor" look={look} patchLook={patchLook} />
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-slate-600">Repair pill text</Label>
+            <Input
+              value={look.repairLabel ?? DEFAULT_HOME_LOOK.repairLabel}
+              onChange={(e) => patchLook({ repairLabel: e.target.value })}
+              placeholder="Repair Mobile etc. (empty hides the pill)"
+            />
+          </div>
           <p className="text-xs text-slate-500">
-            For now, change bottom-nav colors by switching the active store via
-            tabs or contact the design system owner to extend{" "}
-            <code>ThemeSections</code>.
+            The footer tabs are Home, Categories, Auction and Order; the pill opens the repair flow.
           </p>
         </div>
       )

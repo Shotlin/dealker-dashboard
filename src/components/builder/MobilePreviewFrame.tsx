@@ -14,6 +14,10 @@ import {
   UserRound,
   Tag,
   RotateCcw,
+  Gavel,
+  ClipboardList,
+  Smartphone,
+  ChevronRight,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import {
@@ -22,7 +26,7 @@ import {
 } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core"
 import { cn } from "@/lib/utils"
-import type { SectionManifest, ThemeData, ThemeTab } from "@/types/theme.types"
+import { DEFAULT_HOME_LOOK, type SectionManifest, type ThemeData, type ThemeTab } from "@/types/theme.types"
 import {
   usePreviewData,
   resolveProductsForSection,
@@ -71,6 +75,8 @@ const NAV_ICON_MAP: Record<string, LucideIcon> = {
   Home: House,
   Cart: ShoppingCart,
   Categories: Grid2x2,
+  Auction: Gavel,
+  Order: ClipboardList,
   Profile: UserRound,
   "Buy Again": RotateCcw,
   Deals: Tag,
@@ -96,6 +102,7 @@ export function MobilePreviewFrame({
   themeTabs,
   isDragActive = false,
 }: MobilePreviewFrameProps) {
+  const navLook = { ...DEFAULT_HOME_LOOK, ...(themeData?.sections.homeLook ?? {}) }
   const frameRef = useRef<HTMLDivElement | null>(null)
   const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const [availableSize, setAvailableSize] = useState({
@@ -299,22 +306,52 @@ export function MobilePreviewFrame({
                   : undefined
               }
             >
-              <div className={styles.bottomNavDock}>
-                {storeConfig.bottomNav.map((label, index) => {
-                  const Icon = NAV_ICON_MAP[label] ?? Grid2x2
-                  const isActive = index === 0
-                  return (
+              <div
+                className={styles.bottomNavDock}
+                style={{ background: navLook.navBackgroundColor, display: "flex", alignItems: "center" }}
+              >
+                <div style={{ display: "flex", flex: 1 }}>
+                  {["Home", "Categories", "Auction", "Order"].map((label, index) => {
+                    const Icon = NAV_ICON_MAP[label] ?? Grid2x2
+                    const isActive = index === 0
+                    return (
+                      <div
+                        key={label}
+                        className={cn(styles.navItem, isActive && styles.navItemActive)}
+                        style={{ color: isActive ? navLook.navActiveColor : navLook.navLabelColor, transition: "color 200ms ease" }}
+                        aria-label={label}
+                      >
+                        <Icon className={styles.navIcon} strokeWidth={2.2} />
+                        <span>{label}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+                {navLook.repairLabel.trim() !== "" && (
+                  <>
+                    <div style={{ width: 1, height: 34, margin: "0 6px", background: navLook.navLabelColor, opacity: 0.18 }} />
                     <div
-                      key={label}
-                      className={cn(styles.navItem, isActive && styles.navItemActive)}
-                      style={{ color: isActive ? storeConfig.bg : "#9CA3AF", transition: "color 200ms ease" }}
-                      aria-label={label}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        width: "27%",
+                        padding: "8px 8px",
+                        borderRadius: 14,
+                        background: navLook.repairPillColor,
+                        color: navLook.repairPillTextColor,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        lineHeight: 1.15,
+                        whiteSpace: "pre-line",
+                      }}
                     >
-                      <Icon className={styles.navIcon} strokeWidth={2.2} />
-                      <span>{label}</span>
+                      <Smartphone size={16} />
+                      <span style={{ flex: 1 }}>{navLook.repairLabel}</span>
+                      <ChevronRight size={12} />
                     </div>
-                  )
-                })}
+                  </>
+                )}
               </div>
             </div>
           </div>
