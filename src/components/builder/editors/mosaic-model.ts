@@ -42,8 +42,6 @@ export interface MosaicTile {
   /** Hero tiles only */
   badgeText?: string
   badgeGradient?: [string, string]
-  /** Mini tiles only: text of the black bar under the tile (hidden when empty). */
-  caption?: string
   action: TileAction
 }
 
@@ -189,7 +187,6 @@ function readTile(value: unknown, fallback: MosaicTile): MosaicTile {
       record.badge_gradient ?? record.badgeGradient,
       fallback.badgeGradient ?? DEFAULT_BADGE_GRADIENT
     ),
-    caption: asString(record.caption) ?? fallback.caption,
     action: asAction(record.action),
   }
 }
@@ -247,7 +244,6 @@ function tileToConfig(tile: MosaicTile, includeBadge: boolean): Record<string, u
     image_fit: tile.imageFit,
     action: tile.action.type === "none" ? { type: "none", value: null } : tile.action,
   }
-  if (!includeBadge && tile.caption) base.caption = tile.caption
   if (includeBadge) {
     base.badge_text = tile.badgeText ?? ""
     base.badge_gradient = tile.badgeGradient ?? DEFAULT_BADGE_GRADIENT

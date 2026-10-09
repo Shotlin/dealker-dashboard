@@ -17,7 +17,6 @@ export type ChromeRegion =
   | "store_chips"
   | "hero_frame"
   | "fee_card"
-  | "mosaic"
 
 export interface ChromeRegionMeta {
   region: ChromeRegion
@@ -60,11 +59,6 @@ export const CHROME_REGION_META: Record<ChromeRegion, ChromeRegionMeta> = {
     region: "fee_card",
     label: "Fee Card",
     description: "The white ₹0 FEES card (colours here; wording in the section).",
-  },
-  mosaic: {
-    region: "mosaic",
-    label: "Deal Mosaic",
-    description: "Text and caption-bar colours of the deal tiles (tile art, titles and captions are edited in the section).",
   },
 }
 
