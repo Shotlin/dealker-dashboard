@@ -44,7 +44,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
         <CardContent className="space-y-4 p-5">
           <p className="text-base leading-relaxed">
             <b>{d.customer.name}</b> ordered <b>{o.item_count} item{o.item_count === 1 ? "" : "s"}</b> from <b>{vendors || "a seller"}</b> for <b>{money(d.payment.breakdown.total)}</b>.
-            {" "}{payMethodText(o.payment_method, d.payment.gateway?.method)}.
+            {" "}{payMethodText(o.payment_method, d.payment.gateway?.method, d.payment.plan)}.
           </p>
           <p className="text-sm font-medium">{o.summary}</p>
           {o.cancelled_reason && <p className="text-sm text-muted-foreground">Reason given: “{o.cancelled_reason}”</p>}

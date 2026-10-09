@@ -26,7 +26,8 @@ export function StatusPill({ status, className }: { status: string; className?: 
 
 export const CONDITION: Record<string, string> = { NEW: "New", OPEN_BOX: "Open box", REFURBISHED: "Refurbished", USED_LIKE_NEW: "Used · Like new", USED_GOOD: "Used · Good", USED_FAIR: "Used · Fair" }
 
-export function payMethodText(method: string, gatewayMethod?: string | null) {
+export function payMethodText(method: string, gatewayMethod?: string | null, plan?: string) {
+  if (plan === "PARTIAL") return "Partial payment — an advance was paid online, the rest is collected on delivery"
   if (method === "COD") return "Cash on delivery — the customer pays the courier when the parcel arrives"
   if (method === "WALLET") return "Paid from the customer’s Dealker wallet"
   const via = gatewayMethod ? { upi: "UPI", card: "debit / credit card", netbanking: "net banking", wallet: "a mobile wallet" }[gatewayMethod] ?? gatewayMethod : null

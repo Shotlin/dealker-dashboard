@@ -35,6 +35,8 @@ import {
   Boxes,
   Headset,
   Landmark,
+  Percent,
+  PiggyBank,
   PackageSearch,
   ShoppingCart,
   type LucideIcon,
@@ -110,7 +112,6 @@ export const NAV_SECTIONS: NavSection[] = [
     section: "Vendors",
     items: [
       { label: "Vendors & KYC", href: "/vendors", icon: Store },
-      { label: "Vendor Settlements", href: "/settlements", icon: Landmark },
       { label: "Vendors Marketplace", href: "/vendors-marketplace", icon: Boxes },
     ],
   },
@@ -140,8 +141,16 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Cart Milestones", href: "/cart-milestones", icon: TrendingUp },
       { label: "Loyalty & Points", href: "/loyalty", icon: Sparkles },
       { label: "Referral Program", href: "/referrals", icon: Gift },
-      { label: "Wallet & Cashback", href: "/wallet", icon: Wallet },
       { label: "Notifications", href: "/notifications", icon: Bell },
+    ],
+  },
+  {
+    section: "Finance",
+    items: [
+      { label: "Customer Wallet", href: "/wallet", icon: Wallet },
+      { label: "Vendor Wallet", href: "/vendor-wallet", icon: PiggyBank },
+      { label: "Commission & Charges", href: "/commission", icon: Percent },
+      { label: "Vendor Settlements", href: "/settlements", icon: Landmark },
     ],
   },
   {
@@ -207,4 +216,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   support: "Customer Support",
   settlements: "Vendor Settlements",
   shipping: "Providers & Rules",
+  "vendor-wallet": "Vendor Wallet",
+  commission: "Commission & Charges",
+  wallet: "Customer Wallet",
 }

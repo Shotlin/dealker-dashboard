@@ -51,9 +51,16 @@ export function PaymentCard({ d }: { d: OrderOverview }) {
     <Card className="shadow-none">
       <CardHeader className="pb-3"><CardTitle className="flex items-center justify-between text-base">How it was paid
         <Badge variant="outline" className={cn("border-0 text-[11px]", p.status === "PAID" ? "bg-emerald-50 text-emerald-700" : p.status === "REFUNDED" ? "bg-violet-50 text-violet-700" : "bg-amber-50 text-amber-700")}>
-          {p.status === "PAID" ? "Payment received" : p.status === "REFUNDED" ? "Refunded" : p.method === "COD" ? "To be collected" : "Payment pending"}</Badge></CardTitle></CardHeader>
+          {p.status === "PAID" ? "Payment received" : p.status === "REFUNDED" ? "Refunded" : p.status === "PARTIALLY_PAID" ? "Advance paid · balance due" : p.method === "COD" ? "To be collected" : "Payment pending"}</Badge></CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        <p className="flex items-start gap-2 rounded-lg bg-muted/50 p-3 text-sm"><Banknote className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />{payMethodText(p.method, p.gateway?.method)}</p>
+        <p className="flex items-start gap-2 rounded-lg bg-muted/50 p-3 text-sm"><Banknote className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />{payMethodText(p.method, p.gateway?.method, p.plan)}</p>
+        <div className="grid grid-cols-3 gap-2 text-center" data-testid="payment-split">
+          <div className="rounded-lg border p-2"><p className="text-[11px] text-muted-foreground">Total</p><p className="text-sm font-semibold">{money(p.amount_paid + p.amount_due)}</p></div>
+          <div className="rounded-lg border p-2"><p className="text-[11px] text-muted-foreground">Paid</p><p className="text-sm font-semibold text-emerald-600">{money(p.amount_paid)}</p></div>
+          <div className={cn("rounded-lg border p-2", p.amount_due > 0 && "border-amber-300 bg-amber-50")}><p className="text-[11px] text-muted-foreground">Remaining</p><p className={cn("text-sm font-semibold", p.amount_due > 0 && "text-amber-700")}>{money(p.amount_due)}</p></div>
+        </div>
+        {p.plan === "PARTIAL" && <p className="text-xs text-muted-foreground">Partial payment: {money(p.advance_amount)} paid online as advance, {money(p.amount_due || Math.max(0, b.total - p.advance_amount))} to be collected on delivery.</p>}
+        {p.plan === "COD" && p.amount_due > 0 && <p className="text-xs text-muted-foreground">Cash on delivery: {money(p.amount_due)} to be collected by the courier.</p>}
         <dl className="space-y-1.5">
           <Row label="Items" value={money(b.items)} muted />
           <Row label="Delivery" value={b.delivery > 0 ? money(b.delivery) : "Free"} muted />

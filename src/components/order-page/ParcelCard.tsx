@@ -132,6 +132,8 @@ export function ParcelCard({ s, orderId, index, total }: { s: OverviewSeller; or
           <dl className="space-y-1.5 rounded-xl border p-4 text-sm">
             <div className="flex justify-between"><dt className="text-muted-foreground">Items sold</dt><dd className="tabular-nums">{money(s.money.subtotal)}</dd></div>
             <div className="flex justify-between"><dt className="text-muted-foreground">Dealker commission ({s.money.commission_percent}%)</dt><dd className="tabular-nums">− {money(s.money.commission)}</dd></div>
+            {s.money.platform_charge > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Platform charge</dt><dd className="tabular-nums">− {money(s.money.platform_charge)}</dd></div>}
+            {s.money.fee_tax > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Tax on platform fees</dt><dd className="tabular-nums">− {money(s.money.fee_tax)}</dd></div>}
             {s.money.shipping > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Delivery cost</dt><dd className="tabular-nums">− {money(s.money.shipping)}</dd></div>}
             <div className="flex justify-between border-t pt-2 font-semibold"><dt>Seller receives</dt><dd className="tabular-nums">{money(s.money.payable_to_vendor)}</dd></div>
             <p className="text-xs text-muted-foreground">Payout status: {({ PENDING: "waiting until delivery", ELIGIBLE: "ready to be paid", PROCESSING: "being paid", PAID: "paid", ON_HOLD: "on hold", REVERSED: "cancelled" } as Record<string, string>)[s.payout_status] ?? s.payout_status.toLowerCase()}</p>

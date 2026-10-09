@@ -12,7 +12,7 @@ export interface OverviewSeller {
     payout: { id: string; number: string; status: string; amount: number; utr: string | null; paid_at: string | null; created_at: string } | null
     ledger: { type: string; label: string; amount: number; reason: string | null; at: string }[]
   }
-  money: { subtotal: number; shipping: number; commission_percent: number; commission: number; payable_to_vendor: number }
+  money: { subtotal: number; shipping: number; commission_percent: number; commission: number; platform_charge: number; fee_tax: number; channel: "B2C" | "B2B"; payable_to_vendor: number }
   invoice: { number: string; url: string | null } | null
   media: { id: string; kind: "IMAGE" | "VIDEO"; url: string; caption: string | null; created_at: string }[]
   can_create_shipment: boolean
@@ -25,6 +25,7 @@ export interface OrderOverview {
   customer: { id: string; name: string | null; phone: string | null; email: string | null; since: string; orders: number; total_spent: number; address: { name?: string; phone?: string; line1?: string; city?: string; state?: string; pincode?: string } }
   payment: {
     method: string; status: string
+    plan: "FULL_ONLINE" | "COD" | "PARTIAL"; advance_amount: number; amount_paid: number; amount_due: number
     gateway: { id: string | null; method: string | null; status: string; paid_at: string; refund_amount: number | null; refund_status: string | null } | null
     breakdown: { items: number; delivery: number; discount: number; tax_included: number; total: number; points_used: number; points_value: number; wallet_used: number }
     coupon: { code: string; saved: number; details: { description: string | null; discount_type: string; discount_value: string; max_discount: string | null; min_order_amount: string | null; coupon_type: string; absorber: string } | null } | null

@@ -74,6 +74,8 @@ function PayoutCard({ s, d }: { s: OverviewSeller; d: OrderOverview }) {
         <dl className="space-y-1.5 rounded-lg border p-3 text-sm">
           <div className="flex justify-between"><dt className="text-muted-foreground">Customer paid the seller’s items</dt><dd className="tabular-nums">{money(m.subtotal)}</dd></div>
           <div className="flex justify-between"><dt className="text-muted-foreground">Dealker commission ({m.commission_percent}%)</dt><dd className="tabular-nums">− {money(m.commission)}</dd></div>
+          {m.platform_charge > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Platform charge</dt><dd className="tabular-nums">− {money(m.platform_charge)}</dd></div>}
+          {m.fee_tax > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Tax on platform fees</dt><dd className="tabular-nums">− {money(m.fee_tax)}</dd></div>}
           {m.shipping > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Delivery cost</dt><dd className="tabular-nums">− {money(m.shipping)}</dd></div>}
           <div className="flex justify-between border-t pt-2 font-semibold"><dt>Seller receives</dt><dd className="tabular-nums">{money(m.payable_to_vendor)}</dd></div>
         </dl>
