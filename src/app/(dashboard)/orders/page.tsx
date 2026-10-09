@@ -1,5 +1,6 @@
 "use client"
 
+import { OrdersHubTabs } from "@/components/order-page/OrdersHubTabs"
 import { Suspense, useState, useCallback, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -415,6 +416,7 @@ function OrdersContent() {
 
   return (
     <div className="space-y-4">
+      <OrdersHubTabs />
       {/* Page Header */}
       <PageHeader title="Orders" subtitle="Manage and track customer orders">
         <div className="flex items-center gap-2">

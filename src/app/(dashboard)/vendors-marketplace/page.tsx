@@ -1,5 +1,6 @@
 "use client"
 
+import { OrdersHubTabs } from "@/components/order-page/OrdersHubTabs"
 import { Suspense, useState } from "react"
 import { Plus, AlertTriangle, Banknote, Boxes, CheckCircle2, Handshake, Landmark, Percent, Send, Truck } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -106,6 +107,7 @@ function B2bPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1500px] space-y-5">
+      <OrdersHubTabs />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Vendors marketplace</h1>

@@ -5,6 +5,7 @@
  * Delivered, for customer (B2C) and vendor lot (B2B) auctions separately.
  */
 
+import { OrdersHubTabs } from "@/components/order-page/OrdersHubTabs"
 import { useState } from "react"
 import Link from "next/link"
 import { CheckCircle2, Circle } from "lucide-react"
@@ -32,6 +33,7 @@ export default function AuctionOrdersPage() {
 
   return (
     <div className="space-y-6">
+      <OrdersHubTabs />
       <PageHeader title="Auction orders" subtitle="What happens after the hammer falls — payment, QC, shipping and delivery, for customer and vendor auctions separately." />
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex rounded-lg border p-0.5">
