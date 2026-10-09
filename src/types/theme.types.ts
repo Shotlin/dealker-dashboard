@@ -317,6 +317,11 @@ export const SECTION_TYPES = [
   "text_header",
   "arched_product_showcase",
   "spacer",
+  "live_auction",
+  "deal_of_day",
+  "mega_sale",
+  "exchange_sell",
+  "recent_recommended",
 ] as const
 
 export type SectionType = typeof SECTION_TYPES[number]

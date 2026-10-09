@@ -1,5 +1,6 @@
 "use client"
 
+import DealerBlockEditor from "./editors/DealerBlockEditor"
 import { useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import { ImagePlus, Loader2, Plus, Star, Trash2, X } from "lucide-react"
@@ -54,6 +55,8 @@ const MERCH_BINDING_SECTION_TYPES = new Set([
   "trending_products",
   "promo_carousel",
   "arched_product_showcase",
+  "deal_of_day",
+  "recent_recommended",
 ])
 
 export default function PropertyEditor({
@@ -181,6 +184,24 @@ function StyleEditorRouter({
       return <TextHeaderEditor config={config} onChange={onChange} />
     case "spacer":
       return <SpacerEditor config={config} onChange={onChange} />
+    case "live_auction":
+    case "deal_of_day":
+    case "exchange_sell":
+    case "recent_recommended":
+      return (
+        <DealerBlockEditor
+          type={section.section_type}
+          config={config}
+          onChange={onChange}
+        />
+      )
+    case "mega_sale":
+      return (
+        <div className="space-y-6">
+          <DealerBlockEditor type="mega_sale" config={config} onChange={onChange} />
+          <CategoryIconsEditor config={config} onChange={onChange} />
+        </div>
+      )
     default:
       return null
   }

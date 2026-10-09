@@ -7,6 +7,7 @@ import BannerPreview from "./BannerPreview"
 import CarouselPreview from "./CarouselPreview"
 import CategoryIconsPreview from "./CategoryIconsPreview"
 import CustomBannerPreview from "./CustomBannerPreview"
+import DealerBlocksPreview from "./DealerBlocksPreview"
 import FeeStripPreview from "./FeeStripPreview"
 import MosaicPreview from "./MosaicPreview"
 import ProductGridPreview from "./ProductGridPreview"
@@ -40,4 +41,9 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   text_header: TextHeaderPreview,
   arched_product_showcase: ArchedShowcasePreview,
   spacer: SpacerPreview,
+  live_auction: DealerBlocksPreview,
+  deal_of_day: DealerBlocksPreview,
+  mega_sale: DealerBlocksPreview,
+  exchange_sell: DealerBlocksPreview,
+  recent_recommended: DealerBlocksPreview,
 }
