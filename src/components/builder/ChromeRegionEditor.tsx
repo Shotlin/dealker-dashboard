@@ -8,6 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
 import { useUpdateTheme } from "@/hooks/useThemes"
+import {
+  DEFAULT_HOME_LOOK,
+  type HomeLookTheme,
+} from "@/types/theme.types"
 import type {
   Theme,
   ThemeData,
@@ -206,6 +210,29 @@ export default function ChromeRegionEditor({
   )
 }
 
+function LookColor({
+  label,
+  field,
+  fallback,
+  look,
+  patchLook,
+}: {
+  label: string
+  field: keyof HomeLookTheme
+  fallback?: string
+  look: HomeLookTheme
+  patchLook: (patch: Partial<HomeLookTheme>) => void
+}) {
+  const defaults = DEFAULT_HOME_LOOK as Record<string, string>
+  return (
+    <ThemeColorPicker
+      label={label}
+      value={look[field] ?? defaults[field] ?? fallback ?? "#FFFFFF"}
+      onChange={(hex) => patchLook({ [field]: hex })}
+    />
+  )
+}
+
 function RegionFields({
   region,
   sections,
@@ -215,6 +242,9 @@ function RegionFields({
   sections: ThemeSections
   patchSections: (patch: Partial<ThemeSections>) => void
 }) {
+  const look: HomeLookTheme = sections.homeLook ?? {}
+  const patchLook = (patch: Partial<HomeLookTheme>) =>
+    patchSections({ homeLook: { ...look, ...patch } })
   switch (region) {
     case "top_bar":
       return (
@@ -237,6 +267,8 @@ function RegionFields({
               })
             }
           />
+          <LookColor label="Page background (below the header)" field="canvasColor" fallback={sections.topBar.backgroundColor} look={look} patchLook={patchLook} />
+          <LookColor label="Profile button color" field="avatarColor" look={look} patchLook={patchLook} />
         </div>
       )
     case "search_bar":
@@ -263,6 +295,29 @@ function RegionFields({
               })
             }
           />
+          <LookColor label="Search pill background" field="searchPillColor" look={look} patchLook={patchLook} />
+          <LookColor label="Search pill text / icon" field="searchPillTextColor" look={look} patchLook={patchLook} />
+          <LookColor label="Mobile Sell chip — start" field="sellChipStartColor" look={look} patchLook={patchLook} />
+          <LookColor label="Mobile Sell chip — end" field="sellChipEndColor" look={look} patchLook={patchLook} />
+          <LookColor label="Mobile Sell chip text" field="sellChipTextColor" look={look} patchLook={patchLook} />
+        </div>
+      )
+    case "hero_frame":
+      return (
+        <div className="space-y-4">
+          <LookColor label="Frame (bezel) color" field="heroFrameColor" look={look} patchLook={patchLook} />
+          <LookColor label="Page dots color" field="heroDotColor" look={look} patchLook={patchLook} />
+          <p className="text-xs text-slate-500">
+            Banner images are set on the Hero / Promo carousel section; the text on a banner is part of its image.
+          </p>
+        </div>
+      )
+    case "fee_card":
+      return (
+        <div className="space-y-4">
+          <LookColor label="Card background" field="feeCardColor" look={look} patchLook={patchLook} />
+          <LookColor label="Text color" field="feeCardTextColor" look={look} patchLook={patchLook} />
+          <LookColor label="Check mark color" field="feeCardCheckColor" look={look} patchLook={patchLook} />
         </div>
       )
     case "category_tabs":
@@ -325,33 +380,11 @@ function RegionFields({
     case "store_chips":
       return (
         <div className="space-y-4">
-          <ThemeColorPicker
-            label="Store strip background"
-            value={sections.storeSelector.backgroundColor}
-            onChange={(hex) =>
-              patchSections({
-                storeSelector: {
-                  ...sections.storeSelector,
-                  backgroundColor: hex,
-                },
-              })
-            }
-          />
-          <ThemeColorPicker
-            label="Active chip background"
-            value={sections.storeSelector.activeChipColor}
-            onChange={(hex) =>
-              patchSections({
-                storeSelector: {
-                  ...sections.storeSelector,
-                  activeChipColor: hex,
-                },
-              })
-            }
-          />
+          <LookColor label="Tile background" field="storeTileColor" look={look} patchLook={patchLook} />
+          <LookColor label="Selected tile background" field="storeTileActiveColor" look={look} patchLook={patchLook} />
+          <LookColor label="Tile label color" field="storeTileLabelColor" look={look} patchLook={patchLook} />
           <p className="text-xs text-slate-500">
-            The store strip is hidden in the current mobile experience but its
-            colors still apply to the preview chrome.
+            Store names and icons are edited under Storefront → Stores.
           </p>
         </div>
       )

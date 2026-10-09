@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
 import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
@@ -414,8 +415,48 @@ function StripEditor({
     onChange({ ...config, ...patchConfig })
   }
 
+  const [linesText, setLinesText] = useState(() =>
+    Array.isArray(config.lines)
+      ? (config.lines as unknown[]).filter((v): v is string => typeof v === "string").join("\n")
+      : ""
+  )
   return (
     <div className="space-y-6">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="text-sm font-medium text-slate-900">Card content</div>
+        <p className="text-xs text-slate-500">
+          Shown as the white fee card when at least one line is set (otherwise the image / fallback strip below is used).
+          Keep the wording true to your fee settings — it is a promise to customers.
+        </p>
+        <div className="space-y-1">
+          <Label className="text-xs text-slate-500">Big title (e.g. ₹0 FEES)</Label>
+          <Input
+            value={typeof config.title === "string" ? config.title : ""}
+            onChange={(e) => patch({ title: e.target.value })}
+            maxLength={30}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs text-slate-500">Lines (one per row, up to 4)</Label>
+          <Textarea
+            rows={4}
+            value={linesText}
+            onChange={(e) => {
+              setLinesText(e.target.value)
+              patch({ lines: e.target.value.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) })
+            }}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs text-slate-500">Footnote</Label>
+          <Input
+            value={typeof config.footnote === "string" ? config.footnote : ""}
+            onChange={(e) => patch({ footnote: e.target.value })}
+            maxLength={120}
+          />
+        </div>
+      </div>
+
       <ThemeImageUploader
         label={`${title} Image`}
         value={typeof config.image_url === "string" ? config.image_url : null}

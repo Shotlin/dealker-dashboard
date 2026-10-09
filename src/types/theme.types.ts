@@ -62,6 +62,43 @@ export interface BankOffersTheme {
   bannerImageUrls: string[]
 }
 
+/** Colours for the Dealker home look. All optional; the app falls back to
+ *  these defaults (the design's colours) for anything not set. */
+export interface HomeLookTheme {
+  canvasColor?: string
+  avatarColor?: string
+  storeTileColor?: string
+  storeTileActiveColor?: string
+  storeTileLabelColor?: string
+  searchPillColor?: string
+  searchPillTextColor?: string
+  sellChipStartColor?: string
+  sellChipEndColor?: string
+  sellChipTextColor?: string
+  heroFrameColor?: string
+  heroDotColor?: string
+  feeCardColor?: string
+  feeCardTextColor?: string
+  feeCardCheckColor?: string
+}
+
+export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
+  avatarColor: "#111111",
+  storeTileColor: "#FFFFFF",
+  storeTileActiveColor: "#FCE8B0",
+  storeTileLabelColor: "#111111",
+  searchPillColor: "#FFFFFF",
+  searchPillTextColor: "#111111",
+  sellChipStartColor: "#FBE36B",
+  sellChipEndColor: "#F6D23A",
+  sellChipTextColor: "#111111",
+  heroFrameColor: "#000000",
+  heroDotColor: "#FFFFFF",
+  feeCardColor: "#FFFFFF",
+  feeCardTextColor: "#111111",
+  feeCardCheckColor: "#111111",
+}
+
 export interface ThemeMeta {
   seasonLabel: string
   statusBarBrightness: "light" | "dark"
@@ -76,6 +113,7 @@ export interface ThemeSections {
   feeStrip: FeeStripTheme
   seasonalMosaic: SeasonalMosaicTheme
   bankOffers: BankOffersTheme
+  homeLook?: HomeLookTheme
 }
 
 export interface ThemeData {

@@ -241,6 +241,8 @@ export function MobilePreviewFrame({
                               onClick={() => onSectionClick(section.id)}
                               categories={categories}
                               products={sectionProducts}
+                              themeData={themeData}
+                              onChromeRegionClick={onChromeRegionClick}
                             />
                           </BuilderErrorBoundary>
                           {selectedSectionId === section.id && (

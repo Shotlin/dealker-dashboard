@@ -8,10 +8,15 @@ import {
   CircleUserRound,
   Search,
   SignalHigh,
+  Smartphone,
   Wifi,
+  Zap,
 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { getStorefrontStores } from "@/services/storefront-stores.service"
+import { DEFAULT_HOME_LOOK } from "@/types/theme.types"
 import type { ThemeData, ThemeTab } from "@/types/theme.types"
-import { ALL_STORE_KEYS, STORE_CONFIGS } from "@/contexts/StoreContext"
+import { STORE_CONFIGS } from "@/contexts/StoreContext"
 import type { ThemeStoreKey } from "@/types/theme.types"
 import type { ChromeRegion } from "./chromeRegions"
 
@@ -288,7 +293,7 @@ export function FixedHeaderPreview({
   onPreviewTabChange,
 }: FixedHeaderPreviewProps) {
   const config = STORE_CONFIGS[storeKey]
-  const activeChipIndex = ALL_STORE_KEYS.indexOf(storeKey)
+  const { data: stores } = useQuery({ queryKey: ["storefront-stores"], queryFn: getStorefrontStores, staleTime: 60_000 })
 
   // ── Resolve theme colors — use saved values, fall back to store config ──
   //
@@ -300,12 +305,6 @@ export function FixedHeaderPreview({
     themeData?.sections.topBar.backgroundColor ?? config.gradient[0]
   const topBarTextColor =
     themeData?.sections.topBar.textColor ?? config.text
-
-  // Store selector: uses storeSelector.backgroundColor for store-chip row background
-  const storeSelectorBg =
-    themeData?.sections.storeSelector.backgroundColor ?? config.gradient[1]
-  const activeChipColor =
-    themeData?.sections.storeSelector.activeChipColor ?? config.chipActive
 
   // Search zone: uses searchZone.backgroundColor (set via "Search Bar" region editor)
   const searchZoneBg =
@@ -367,16 +366,19 @@ export function FixedHeaderPreview({
     }))
   })()
 
+  const look = { ...DEFAULT_HOME_LOOK, ...(themeData?.sections.homeLook ?? {}) }
+  const promoUrl = themeData?.sections.searchZone.promoBoxImageUrl ?? null
+  const hints = themeData?.sections.searchZone.searchHints ?? []
+  const hint = hints[0] ?? "products"
+  const tiles = (stores ?? [])
+    .filter((st) => st.is_active)
+    .map((st) => ({ key: st.store_key, label: st.label, iconUrl: st.icon_url }))
+  const tileList = tiles.length > 0 ? tiles : STORE_CHIPS.slice(0, 5).map((c) => ({ key: c.key, label: c.label, iconUrl: null as string | null }))
+
   return (
     <div style={{ color: topBarTextColor }}>
-      {/* ── Top bar (status + delivery header) ─────────────────── */}
-      <div
-        style={{
-          background: topBarBg,
-          transition: "background 200ms ease",
-        }}
-      >
-        {/* Status bar */}
+      {/* ── Top bar: status + delivery line + profile button ───────── */}
+      <div style={{ background: topBarBg, transition: "background 200ms ease" }}>
         <div
           data-region="top_bar"
           onClick={handleRegionClick("top_bar")}
@@ -395,18 +397,10 @@ export function FixedHeaderPreview({
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <SignalHigh size={12} strokeWidth={2.1} />
             <Wifi size={12} strokeWidth={2.1} />
-            <div
-              style={{
-                width: 18,
-                height: 9,
-                borderRadius: 999,
-                border: "1.5px solid currentColor",
-              }}
-            />
+            <div style={{ width: 18, height: 9, borderRadius: 999, border: "1.5px solid currentColor" }} />
           </div>
         </div>
 
-        {/* Delivery header */}
         <div
           data-region="top_bar"
           onClick={handleRegionClick("top_bar")}
@@ -416,49 +410,29 @@ export function FixedHeaderPreview({
             alignItems: "center",
             justifyContent: "space-between",
             gap: 12,
-            padding: "4px 16px 8px",
+            padding: "2px 16px 8px",
             color: topBarTextColor,
           }}
         >
           <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 17,
-                fontWeight: 800,
-                letterSpacing: "-0.03em",
-              }}
-            >
-              <span>⚡</span>
-              <span>6 mins delivery</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 19, fontWeight: 800, letterSpacing: "-0.03em" }}>
+              <Zap size={19} strokeWidth={2.4} fill="currentColor" />
+              <span>30 minutes</span>
             </div>
-            <div
-              style={{
-                marginTop: 2,
-                display: "flex",
-                alignItems: "center",
-                gap: 3,
-                fontSize: 11,
-                fontWeight: 500,
-                opacity: 0.78,
-              }}
-            >
-              <span>Add delivery address</span>
-              <ChevronDown size={12} strokeWidth={2.2} />
+            <div style={{ marginTop: 1, display: "flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 500 }}>
+              <span>Home - your delivery address</span>
+              <ChevronDown size={13} strokeWidth={2.2} />
             </div>
           </div>
-
           <div
             style={{
               display: "grid",
               placeItems: "center",
-              width: 38,
-              height: 38,
+              width: 32,
+              height: 32,
               borderRadius: 999,
-              background: "rgba(255,255,255,0.78)",
-              color: "#111827",
+              border: `2px solid ${look.avatarColor}`,
+              color: look.avatarColor,
             }}
           >
             <CircleUserRound size={20} strokeWidth={2.1} />
@@ -466,120 +440,122 @@ export function FixedHeaderPreview({
         </div>
       </div>
 
-      {/* ── Store chips ──────────────────────────────────────────── */}
-      {/* FIX: Store chips are always shown in the Flutter home_screen.
-          The user said they disabled the store section — but in Flutter,
-          StoreSelectorRow has no "visible" field. The store chips appear
-          in the old home_screen.dart layout. In the newer StoreScreenShell,
-          the store chips row is NOT rendered at all (it's replaced by the
-          HomeHeader + search + category tab flow). Since the builder preview
-          uses the Marketplace store which is the main home screen,
-          we hide the store chips row — it matches the current mobile UX
-          where the store chips are only visible in specific store sub-screens. */}
-      {false && (
-        <div
-          data-region="store_chips"
-          onClick={handleRegionClick("store_chips")}
-          style={{
-            ...regionStyle("store_chips"),
-            display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            gap: 8,
-            padding: "0 12px 8px",
-            background: storeSelectorBg,
-            transition: "background 200ms ease",
-          }}
-        >
-          {STORE_CHIPS.map((chip, index) => {
-            const isActive = index === activeChipIndex
-            return (
-              <div
-                key={chip.key}
+      {/* ── Store tiles ───────────────────────────────────────────── */}
+      <div
+        data-region="store_chips"
+        onClick={handleRegionClick("store_chips")}
+        style={{
+          ...regionStyle("store_chips"),
+          display: "flex",
+          gap: 7,
+          overflowX: "auto",
+          padding: "0 10px 8px",
+          background: topBarBg,
+          scrollbarWidth: "none",
+          transition: "background 200ms ease",
+        }}
+      >
+        {tileList.map((tile) => {
+          const isActive = tile.key === storeKey
+          return (
+            <div
+              key={tile.key}
+              style={{
+                flex: "0 0 62px",
+                height: 66,
+                borderRadius: 11,
+                background: isActive ? look.storeTileActiveColor : look.storeTileColor,
+                boxShadow: "0 3px 6px rgba(15,23,42,0.08)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 2,
+                padding: "4px 2px",
+                transition: "background 200ms ease",
+              }}
+            >
+              <div style={{ width: 30, height: 30, display: "grid", placeItems: "center" }}>
+                {tile.iconUrl ? (
+                  <img src={tile.iconUrl} alt={tile.label} draggable={false} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                ) : (
+                  <span style={{ fontSize: 20 }}>🛍️</span>
+                )}
+              </div>
+              <span
                 style={{
-                  height: isActive ? 58 : 52,
-                  marginTop: isActive ? 0 : 4,
-                  borderRadius: isActive ? 16 : 14,
-                  background: isActive ? activeChipColor : "#ffffff",
-                  display: "grid",
-                  placeItems: "center",
-                  boxShadow: isActive ? "0 8px 16px rgba(15,23,42,0.07)" : "none",
+                  fontSize: 8.5,
+                  fontWeight: 700,
+                  lineHeight: 1.05,
+                  textAlign: "center",
+                  color: look.storeTileLabelColor,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
                   overflow: "hidden",
-                  padding: isActive ? "8px 10px 10px" : "6px 7px",
-                  opacity: isActive ? 1 : 0.55,
-                  transform: isActive ? "scale(1.15)" : "scale(1)",
-                  transition: "all 200ms ease",
                 }}
               >
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#111827" }}>{chip.label}</span>
-              </div>
-            )
-          })}
-        </div>
-      )}
+                {tile.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
 
-      {/* ── Search bar ───────────────────────────────────────────── */}
-      {/* FIX: Was using config.gradient[2] (store hardcode). Now uses searchZone.backgroundColor */}
+      {/* ── Search row: pill + Mobile Sell chip + promo card ───────── */}
       <div
         data-region="search_bar"
         onClick={handleRegionClick("search_bar")}
         style={{
           ...regionStyle("search_bar"),
-          padding: "7px 12px 6px",
+          display: "flex",
+          gap: 7,
+          overflow: "hidden",
+          padding: "6px 10px 6px",
           background: searchZoneBg,
           transition: "background 200ms ease",
         }}
       >
         <div
           style={{
+            flex: "0 0 52%",
             display: "flex",
             alignItems: "center",
-            gap: 10,
-            height: 50,
-            padding: "0 14px",
-            borderRadius: 12,
-            background: "#ffffff",
-            border: "1px solid rgba(234,231,240,1)",
-            boxShadow: "0 4px 14px rgba(42,26,71,0.06)",
+            gap: 7,
+            height: 38,
+            padding: "0 10px",
+            borderRadius: 11,
+            background: look.searchPillColor,
+            color: look.searchPillTextColor,
           }}
         >
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              display: "grid",
-              placeItems: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Search size={18} strokeWidth={2.2} color="#6B3FA0" />
-          </div>
-          <div
-            style={{
-              width: 1.5,
-              height: 20,
-              background: "#6B3FA0",
-              borderRadius: 2,
-              flexShrink: 0,
-            }}
-          />
-          <span
-            style={{
-              flex: 1,
-              fontSize: 14,
-              fontWeight: 400,
-              color: "#6B6770",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            Search &apos;fresh vegetables&apos;
+          <Search size={15} strokeWidth={2.4} />
+          <span style={{ fontSize: 11, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            Search for “{hint}”
           </span>
-          <div style={{ flexShrink: 0, opacity: 0.7 }}>
-            <Search size={20} strokeWidth={1.8} />
-          </div>
         </div>
+        <div
+          style={{
+            flex: "0 0 19%",
+            height: 38,
+            borderRadius: 11,
+            display: "flex",
+            alignItems: "center",
+            gap: 3,
+            padding: "0 5px",
+            background: `linear-gradient(90deg, ${look.sellChipStartColor}, ${look.sellChipEndColor})`,
+            color: look.sellChipTextColor,
+            fontSize: 9,
+            fontWeight: 600,
+            lineHeight: 1.1,
+          }}
+        >
+          <Smartphone size={13} />
+          <span style={{ flex: 1 }}>Mobile Sell</span>
+        </div>
+        {promoUrl && (
+          <img src={promoUrl} alt="Promo" draggable={false} style={{ flex: "0 0 28%", height: 38, borderRadius: 11, objectFit: "cover" }} />
+        )}
       </div>
 
       {/* ── Category tabs — scrollable with mouse drag ────────────── */}

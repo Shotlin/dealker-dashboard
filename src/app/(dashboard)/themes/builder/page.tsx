@@ -90,7 +90,8 @@ import {
 } from "@/hooks/useBuilderAutosave"
 import { useTabThemes } from "@/hooks/useThemes"
 import { useArchiveThemeTab, useCreateThemeTab, useThemeTabs, useUpdateThemeTab } from "@/hooks/useThemeTabs"
-import { useStoreContext } from "@/contexts/StoreContext"
+import { ALL_STORE_KEYS, STORE_CONFIGS, useStoreContext } from "@/contexts/StoreContext"
+import type { ThemeStoreKey } from "@/types/theme.types"
 import { getSections, getSectionVersions } from "@/services/sections.service"
 import { getThemeTabs } from "@/services/theme-tabs.service"
 import type {
@@ -491,14 +492,8 @@ function ThemeBuilderPageContent() {
     }
   }, [isDirty])
 
-  // Auto-bind store key to the active tab's store_key.
-  // The store switcher UI is hidden — only one default mobile home layout is needed
-  // for the current mobile experience. Underlying store data is preserved for the API.
-  useEffect(() => {
-    if (activeTab && activeTab.store_key !== activeStoreKey) {
-      setActiveStoreKey(activeTab.store_key)
-    }
-  }, [activeTab, activeStoreKey, setActiveStoreKey])
+  // The store is chosen with the store selector in the header; the tab list is
+  // already filtered by it, so no auto-binding back from the active tab is needed.
 
   // On mobile/tablet, scroll to the editor panel when a section is selected
   useEffect(() => {
@@ -1448,12 +1443,18 @@ function ThemeBuilderPageContent() {
           <div className="border-b border-slate-200/80 px-4 py-3.5 sm:px-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className="rounded-full border-slate-200 bg-slate-50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-500"
+                <select
+                  aria-label="Store"
+                  value={activeStoreKey}
+                  onChange={(e) => setActiveStoreKey(e.target.value as ThemeStoreKey)}
+                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-sky-300"
                 >
-                  {activeTab?.store_key ?? "marketplace"}
-                </Badge>
+                  {ALL_STORE_KEYS.map((key) => (
+                    <option key={key} value={key}>
+                      {STORE_CONFIGS[key].label}
+                    </option>
+                  ))}
+                </select>
                 <Badge
                   variant="secondary"
                   className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"

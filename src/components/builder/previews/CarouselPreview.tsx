@@ -4,6 +4,7 @@
 import { memo } from "react"
 import { cn } from "@/lib/utils"
 import { useBanners } from "@/hooks/useBanners"
+import { DEFAULT_HOME_LOOK } from "@/types/theme.types"
 import type { PreviewProps } from "./index"
 import styles from "../MobilePreviewFrame.module.css"
 
@@ -11,6 +12,8 @@ function CarouselPreview({
   section,
   isSelected,
   onClick,
+  themeData,
+  onChromeRegionClick,
 }: PreviewProps) {
   const config = section.config as Record<string, unknown>
   const bannerSource =
@@ -48,6 +51,7 @@ function CarouselPreview({
 
   const isPromo = section.section_type === "promo_carousel"
   const hasImages = allImages.length > 0
+  const look = { ...DEFAULT_HOME_LOOK, ...(themeData?.sections.homeLook ?? {}) }
 
   return (
     <button
@@ -63,7 +67,63 @@ function CarouselPreview({
       <div style={{ padding: "8px 10px" }}>
         {hasImages ? (
           <div>
-            {/* Show first image as main card */}
+            {isPromo ? (
+              /* Dealker hero: black phone-bezel frame, dots overlaid bottom-right (matches the app). */
+              <div
+                style={{
+                  position: "relative",
+                  background: look.heroFrameColor,
+                  borderRadius: 22,
+                  padding: 6,
+                  aspectRatio: "870 / 382",
+                }}
+              >
+                <img
+                  src={allImages[0]}
+                  alt="Promo Banner"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", borderRadius: 16 }}
+                />
+                {allImages.length > 1 && (
+                  <div style={{ position: "absolute", right: 16, bottom: 14, display: "flex", gap: 6 }}>
+                    {allImages.map((_, i) => (
+                      <span
+                        key={`hd-${i}`}
+                        style={{
+                          width: 9,
+                          height: 9,
+                          borderRadius: 999,
+                          border: `1.5px solid ${look.heroDotColor}`,
+                          background: i === 0 ? look.heroDotColor : "transparent",
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+                {onChromeRegionClick && (
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onChromeRegionClick("hero_frame")
+                    }}
+                    style={{
+                      position: "absolute",
+                      top: 10,
+                      left: 10,
+                      background: "rgba(59,130,246,0.92)",
+                      color: "#fff",
+                      fontSize: 9,
+                      fontWeight: 700,
+                      padding: "2px 7px",
+                      borderRadius: 999,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Frame colors
+                  </span>
+                )}
+              </div>
+            ) : (
             <div
               style={{
                 borderRadius,
@@ -74,38 +134,14 @@ function CarouselPreview({
             >
               <img
                 src={allImages[0]}
-                alt={isPromo ? "Promo Banner" : "Carousel"}
-                style={{
-                  width: "100%",
-                  height: isPromo ? 160 : 140,
-                  objectFit: "cover",
-                  display: "block",
-                }}
+                alt="Carousel"
+                style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }}
               />
-              {/* Source badge */}
-              {isPromo && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 6,
-                    right: 6,
-                    background: bannerSource === "custom" ? "rgba(139,92,246,0.85)" : "rgba(30,120,255,0.85)",
-                    color: "#fff",
-                    fontSize: 9,
-                    fontWeight: 700,
-                    padding: "2px 7px",
-                    borderRadius: 999,
-                    letterSpacing: "0.04em",
-                    backdropFilter: "blur(4px)",
-                  }}
-                >
-                  {bannerSource === "custom" ? "CUSTOM" : "SYSTEM"}
-                </div>
-              )}
             </div>
+            )}
 
             {/* Pagination dots */}
-            {allImages.length > 1 && (
+            {!isPromo && allImages.length > 1 && (
               <div
                 style={{
                   display: "flex",

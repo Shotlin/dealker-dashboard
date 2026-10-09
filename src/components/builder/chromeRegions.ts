@@ -15,6 +15,8 @@ export type ChromeRegion =
   | "category_tabs"
   | "bottom_nav"
   | "store_chips"
+  | "hero_frame"
+  | "fee_card"
 
 export interface ChromeRegionMeta {
   region: ChromeRegion
@@ -26,12 +28,12 @@ export const CHROME_REGION_META: Record<ChromeRegion, ChromeRegionMeta> = {
   top_bar: {
     region: "top_bar",
     label: "Top Bar",
-    description: "Status bar, delivery time, address line, profile icon.",
+    description: "Page background, delivery time, address line, profile button.",
   },
   search_bar: {
     region: "search_bar",
     label: "Search Bar",
-    description: "Search field, hints, and the right-side promo box.",
+    description: "Search pill, Mobile Sell chip, hints and the promo card.",
   },
   category_tabs: {
     region: "category_tabs",
@@ -45,8 +47,18 @@ export const CHROME_REGION_META: Record<ChromeRegion, ChromeRegionMeta> = {
   },
   store_chips: {
     region: "store_chips",
-    label: "Store Chips",
-    description: "Top store selector chip strip.",
+    label: "Store Tiles",
+    description: "The five store tiles under the address line (Mobile, Mobile Part, …).",
+  },
+  hero_frame: {
+    region: "hero_frame",
+    label: "Hero Banner Frame",
+    description: "Phone-bezel frame and page dots around the hero banner.",
+  },
+  fee_card: {
+    region: "fee_card",
+    label: "Fee Card",
+    description: "The white ₹0 FEES card (colours here; wording in the section).",
   },
 }
 

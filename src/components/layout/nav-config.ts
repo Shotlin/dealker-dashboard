@@ -183,6 +183,7 @@ export const NAV_SECTIONS: NavSection[] = [
     section: "Storefront",
     items: [
       { label: "Themes", href: "/themes", icon: Palette },
+      { label: "Stores", href: "/storefront-stores", icon: Smartphone },
       { label: "Theme Tabs", href: "/theme-tabs", icon: Tags },
       { label: "Banners", href: "/banners", icon: Image },
     ],
@@ -230,6 +231,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   b2b: "B2B",
   "cart-milestones": "Cart Milestones",
   "theme-tabs": "Theme Tabs",
+  "storefront-stores": "Stores",
   "activity-log": "Activity Log",
   "app-branding": "Branding",
   "legal-pages": "Legal Pages",

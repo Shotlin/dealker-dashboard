@@ -1,6 +1,7 @@
 import type { FC } from "react"
 import type { Category, Product } from "@/types"
-import type { SectionManifest, SectionType } from "@/types/theme.types"
+import type { SectionManifest, SectionType, ThemeData } from "@/types/theme.types"
+import type { ChromeRegion } from "../chromeRegions"
 import ArchedShowcasePreview from "./ArchedShowcasePreview"
 import BannerPreview from "./BannerPreview"
 import CarouselPreview from "./CarouselPreview"
@@ -19,6 +20,10 @@ export interface PreviewProps {
   onClick: () => void
   categories?: Category[]
   products?: Product[]
+  /** Theme being edited — lets previews use the same colours as the app. */
+  themeData?: ThemeData | null
+  /** Opens the theme-colour editor for a chrome region (hero frame, fee card…). */
+  onChromeRegionClick?: (region: ChromeRegion) => void
 }
 
 export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
