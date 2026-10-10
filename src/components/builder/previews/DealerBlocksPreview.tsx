@@ -182,18 +182,16 @@ function DealerBlocksPreview({
     // Every size is a share of the section width (1448 px reference), like the app.
     const u = (px: number) => `${(px / 1448) * 100}cqw`;
     const bgImage = v("bg_image_url");
-    const cards = items.length
-      ? items
-      : [null, null, null];
+    const cards = items.length ? items : [null, null];
     body = (
       <div
         style={{
           containerType: "inline-size",
           position: "relative",
           width: "100%",
-          aspectRatio: "1448 / 925",
+          aspectRatio: "1448 / 1540",
           background: bgImage
-            ? `url(${bgImage}) top center / cover no-repeat ${v("header_bg_color")}`
+            ? `url(${bgImage}) top center / 100% auto no-repeat ${v("header_bg_color")}`
             : `linear-gradient(135deg, ${v("header_bg_color")}, #0d0d4a)`,
           overflow: "hidden",
         }}
@@ -280,13 +278,13 @@ function DealerBlocksPreview({
             left: u(45),
             right: u(45),
             top: u(285),
-            height: u(614),
+            height: u(1225),
             borderRadius: u(46),
             background: v("panel_color"),
             boxShadow: "0 10px 30px rgba(0,0,0,.12)",
             display: "flex",
-            gap: u(18),
-            padding: u(20),
+            gap: u(33),
+            padding: u(29),
             overflow: "hidden",
           }}
         >
@@ -299,12 +297,12 @@ function DealerBlocksPreview({
                 key={i}
                 style={{
                   flex: "0 0 auto",
-                  width: u(427),
-                  height: u(574),
+                  width: u(869),
+                  height: u(1167),
                   borderRadius: u(40),
                   background: "#fff",
                   boxShadow: "0 4px 14px rgba(0,0,0,.08)",
-                  padding: u(33),
+                  padding: u(50),
                   display: "flex",
                   flexDirection: "column",
                 }}
@@ -317,27 +315,27 @@ function DealerBlocksPreview({
                       style={{ maxWidth: "80%", maxHeight: "100%", objectFit: "contain" }}
                     />
                   ) : (
-                    <span style={{ fontSize: u(150) }}>📱</span>
+                    <span style={{ fontSize: u(300) }}>📱</span>
                   )}
                 </div>
-                <div style={{ fontSize: u(36), fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <div style={{ fontSize: u(58), fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {p?.name ?? "Deal product"}
                 </div>
-                <div style={{ fontSize: u(40), fontWeight: 900, margin: `${u(8)} 0 ${u(14)}` }}>
+                <div style={{ fontSize: u(66), fontWeight: 900, margin: `${u(12)} 0 ${u(24)}` }}>
                   {p ? inr(price) : "₹0"}{" "}
                   {off > 0 && (
-                    <span style={{ fontSize: u(26), color: "#16a34a" }}>{off}% OFF</span>
+                    <span style={{ fontSize: u(40), color: "#16a34a" }}>{off}% OFF</span>
                   )}
                 </div>
                 <div
                   style={{
-                    height: u(96),
-                    borderRadius: u(22),
+                    height: u(150),
+                    borderRadius: u(34),
                     background: v("grab_button_color"),
                     color: "#fff",
                     display: "grid",
                     placeItems: "center",
-                    fontSize: u(36),
+                    fontSize: u(56),
                     fontWeight: 700,
                   }}
                 >
@@ -347,117 +345,6 @@ function DealerBlocksPreview({
             );
           })}
         </div>
-      </div>
-    );
-  } else if (type === "mega_sale") {
-    const chips = Array.isArray(config.items)
-      ? (config.items as Array<Record<string, unknown>>).slice(0, 4)
-      : [];
-    body = (
-      <div
-        style={{
-          background: v("bg_color"),
-          color: v("text_color"),
-          borderRadius: 14,
-          padding: 8,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <div style={{ minWidth: 92 }}>
-          <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1 }}>
-            {v("title")}
-          </div>
-          <div style={{ fontSize: 10, fontWeight: 800 }}>{v("subtitle")}</div>
-        </div>
-        <div style={{ display: "flex", gap: 5, flex: 1 }}>
-          {(chips.length
-            ? chips
-            : [
-                { label: "Mobile" },
-                { label: "Laptop" },
-                { label: "Accessories" },
-              ]
-          ).map((c, i) => (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                background: v("chip_color"),
-                borderRadius: 9,
-                padding: "4px 2px",
-                textAlign: "center",
-                fontSize: 8,
-                fontWeight: 700,
-              }}
-            >
-              {typeof c.image_url === "string" && c.image_url ? (
-                <img
-                  src={c.image_url}
-                  alt=""
-                  style={{ height: 18, display: "block", margin: "0 auto 2px" }}
-                />
-              ) : null}
-              {String(c.label ?? "")}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  } else if (type === "exchange_sell") {
-    body = (
-      <div>
-        <div
-          style={{
-            background: v("bg_color"),
-            color: v("text_color"),
-            borderRadius: 12,
-            padding: "8px 10px",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <span style={{ fontSize: 22 }}>📱</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, fontWeight: 900 }}>{v("title")}</div>
-            <div style={{ fontSize: 8.5 }}>{v("subtitle")}</div>
-          </div>
-          <span
-            style={{
-              background: v("button_color"),
-              color: v("button_text_color"),
-              borderRadius: 8,
-              fontSize: 9,
-              fontWeight: 800,
-              padding: "6px 9px",
-            }}
-          >
-            {v("button_label")}
-          </span>
-        </div>
-        {[1, 2, 3, 4].some((i) => v(`trust_${i}_title`)) && (
-        <div
-          style={{
-            marginTop: 5,
-            background: v("trust_bg_color"),
-            color: v("text_color"),
-            borderRadius: 10,
-            padding: 6,
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 4,
-          }}
-        >
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} style={{ fontSize: 7.5, textAlign: "center" }}>
-              <div style={{ fontWeight: 800 }}>🛡 {v(`trust_${i}_title`)}</div>
-              <div style={{ opacity: 0.6 }}>{v(`trust_${i}_sub`)}</div>
-            </div>
-          ))}
-        </div>
-        )}
       </div>
     );
   } else {

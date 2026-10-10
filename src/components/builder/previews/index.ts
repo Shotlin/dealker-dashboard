@@ -43,7 +43,5 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   spacer: SpacerPreview,
   live_auction: DealerBlocksPreview,
   deal_of_day: DealerBlocksPreview,
-  mega_sale: DealerBlocksPreview,
-  exchange_sell: DealerBlocksPreview,
   recent_recommended: DealerBlocksPreview,
 }

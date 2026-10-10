@@ -336,8 +336,6 @@ export const SECTION_TYPES = [
   "spacer",
   "live_auction",
   "deal_of_day",
-  "mega_sale",
-  "exchange_sell",
   "recent_recommended",
 ] as const
 

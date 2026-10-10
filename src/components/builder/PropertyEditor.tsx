@@ -188,7 +188,6 @@ function StyleEditorRouter({
       return <SpacerEditor config={config} onChange={onChange} />;
     case "live_auction":
     case "deal_of_day":
-    case "exchange_sell":
     case "recent_recommended":
       return (
         <DealerBlockEditor
@@ -196,17 +195,6 @@ function StyleEditorRouter({
           config={config}
           onChange={onChange}
         />
-      );
-    case "mega_sale":
-      return (
-        <div className="space-y-6">
-          <DealerBlockEditor
-            type="mega_sale"
-            config={config}
-            onChange={onChange}
-          />
-          <CategoryIconsEditor config={config} onChange={onChange} />
-        </div>
       );
     default:
       return null;

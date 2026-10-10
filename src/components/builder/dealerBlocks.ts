@@ -8,15 +8,11 @@ import type { SectionType } from "@/types/theme.types";
 export type DealerBlockType =
   | "live_auction"
   | "deal_of_day"
-  | "mega_sale"
-  | "exchange_sell"
   | "recent_recommended";
 
 export const DEALER_BLOCK_TYPES: DealerBlockType[] = [
   "live_auction",
   "deal_of_day",
-  "mega_sale",
-  "exchange_sell",
   "recent_recommended",
 ];
 
@@ -67,33 +63,6 @@ export const DEALER_BLOCK_DEFAULTS: Record<
     view_all_text_color: "#1F4FE0",
     panel_color: "#FFFFFF",
     grab_button_color: "#1B5BF2",
-  },
-  mega_sale: {
-    title: "MEGA SALE",
-    subtitle: "UP TO 80% OFF",
-    view_all_label: "View All →",
-    bg_color: "#FBE36B",
-    text_color: "#111111",
-    chip_color: "#FFFFFF",
-    items: [],
-  },
-  exchange_sell: {
-    title: "EXCHANGE & SELL YOUR DEVICE",
-    subtitle: "Get the best value for your old phone",
-    button_label: "Get Estimate →",
-    bg_color: "#FBE36B",
-    text_color: "#111111",
-    button_color: "#0F2340",
-    button_text_color: "#FFFFFF",
-    trust_bg_color: "#FFFFFF",
-    trust_1_title: "Quality Checked",
-    trust_1_sub: "Thoroughly Inspected",
-    trust_2_title: "Battery Tested",
-    trust_2_sub: "Longer Life",
-    trust_3_title: "Secure Payments",
-    trust_3_sub: "100% Safe",
-    trust_4_title: "Warranty Options",
-    trust_4_sub: "Up to 12 Months",
   },
   recent_recommended: {
     left_title: "Recently Viewed",
@@ -155,32 +124,6 @@ export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
     col("panel_color", "Card panel background"),
     txt("button_label", "Card button label"),
     col("grab_button_color", "Card button colour"),
-  ],
-  mega_sale: [
-    txt("title", "Title"),
-    txt("subtitle", "Subtitle"),
-    txt("view_all_label", "“View all” label"),
-    col("bg_color", "Strip background"),
-    col("text_color", "Text color"),
-    col("chip_color", "Chip background"),
-  ],
-  exchange_sell: [
-    txt("title", "Title"),
-    txt("subtitle", "Subtitle"),
-    txt("button_label", "Button label"),
-    col("bg_color", "Strip background"),
-    col("text_color", "Text color"),
-    col("button_color", "Button color"),
-    col("button_text_color", "Button text color"),
-    col("trust_bg_color", "Trust row background"),
-    txt("trust_1_title", "Trust 1 — title"),
-    txt("trust_1_sub", "Trust 1 — subtitle"),
-    txt("trust_2_title", "Trust 2 — title"),
-    txt("trust_2_sub", "Trust 2 — subtitle"),
-    txt("trust_3_title", "Trust 3 — title"),
-    txt("trust_3_sub", "Trust 3 — subtitle"),
-    txt("trust_4_title", "Trust 4 — title"),
-    txt("trust_4_sub", "Trust 4 — subtitle"),
   ],
   recent_recommended: [
     txt("left_title", "Left card title"),
