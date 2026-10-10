@@ -43,10 +43,13 @@
  */
 
 import { useEffect } from "react"
+import { useQuery } from "@tanstack/react-query"
 
 import { useAuthStore } from "@/store/auth.store"
 import { useShopContextStore } from "@/store/shop-context.store"
 import { useShopRoom } from "@/hooks/useShopRoom"
+import { ROLE_DEFAULTS } from "@/lib/permissions"
+import { shopsService } from "@/services/shops.service"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -154,6 +157,36 @@ export function ShopContextHydrator(): null {
       }
     }
   }, [user])
+
+  // Effect 3 — single-store: Dealker is ONE store, so a super admin always works
+  // inside the official (platform) shop. Without this they sat in "All shops" mode
+  // and every shop-scoped page (Banners, Products, Coupons...) asked them to pick a
+  // shop that no one can create. Vendors are untouched (their shop is locked).
+  const isSuperAdminUser = !!user && SUPER_ADMIN_ROLES.has((user as AuthProfileWithAssignments).role ?? "")
+  const mode = useShopContextStore((s) => s.mode)
+  const hydrated = useShopContextStore((s) => s.isHydrated)
+  const needsPlatformShop = isSuperAdminUser && hydrated && mode !== "STORE_MODE"
+  const { data: platformShop } = useQuery({
+    queryKey: ["platform-shop"],
+    queryFn: () => shopsService.platform(),
+    enabled: needsPlatformShop,
+    staleTime: 5 * 60_000,
+    retry: 1,
+  })
+  useEffect(() => {
+    if (!needsPlatformShop || !platformShop) return
+    useShopContextStore.getState().setActiveShop(
+      {
+        id: platformShop.id,
+        name: platformShop.name,
+        branchCode: platformShop.branch_code,
+        city: platformShop.city,
+        isActive: platformShop.is_active,
+      },
+      "SHOP_ADMIN",
+      [...ROLE_DEFAULTS.SHOP_ADMIN],
+    )
+  }, [needsPlatformShop, platformShop])
 
   return null
 }
