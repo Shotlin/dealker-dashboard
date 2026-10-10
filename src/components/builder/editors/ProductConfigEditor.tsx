@@ -71,16 +71,26 @@ function backgroundGuide(cardStyle: string, topPt: number, bottomPt: number) {
   const topPx = Math.round(topPt * PIXEL_DENSITY)
   const cardPx = Math.round(cardPt * PIXEL_DENSITY)
   const bottomPx = Math.round(bottomPt * PIXEL_DENSITY)
-  return { widthPx, heightPx: topPx + cardPx + bottomPx, topPx, cardPx, bottomPx }
+  const heightPx = topPx + cardPx + bottomPx
+  // Simple ratio for AI image tools (they follow ratios, not pixel sizes).
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+  const d = gcd(widthPx, heightPx)
+  const ratio = `${Math.round(widthPx / d)}:${Math.round(heightPx / d)}`
+  const ratioNearest =
+    [["1:1", 1], ["5:4", 1.25], ["4:3", 1.333], ["3:2", 1.5], ["16:9", 1.778], ["2:1", 2]]
+      .reduce((best, r) => (Math.abs((r[1] as number) - widthPx / heightPx) < Math.abs((best[1] as number) - widthPx / heightPx) ? r : best))[0] as string
+  return { widthPx, heightPx, topPx, cardPx, bottomPx, ratio, ratioNearest, aspect: widthPx / heightPx }
 }
 
 function backgroundPrompt(g: ReturnType<typeof backgroundGuide>) {
+  const topPct = Math.round((g.topPx / g.heightPx) * 100)
+  const cardPct = Math.round((g.cardPx / g.heightPx) * 100)
   return [
-    `Create a ${g.widthPx} x ${g.heightPx} px background image for a mobile app product-carousel section.`,
-    `Layout, top to bottom:`,
-    `1) TOP ZONE (0 to ${g.topPx} px): the hero artwork — headline text, logo/badge and decorative graphics for my sale theme. Keep text at least 40 px from the left and right edges.`,
-    `2) MIDDLE ZONE (${g.topPx} to ${g.topPx + g.cardPx} px): a calm, plain area in the SAME colour as the top, with only a very soft gradient or faint pattern. NO text, products or busy graphics here — product cards will sit on top of it.`,
-    `3) BOTTOM ZONE (last ${g.bottomPx} px): the same background colour, continuing the middle.`,
+    `Create a background image with aspect ratio ${g.ratioNearest} (width : height, taller than a normal banner — about ${g.aspect.toFixed(2)}:1), for a mobile app product-carousel section. If you can set pixels: ${g.widthPx} x ${g.heightPx}.`,
+    `Layout, top to bottom (as % of the height):`,
+    `1) TOP ${topPct}%: the hero artwork — headline text, logo/badge and decorative graphics for my sale theme. Keep text at least 4% away from the left and right edges.`,
+    `2) NEXT ${cardPct}%: a calm, plain area in the SAME colour as the top, only a very soft gradient or faint pattern. NO text, products or busy graphics here — product cards will sit on top of it.`,
+    `3) LAST ${100 - topPct - cardPct}%: the same background colour, continuing the middle.`,
     `One continuous colour scheme top to bottom, flat rectangular image, no border, no rounded corners, no phone mockup (the app adds the rounded corners).`,
   ].join("\n")
 }
@@ -104,6 +114,8 @@ export default function ProductConfigEditor({
     typeof config.background_image_url === "string" ? config.background_image_url : ""
   const hasBackground = backgroundUrl.trim().length > 0
   const showTitle = config.show_title !== false
+  const showViewAllButton =
+    typeof config.show_view_all_button === "boolean" ? config.show_view_all_button : hasBackground
   const topSpace =
     typeof config.top_space === "number" ? config.top_space : hasBackground ? DEFAULT_TOP_SPACE : 0
   const bottomSpace =
@@ -130,6 +142,32 @@ export default function ProductConfigEditor({
           onChange={(event) => patchConfig({ title: event.target.value })}
           placeholder="Products"
         />
+        {isCarousel ? (
+          <div className="mt-2 flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2.5">
+            <div>
+              <div className="text-sm font-medium text-slate-900">Show title</div>
+              <div className="text-xs text-slate-500">
+                Turn off to hide the heading and "View All" — e.g. when your background image already has the text.
+              </div>
+            </div>
+            <Switch
+              checked={showTitle}
+              onCheckedChange={(checked) => patchConfig({ show_title: checked })}
+            />
+          </div>
+        ) : null}
+        {isCarousel && showTitle ? (
+          <div className="mt-2">
+            <ThemeColorPicker
+              label="Title colour (optional)"
+              value={typeof config.title_color === "string" && config.title_color ? config.title_color : hasBackground ? "#FFFFFF" : "#131313"}
+              onChange={(value) => patchConfig({ title_color: value })}
+            />
+            <p className="mt-1 text-[11px] text-slate-500">
+              Applies to the title and "View All". With a background image it defaults to white.
+            </p>
+          </div>
+        ) : null}
       </div>
 
       {showColumns ? (
@@ -228,12 +266,43 @@ export default function ProductConfigEditor({
       ) : null}
 
       {isCarousel ? (
+        <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-slate-900">"View all" button</div>
+              <div className="text-xs text-slate-500">
+                A white full-width button under the cards. Opens this section's category.
+              </div>
+            </div>
+            <Switch
+              checked={showViewAllButton}
+              onCheckedChange={(checked) => patchConfig({ show_view_all_button: checked })}
+            />
+          </div>
+          {showViewAllButton ? (
+            <div className="space-y-1">
+              <Label htmlFor="carousel-view-all-label" className="text-xs text-slate-500">
+                Button text
+              </Label>
+              <Input
+                id="carousel-view-all-label"
+                value={typeof config.view_all_label === "string" ? config.view_all_label : "View all"}
+                onChange={(event) => patchConfig({ view_all_label: event.target.value })}
+                maxLength={24}
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {isCarousel ? (
         <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4">
           <div>
             <div className="text-sm font-medium text-slate-900">Section background</div>
             <p className="text-xs text-slate-500">
               One image behind the whole carousel — artwork on top, the product cards in the
-              middle, the same colour below.
+              middle, the same colour below. The section is exactly as tall as your image, so
+              the whole picture always shows (never cropped).
             </p>
           </div>
 
@@ -242,21 +311,8 @@ export default function ProductConfigEditor({
             kind="banner"
             value={backgroundUrl || null}
             onChange={(url) => patchConfig({ background_image_url: url ?? "" })}
-            hint={`Recommended: ${guide.widthPx} × ${guide.heightPx} px (updates with the settings below). PNG, WebP or JPG, under 5 MB.`}
+            hint={`Best shape: about ${guide.ratioNearest} (${guide.widthPx} × ${guide.heightPx} px). Any size works — the whole image always shows; if it is shorter than the cards need, the section extends below it in the image's bottom colour. PNG, WebP or JPG, under 5 MB.`}
           />
-
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2.5">
-            <div>
-              <div className="text-sm font-medium text-slate-900">Show built-in title</div>
-              <div className="text-xs text-slate-500">
-                Turn off when your background already has the heading drawn in.
-              </div>
-            </div>
-            <Switch
-              checked={showTitle}
-              onCheckedChange={(checked) => patchConfig({ show_title: checked })}
-            />
-          </div>
 
           <SpaceSlider
             id="carousel-top-space"
@@ -269,8 +325,8 @@ export default function ProductConfigEditor({
           />
           <SpaceSlider
             id="carousel-bottom-space"
-            label="Space below the cards"
-            help="Extra background under the cards."
+            label="Minimum space below the cards"
+            help="With an image, whatever your image has below the cards is used; this is the minimum."
             value={bottomSpace}
             min={0}
             max={120}
@@ -298,17 +354,18 @@ export default function ProductConfigEditor({
             </div>
             <ul className="space-y-0.5 text-[11px] text-amber-800">
               <li>
-                <strong>Canvas:</strong> {guide.widthPx} × {guide.heightPx} px
+                <strong>Best shape:</strong> {guide.ratioNearest} — e.g. {guide.widthPx} × {guide.heightPx} px (taller than a normal banner)
               </li>
               <li>
-                <strong>Top artwork zone:</strong> 0 – {guide.topPx} px (headline, graphics)
+                <strong>Top artwork zone:</strong> first {Math.round((guide.topPx / guide.heightPx) * 100)}% of the height (headline, graphics)
               </li>
               <li>
-                <strong>Cards zone:</strong> {guide.topPx} – {guide.topPx + guide.cardPx} px
+                <strong>Cards zone:</strong> next {Math.round((guide.cardPx / guide.heightPx) * 100)}%
                 (keep plain — cards cover it)
               </li>
               <li>
-                <strong>Bottom zone:</strong> last {guide.bottomPx} px (same colour)
+                <strong>Bottom zone:</strong> the rest (same colour). AI tools often ignore pixel sizes, so ask for
+                the ratio above; a wider/shorter image still works.
               </li>
             </ul>
             <div className="flex items-center justify-between gap-2 pt-1">

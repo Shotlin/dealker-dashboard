@@ -37,6 +37,10 @@ function TrendingPreview({
   const topSpace = num(config.top_space) ?? (hasBg ? 96 : 0)
   const bottomSpace = num(config.bottom_space) ?? (hasBg ? 14 : 0)
   const radius = Math.min(Math.max(num(config.border_radius) ?? 16, 0), 32)
+  const titleColor = typeof config.title_color === "string" && config.title_color ? config.title_color : bgUrl ? "#FFFFFF" : "#131313"
+  const showViewAll =
+    isCarousel && (typeof config.show_view_all_button === "boolean" ? config.show_view_all_button : hasBg)
+  const viewAllLabel = typeof config.view_all_label === "string" && config.view_all_label.trim() ? config.view_all_label : "View all"
 
   // Flutter: last word of title is green accent
   const words = title.split(" ")
@@ -56,7 +60,7 @@ function TrendingPreview({
       <div
         style={
           hasBg
-            ? { margin: "6px 12px", borderRadius: radius, overflow: "hidden", position: "relative", background: bgColor || undefined }
+            ? { margin: "6px 12px", borderRadius: radius, overflow: "hidden", position: "relative", background: bgColor || undefined, minHeight: topSpace + 190 + bottomSpace }
             : undefined
         }
       >
@@ -64,7 +68,7 @@ function TrendingPreview({
           <img
             src={bgUrl}
             alt=""
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ display: "block", width: "100%", height: "auto" }}
           />
         ) : null}
       {/* Section header — Flutter style with colored last word */}
@@ -72,8 +76,8 @@ function TrendingPreview({
       <div style={hasBg ? { padding: "12px 18px 0", position: "absolute", top: 0, left: 0, right: 0, zIndex: 1 } : { padding: "12px 18px 0", position: "relative" }}>
         {isBox ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 14, fontWeight: 900, color: "#131313", textTransform: "uppercase" }}>{title}</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#131313" }}>View All →</span>
+            <span style={{ fontSize: 14, fontWeight: 900, color: titleColor, textTransform: "uppercase" }}>{title}</span>
+            {!showViewAll ? <span style={{ fontSize: 11, fontWeight: 700, color: hasBg ? "#fff" : "#131313" }}>View All →</span> : null}
           </div>
         ) : hasAccent ? (
           <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.1 }}>
@@ -107,9 +111,9 @@ function TrendingPreview({
           overflowX: "auto",
           scrollbarWidth: "none",
           padding: "10px 14px 8px",
-          position: "relative",
-          marginTop: hasBg ? topSpace - 10 : topSpace,
-          marginBottom: bottomSpace,
+          ...(bgUrl
+            ? { position: "absolute", left: 0, right: 0, top: topSpace - 10 }
+            : { position: "relative", marginTop: hasBg ? topSpace - 10 : topSpace, marginBottom: bottomSpace }),
         }}
       >
         {isBox && items.length > 0
@@ -124,6 +128,24 @@ function TrendingPreview({
             <TrendingPlaceholder key={`ph-${i}`} index={i} />
           ))}
       </div>
+      {showViewAll ? (
+        <div
+          style={{
+            margin: bgUrl ? 0 : "0 14px 8px",
+            ...(bgUrl ? { position: "absolute", left: 14, right: 14, bottom: 12 } : {}),
+            background: "#fff",
+            borderRadius: 12,
+            height: 40,
+            display: "grid",
+            placeItems: "center",
+            fontSize: 13,
+            fontWeight: 800,
+            color: "#131313",
+          }}
+        >
+          {viewAllLabel} →
+        </div>
+      ) : null}
       </div>
       {isBox && onChromeRegionClick && (
         <span
