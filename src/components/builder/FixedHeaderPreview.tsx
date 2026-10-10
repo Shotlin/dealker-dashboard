@@ -8,7 +8,6 @@ import {
   CircleUserRound,
   Search,
   SignalHigh,
-  Smartphone,
   Wifi,
   Zap,
 } from "lucide-react"
@@ -363,6 +362,7 @@ export function FixedHeaderPreview({
 
   const look = { ...DEFAULT_HOME_LOOK, ...(themeData?.sections.homeLook ?? {}) }
   const promoUrl = themeData?.sections.searchZone.promoBoxImageUrl ?? null
+  const sellUrl = themeData?.sections.searchZone.sellBoxImageUrl ?? null
   const hints = themeData?.sections.searchZone.searchHints ?? []
   const hint = hints[0] ?? "products"
   const tiles = (stores ?? [])
@@ -522,6 +522,7 @@ export function FixedHeaderPreview({
             borderRadius: 11,
             background: look.searchPillColor,
             color: look.searchPillTextColor,
+            border: `1.5px solid ${look.searchPillBorderColor}`,
           }}
         >
           <Search size={15} strokeWidth={2.4} />
@@ -529,25 +530,9 @@ export function FixedHeaderPreview({
             Search for “{hint}”
           </span>
         </div>
-        <div
-          style={{
-            flex: "0 0 19%",
-            height: 38,
-            borderRadius: 11,
-            display: "flex",
-            alignItems: "center",
-            gap: 3,
-            padding: "0 5px",
-            background: `linear-gradient(90deg, ${look.sellChipStartColor}, ${look.sellChipEndColor})`,
-            color: look.sellChipTextColor,
-            fontSize: 9,
-            fontWeight: 600,
-            lineHeight: 1.1,
-          }}
-        >
-          <Smartphone size={13} />
-          <span style={{ flex: 1 }}>Mobile Sell</span>
-        </div>
+        {sellUrl && (
+          <img src={sellUrl} alt="Mobile Sell" draggable={false} style={{ flex: "0 0 19%", height: 38, borderRadius: 11, objectFit: "cover" }} />
+        )}
         {promoUrl && (
           <img src={promoUrl} alt="Promo" draggable={false} style={{ flex: "0 0 28%", height: 38, borderRadius: 11, objectFit: "cover" }} />
         )}

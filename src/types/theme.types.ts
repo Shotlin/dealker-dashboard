@@ -25,7 +25,19 @@ export interface SearchZoneTheme {
   waveColor: string
   searchHints: string[]
   promoBoxImageUrl: string | null
+  /** Image-only "Mobile Sell" box next to the search bar. */
+  sellBoxImageUrl?: string | null
 }
+
+/**
+ * Exact upload sizes for the two boxes right of the search bar (design px of
+ * the 914-wide app reference x 4). Aspect ratios match the boxes in the app,
+ * so an image of this size fills the box edge to edge with no crop.
+ */
+export const SEARCH_BOX_IMAGE_SPEC = {
+  sell: { width: 668, height: 336, label: "668 × 336 px (167:84)" },
+  promo: { width: 960, height: 336, label: "960 × 336 px (240:84)" },
+} as const
 
 export interface BannerAnimationTheme {
   lottieUrl: string | null
@@ -72,6 +84,7 @@ export interface HomeLookTheme {
   storeTileLabelColor?: string
   searchPillColor?: string
   searchPillTextColor?: string
+  searchPillBorderColor?: string
   sellChipStartColor?: string
   sellChipEndColor?: string
   sellChipTextColor?: string
@@ -101,6 +114,7 @@ export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
   storeTileLabelColor: "#111111",
   searchPillColor: "#FFFFFF",
   searchPillTextColor: "#111111",
+  searchPillBorderColor: "#222222",
   sellChipStartColor: "#FBE36B",
   sellChipEndColor: "#F6D23A",
   sellChipTextColor: "#111111",

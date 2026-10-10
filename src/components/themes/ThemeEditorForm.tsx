@@ -24,6 +24,7 @@ import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
 import { ThemeGradientPicker } from "@/components/themes/ThemeGradientPicker"
 import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
 import { ThemeSectionCard } from "@/components/themes/ThemeSectionCard"
+import { SEARCH_BOX_IMAGE_SPEC } from "@/types/theme.types"
 import type {
   ABVariant,
   ThemeData,
@@ -608,7 +609,26 @@ export function ThemeEditorForm({
         </div>
 
         <ThemeImageUploader
+          label="Mobile Sell Box Image"
+          hint={`Image only. Upload exactly ${SEARCH_BOX_IMAGE_SPEC.sell.label}. Empty = box hidden.`}
+          value={themeData.sections.searchZone.sellBoxImageUrl ?? null}
+          onChange={(sellBoxImageUrl) =>
+            updateThemeData((current) => ({
+              ...current,
+              sections: {
+                ...current.sections,
+                searchZone: {
+                  ...current.sections.searchZone,
+                  sellBoxImageUrl,
+                },
+              },
+            }))
+          }
+        />
+
+        <ThemeImageUploader
           label="Promo Box Image"
+          hint={`Image only. Upload exactly ${SEARCH_BOX_IMAGE_SPEC.promo.label}. Empty = box hidden.`}
           value={themeData.sections.searchZone.promoBoxImageUrl}
           onChange={(promoBoxImageUrl) =>
             updateThemeData((current) => ({

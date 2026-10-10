@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
+import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
 import { useUpdateTheme } from "@/hooks/useThemes"
 import {
   DEFAULT_HOME_LOOK,
+  SEARCH_BOX_IMAGE_SPEC,
   type HomeLookTheme,
 } from "@/types/theme.types"
 import type {
@@ -298,9 +300,27 @@ function RegionFields({
           />
           <LookColor label="Search pill background" field="searchPillColor" look={look} patchLook={patchLook} />
           <LookColor label="Search pill text / icon" field="searchPillTextColor" look={look} patchLook={patchLook} />
-          <LookColor label="Mobile Sell chip — start" field="sellChipStartColor" look={look} patchLook={patchLook} />
-          <LookColor label="Mobile Sell chip — end" field="sellChipEndColor" look={look} patchLook={patchLook} />
-          <LookColor label="Mobile Sell chip text" field="sellChipTextColor" look={look} patchLook={patchLook} />
+          <LookColor label="Search bar border" field="searchPillBorderColor" fallback="#222222" look={look} patchLook={patchLook} />
+          <ThemeImageUploader
+            label="Mobile Sell box image"
+            hint={`Image only — no text is added by the app. Upload exactly ${SEARCH_BOX_IMAGE_SPEC.sell.label} (PNG/JPG/WebP). Shown at 167 × 84 design px, right of the search bar. Leave empty to hide the box.`}
+            value={sections.searchZone.sellBoxImageUrl ?? null}
+            onChange={(sellBoxImageUrl) =>
+              patchSections({
+                searchZone: { ...sections.searchZone, sellBoxImageUrl },
+              })
+            }
+          />
+          <ThemeImageUploader
+            label="Promo box image"
+            hint={`Image only. Upload exactly ${SEARCH_BOX_IMAGE_SPEC.promo.label} (PNG/JPG/WebP). Shown at 240 × 84 design px, at the far right. Leave empty to hide the box.`}
+            value={sections.searchZone.promoBoxImageUrl}
+            onChange={(promoBoxImageUrl) =>
+              patchSections({
+                searchZone: { ...sections.searchZone, promoBoxImageUrl },
+              })
+            }
+          />
         </div>
       )
     case "hero_frame":
