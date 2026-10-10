@@ -20,6 +20,8 @@ interface ThemeImageUploaderProps {
   accept?: string;
   /** Cloudinary folder: dealker/<kind>. Defaults to "theme". */
   kind?: UploadKind;
+  /** Recommended size / usage note shown under the label. */
+  hint?: string;
 }
 
 function isImageUpload(accept?: string) {
@@ -41,6 +43,7 @@ export function ThemeImageUploader({
   onChange,
   accept = "image/*",
   kind = "theme",
+  hint,
 }: ThemeImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -72,6 +75,7 @@ export function ThemeImageUploader({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
 
       <div className="space-y-3 rounded-lg border bg-card p-4">
         <button

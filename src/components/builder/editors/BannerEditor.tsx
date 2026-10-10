@@ -80,6 +80,7 @@ export default function BannerEditor({ config, onChange }: BannerEditorProps) {
         <ThemeImageUploader
           label="Banner Image"
           kind="banner"
+          hint="Recommended: 1080 × 324 px (3.3:1) at the default 120 pt section height — it fills the full screen width and is cropped to fit, so keep text in the middle. If you change the section height, use image height = 324 × (height ÷ 120). PNG, WebP or JPG, under 5 MB."
           value={typeof config.image_url === "string" ? config.image_url : null}
           onChange={(value) =>
             patchConfig({ image_url: value, lottie_url: null })

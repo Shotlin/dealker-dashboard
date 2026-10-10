@@ -688,6 +688,7 @@ export function ThemeEditorForm({
       >
         <ThemeImageUploader
           label="Fee Strip Image"
+          hint="Recommended: 1200 × 240 px (5:1, wide strip). PNG, WebP or JPG, under 5 MB. It is shown full-width at about 60–96 pt tall — keep text and icons inside the middle, away from the edges. A transparent PNG shows the Container Color behind it."
           value={themeData.sections.feeStrip.imageUrl}
           onChange={(imageUrl) =>
             updateThemeData((current) => ({

@@ -449,8 +449,10 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
                     • <strong>Format:</strong> JPG, PNG, WEBP
                   </span>
                   <span>
-                    • <strong>Recommended:</strong> Wide banner image (carousel
-                    ratio)
+                    • <strong>Recommended:</strong> 1740 × 764 px (2.3:1) — the
+                    home carousel's default shape (min 1200 × 527). If you set a
+                    different Aspect Ratio on the carousel in the theme builder,
+                    match that ratio. Keep key content away from the edges.
                   </span>
                 </div>
               }

@@ -511,6 +511,11 @@ function StripEditor({
 
       <ThemeImageUploader
         label={`${title} Image`}
+        hint={
+          title === "Fee Strip"
+            ? "Recommended: 1200 × 240 px (5:1, wide strip). PNG, WebP or JPG, under 5 MB. It is shown full-width at about 60–96 pt tall — keep text and icons inside the middle, away from the edges. A transparent PNG shows the Container Color behind it."
+            : undefined
+        }
         value={typeof config.image_url === "string" ? config.image_url : null}
         onChange={(value) => patch({ image_url: value })}
       />
@@ -617,6 +622,7 @@ function BankOffersEditor({
 
             <ThemeImageUploader
               label={`Bank Offer Image ${index + 1}`}
+              hint="Recommended: 1344 × 296 px (4.5:1). Each offer card is shown about 336 × 74 pt, so keep text and logos inside the middle. PNG, WebP or JPG, under 5 MB."
               value={imageUrl || null}
               onChange={(value) =>
                 patchImageUrls(
@@ -976,6 +982,10 @@ function PromoCustomImagesEditor({
         <p className="text-[11px] font-semibold text-amber-800 mb-1">
           Recommended Banner Size
         </p>
+        <p className="text-[10px] text-amber-700 mb-1">
+          <strong>Default (no Aspect Ratio set): 2.3:1</strong> — 1740 × 764 px
+          (min 1200 × 527)
+        </p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
           <p className="text-[10px] text-amber-700">
             <strong>16:9 ratio</strong> — 1200 × 675 px
@@ -1173,6 +1183,7 @@ function CustomBannerEditor({
     <div className="space-y-6">
       <ThemeImageUploader
         label="Custom Banner"
+        hint="Recommended: 1080 px wide, any height — e.g. 1080 × 540 (2:1). It is shown at its own proportions between small side margins, with rounded corners, and is not cropped (set Aspect Ratio below only if you want it cropped to a fixed shape). PNG, WebP or JPG, under 5 MB."
         value={typeof config.image_url === "string" ? config.image_url : null}
         onChange={(value) => patch({ image_url: value })}
       />
