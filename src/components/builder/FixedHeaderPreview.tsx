@@ -276,6 +276,54 @@ function CategoryTabsScrollRow({
   )
 }
 
+
+// ── Header colour helpers (mirror the app: shade / tint between header and panel) ──
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "")
+  const f = h.length === 3 ? h.split("").map((c) => c + c).join("") : h.padEnd(6, "0")
+  return [parseInt(f.slice(0, 2), 16), parseInt(f.slice(2, 4), 16), parseInt(f.slice(4, 6), 16)]
+}
+function rgbToHex(r: number, g: number, b: number): string {
+  const c = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0")
+  return `#${c(r)}${c(g)}${c(b)}`
+}
+function shadeHex(hex: string, delta: number): string {
+  const [r, g, b] = hexToRgb(hex).map((v) => v / 255)
+  const max = Math.max(r, g, b), min = Math.min(r, g, b)
+  let h = 0, s = 0
+  const l = (max + min) / 2
+  if (max !== min) {
+    const d = max - min
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+    h /= 6
+  }
+  const nl = Math.max(0, Math.min(1, l + delta))
+  const hue = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1
+    if (t > 1) t -= 1
+    if (t < 1 / 6) return p + (q - p) * 6 * t
+    if (t < 1 / 2) return q
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+    return p
+  }
+  if (s === 0) return rgbToHex(nl * 255, nl * 255, nl * 255)
+  const q = nl < 0.5 ? nl * (1 + s) : nl + s - nl * s
+  const pp = 2 * nl - q
+  return rgbToHex(hue(pp, q, h + 1 / 3) * 255, hue(pp, q, h) * 255, hue(pp, q, h - 1 / 3) * 255)
+}
+function mixHex(a: string, b: string, t: number): string {
+  const [ar, ag, ab] = hexToRgb(a)
+  const [br, bg, bb] = hexToRgb(b)
+  return rgbToHex(ar + (br - ar) * t, ag + (bg - ag) * t, ab + (bb - ab) * t)
+}
+
+// Folder-tab outlines in a 100×100 box; the selected tab flares into the panel below.
+const TAB_SELECTED_PATH =
+  "M -14 101.5 L -14 100 Q 0 100 0 86 L 11 17 Q 11 0 28 0 L 72 0 Q 89 0 89 17 L 100 86 Q 100 100 114 100 L 114 101.5 Z"
+const TAB_PLAIN_PATH =
+  "M 0 101.5 L 0 100 L 11 17 Q 11 0 28 0 L 72 0 Q 89 0 89 17 L 100 100 L 100 101.5 Z"
+
 export function FixedHeaderPreview({
   themeData,
   activeTabKey,
@@ -361,6 +409,10 @@ export function FixedHeaderPreview({
   })()
 
   const look = { ...DEFAULT_HOME_LOOK, ...(themeData?.sections.homeLook ?? {}) }
+  const headerStart = look.headerStartColor ?? topBarBg
+  const headerEnd = look.headerEndColor ?? shadeHex(headerStart, -0.08)
+  const inactiveTab = look.storeTabColor ?? shadeHex(mixHex(headerEnd, searchZoneBg, 0.55), -0.05)
+  const shine = look.headerShine
   const promoUrl = themeData?.sections.searchZone.promoBoxImageUrl ?? null
   const sellUrl = themeData?.sections.searchZone.sellBoxImageUrl ?? null
   const hints = themeData?.sections.searchZone.searchHints ?? []
@@ -373,7 +425,13 @@ export function FixedHeaderPreview({
   return (
     <div style={{ color: topBarTextColor }}>
       {/* ── Top bar: status + delivery line + profile button ───────── */}
-      <div style={{ background: topBarBg, transition: "background 200ms ease" }}>
+      <div style={{ position: "relative", background: `linear-gradient(180deg, ${headerStart}, ${headerEnd})`, transition: "background 200ms ease" }}>
+        {shine > 0 && (
+          <>
+            <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: `linear-gradient(135deg, rgba(255,255,255,0) 18%, rgba(255,255,255,${shine * 0.55}) 40%, rgba(255,255,255,0) 62%)` }} />
+            <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: `radial-gradient(circle at 95% -15%, rgba(255,255,255,${shine * 0.7}), rgba(255,255,255,0) 60%)` }} />
+          </>
+        )}
         <div
           data-region="top_bar"
           onClick={handleRegionClick("top_bar")}
@@ -433,69 +491,64 @@ export function FixedHeaderPreview({
             <CircleUserRound size={20} strokeWidth={2.1} />
           </div>
         </div>
-      </div>
-
-      {/* ── Store tiles ───────────────────────────────────────────── */}
+      {/* ── Store tabs (folder tabs: selected one is carved into the panel) ── */}
       <div
         data-region="store_chips"
         onClick={handleRegionClick("store_chips")}
         style={{
           ...regionStyle("store_chips"),
+          position: "relative",
           display: "flex",
-          gap: 7,
-          overflowX: "auto",
-          padding: "0 10px 8px",
-          background: topBarBg,
-          scrollbarWidth: "none",
-          transition: "background 200ms ease",
+          padding: "0 7px",
+          height: 72,
         }}
       >
         {tileList.map((tile) => {
           const isActive = tile.key === storeKey
           return (
-            <div
-              key={tile.key}
-              style={{
-                flex: "0 0 62px",
-                height: 66,
-                borderRadius: 11,
-                background: isActive ? look.storeTileActiveColor : look.storeTileColor,
-                boxShadow: "0 3px 6px rgba(15,23,42,0.08)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 2,
-                padding: "4px 2px",
-                transition: "background 200ms ease",
-              }}
-            >
-              <div style={{ width: 30, height: 30, display: "grid", placeItems: "center" }}>
-                {tile.iconUrl ? (
-                  <img src={tile.iconUrl} alt={tile.label} draggable={false} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                ) : (
-                  <span style={{ fontSize: 20 }}>🛍️</span>
-                )}
+            <div key={tile.key} style={{ flex: 1, position: "relative", zIndex: isActive ? 2 : 1 }}>
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%" style={{ position: "absolute", inset: 0, overflow: "visible" }}>
+                <defs>
+                  <linearGradient id={`tabsel-${tile.key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor={shadeHex(searchZoneBg, 0.07)} />
+                    <stop offset="0.45" stopColor={searchZoneBg} />
+                  </linearGradient>
+                </defs>
+                <path d={isActive ? TAB_SELECTED_PATH : TAB_PLAIN_PATH} fill={isActive ? `url(#tabsel-${tile.key})` : inactiveTab} />
+              </svg>
+              <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "6px 2px 4px" }}>
+                <div style={{ width: 30, height: 30, display: "grid", placeItems: "center", opacity: isActive ? 1 : 0.85 }}>
+                  {tile.iconUrl ? (
+                    <img src={tile.iconUrl} alt={tile.label} draggable={false} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                  ) : (
+                    <span style={{ fontSize: 20 }}>🛍️</span>
+                  )}
+                </div>
+                <span
+                  style={{
+                    fontSize: 8.5,
+                    fontWeight: isActive ? 800 : 600,
+                    lineHeight: 1.05,
+                    textAlign: "center",
+                    color: look.storeTileLabelColor,
+                    opacity: isActive ? 1 : 0.62,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {tile.label}
+                </span>
               </div>
-              <span
-                style={{
-                  fontSize: 8.5,
-                  fontWeight: 700,
-                  lineHeight: 1.05,
-                  textAlign: "center",
-                  color: look.storeTileLabelColor,
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-              >
-                {tile.label}
-              </span>
             </div>
           )
         })}
       </div>
+      </div>
+
+      {/* ── Panel: search row + category tabs, rounded bottom ───────── */}
+      <div style={{ borderRadius: `0 0 ${look.panelRadius}px ${look.panelRadius}px`, overflow: "hidden" }}>
 
       {/* ── Search row: pill + Mobile Sell chip + promo card ───────── */}
       <div
@@ -551,6 +604,7 @@ export function FixedHeaderPreview({
           onPreviewTabChange={onPreviewTabChange}
         />
       ) : null}
+      </div>
     </div>
   )
 }
