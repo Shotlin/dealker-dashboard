@@ -983,7 +983,7 @@ function PromoCustomImagesEditor({
           Recommended Banner Size
         </p>
         <p className="text-[10px] text-amber-700 mb-1">
-          <strong>Default (no Aspect Ratio set): 2.3:1</strong> — 1740 × 764 px
+          <strong>Home carousel shape: 2.3:1</strong> — 1740 × 764 px
           (min 1200 × 527)
         </p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
@@ -1001,8 +1001,8 @@ function PromoCustomImagesEditor({
           </p>
         </div>
         <p className="text-[10px] text-amber-600 mt-1">
-          Format: JPG, PNG, or WEBP. Use the same ratio as the Aspect Ratio
-          setting above.
+          Format: JPG, PNG, or WEBP. The home carousel always shows banners
+          at the 2.3:1 shape above.
         </p>
       </div>
 

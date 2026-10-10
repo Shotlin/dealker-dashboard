@@ -50,38 +50,24 @@ export const SECTION_STYLE_PRESETS: Partial<
       patch: { gradient: ["#0B0B14", "#27272A"], height: 240 },
     },
   ],
+  // One product card design everywhere — presets only control scrolling / columns.
   product_carousel: [
     {
-      id: "minimal-cards",
-      label: "Minimal Cards",
-      patch: { card_style: "standard", auto_scroll: false },
+      id: "manual-scroll",
+      label: "Manual scroll",
+      patch: { auto_scroll: false },
     },
     {
-      id: "rounded-premium",
-      label: "Rounded Premium",
-      patch: { card_style: "premium", auto_scroll: false },
-    },
-    {
-      id: "compact-commerce",
-      label: "Compact Commerce",
-      patch: { card_style: "compact", auto_scroll: false },
-    },
-    {
-      id: "big-image-cards",
-      label: "Big Image Cards",
-      patch: { card_style: "big_image", auto_scroll: true },
+      id: "auto-scroll",
+      label: "Auto-scroll",
+      patch: { auto_scroll: true },
     },
   ],
   category_product_grid: [
     {
       id: "grid-2",
       label: "2-up Grid",
-      patch: { columns: 2, card_shape: "rounded" },
-    },
-    {
-      id: "grid-3",
-      label: "3-up Grid",
-      patch: { columns: 3, card_shape: "rounded" },
+      patch: { columns: 2 },
     },
   ],
   round_category_icons: [

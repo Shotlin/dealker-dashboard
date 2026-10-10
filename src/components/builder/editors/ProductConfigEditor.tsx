@@ -10,7 +10,6 @@ import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
 import { cn } from "@/lib/utils"
 import type { SectionType } from "@/types/theme.types"
 import AnimationPicker from "./AnimationPicker"
-import CardShapePicker from "./CardShapePicker"
 
 interface ProductConfigEditorProps {
   config: Record<string, unknown>
@@ -22,51 +21,19 @@ interface ProductConfigEditorProps {
 // columns.clamp(2, 3) in the Flutter app's _buildCategoryProductGrid.
 const COLUMN_OPTIONS = [2, 3] as const
 
-/**
- * Product card visual styles offered to admins. Values are the canonical
- * UPPER_SNAKE tokens persisted into `section.config.product_card_style` and
- * read verbatim by the Flutter app (`productCardVariantFromString`). Keep these
- * in lock-step with the Flutter `ProductCardVariant` enum.
- *
- * Default is QUICK_COMMERCE_COMPACT — sections saved without this key (older
- * themes) fall back to it on the app side too.
- */
-const PRODUCT_CARD_STYLES = [
-  {
-    value: "QUICK_COMMERCE_COMPACT",
-    label: "Quick Commerce (Compact)",
-    description: "Premium reference card — price sticker, discount line, rating & delivery.",
-  },
-  {
-    value: "DEALKER_MARKETPLACE_BOX",
-    label: "Dealker Marketplace Box",
-    description: "Home design box — badge, name, variant, price + MRP, rating, stock. Colours in Product Box.",
-  },
-  {
-    value: "DEALKER_LEGACY_CLEAN",
-    label: "Dealker Legacy (Clean)",
-    description: "Classic simpler card — plain price, minimal chrome.",
-  },
-] as const
-
-const DEFAULT_PRODUCT_CARD_STYLE = "QUICK_COMMERCE_COMPACT"
-
 // Reference phone: 390 pt wide, 3× pixel density. The section sits between 12 pt side
 // margins (366 pt wide) and the card row is a fixed height per card style — keep these
 // in lock-step with `_ManifestHorizontalProductSection` in the Flutter app.
 const SECTION_WIDTH_PT = 366
 const PIXEL_DENSITY = 3
-const CARD_ROW_HEIGHT_PT: Record<string, number> = {
-  DEALKER_MARKETPLACE_BOX: 184,
-  QUICK_COMMERCE_COMPACT: 246,
-  DEALKER_LEGACY_CLEAN: 246,
-}
+// The Dealker product card: 234 pt wide (60% of 390) × 1300/968 tall, plus 28 pt for its shadow.
+const CARD_ROW_HEIGHT_PT = 342
 const DEFAULT_TOP_SPACE = 96
 const DEFAULT_BOTTOM_SPACE = 14
 
 /** Size + zones for the carousel background artwork, from the current settings. */
-function backgroundGuide(cardStyle: string, topPt: number, bottomPt: number) {
-  const cardPt = CARD_ROW_HEIGHT_PT[cardStyle] ?? 246
+function backgroundGuide(topPt: number, bottomPt: number) {
+  const cardPt = CARD_ROW_HEIGHT_PT
   const widthPx = Math.round(SECTION_WIDTH_PT * PIXEL_DENSITY)
   const topPx = Math.round(topPt * PIXEL_DENSITY)
   const cardPx = Math.round(cardPt * PIXEL_DENSITY)
@@ -102,13 +69,7 @@ export default function ProductConfigEditor({
 }: ProductConfigEditorProps) {
   const title = typeof config.title === "string" ? config.title : "Products"
   const columns = typeof config.columns === "number" ? config.columns : 3
-  const cardShape =
-    typeof config.card_shape === "string" ? config.card_shape : "rounded"
   const autoScroll = Boolean(config.auto_scroll)
-  const productCardStyle =
-    typeof config.product_card_style === "string"
-      ? config.product_card_style
-      : DEFAULT_PRODUCT_CARD_STYLE
   const isCarousel = sectionType === "product_carousel"
   const backgroundUrl =
     typeof config.background_image_url === "string" ? config.background_image_url : ""
@@ -121,7 +82,7 @@ export default function ProductConfigEditor({
   const bottomSpace =
     typeof config.bottom_space === "number" ? config.bottom_space : hasBackground ? DEFAULT_BOTTOM_SPACE : 0
   const backgroundRadius = typeof config.border_radius === "number" ? config.border_radius : 16
-  const guide = backgroundGuide(productCardStyle, topSpace, bottomSpace)
+  const guide = backgroundGuide(topSpace, bottomSpace)
   const showColumns = sectionType === "category_product_grid"
   const showAutoScroll = sectionType === "product_carousel"
 
@@ -197,56 +158,12 @@ export default function ProductConfigEditor({
         </div>
       ) : null}
 
-      <CardShapePicker
-        value={cardShape}
-        onChange={(value) => patchConfig({ card_shape: value })}
-      />
-
-      <div className="space-y-3">
-        <div>
-          <div className="text-sm font-medium text-slate-900">
-            Product Card Style
-          </div>
-          <p className="text-xs text-slate-500">
-            Controls how product cards look in the mobile app for this section.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-2">
-          {PRODUCT_CARD_STYLES.map((option) => {
-            const isActive = option.value === productCardStyle
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() =>
-                  patchConfig({ product_card_style: option.value })
-                }
-                className={cn(
-                  "rounded-2xl border px-4 py-3 text-left transition-all duration-200",
-                  isActive
-                    ? "border-blue-500 bg-blue-50 shadow-[0_0_0_3px_rgba(59,130,246,0.12)]"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                )}
-                aria-pressed={isActive}
-              >
-                <div
-                  className={cn(
-                    "text-sm font-semibold",
-                    isActive ? "text-blue-700" : "text-slate-800"
-                  )}
-                >
-                  {option.label}
-                </div>
-                <div className="mt-0.5 text-xs text-slate-500">
-                  {option.description}
-                </div>
-              </button>
-            )
-          })}
-        </div>
-        <p className="text-[11px] text-slate-400">
-          Default is Quick Commerce (Compact). Existing sections without a style
-          keep this default.
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <div className="text-sm font-medium text-slate-900">Product card</div>
+        <p className="mt-0.5 text-xs text-slate-500">
+          All product sections use the Dealker product card (picture, name, variant, seller,
+          price, discount, rating, delivery, Add to Cart). There is nothing to choose — the
+          card shows each row only when the product has that information.
         </p>
       </div>
 

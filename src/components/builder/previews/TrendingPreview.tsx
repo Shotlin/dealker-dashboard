@@ -116,13 +116,9 @@ function TrendingPreview({
             : { position: "relative", marginTop: hasBg ? topSpace - 10 : topSpace, marginBottom: bottomSpace }),
         }}
       >
-        {isBox && items.length > 0
+        {items.length > 0
           ? items.map((product) => (
-            <BoxCard key={product.id} product={product} look={look} />
-          ))
-          : items.length > 0
-          ? items.map((product) => (
-            <TrendingCard key={product.id} product={product} />
+            <DealkerCard key={product.id} product={product} />
           ))
           : Array.from({ length: 4 }, (_, i) => (
             <TrendingPlaceholder key={`ph-${i}`} index={i} />
@@ -342,6 +338,70 @@ function TrendingPlaceholder({ index }: { index: number }) {
           }}
         />
       </div>
+    </div>
+  )
+}
+
+
+/** Builder-preview replica of the app's Dealker product card (sizes are proportions of the card width). */
+function DealkerCard({ product }: { product: Product }) {
+  const W = 190
+  const u = W / 968
+  const px = (v: number) => v * u
+  const p = product as Product & { sold_by?: string | null; avg_rating?: number; rating_count?: number }
+  const price = product.sale_price ?? product.price
+  const onSale = product.sale_price != null && product.sale_price < product.price
+  const discount = onSale ? Math.round(((product.price - (product.sale_price as number)) / product.price) * 100) : 0
+  const inStock = (product.stock_quantity ?? 0) > 0
+  const money = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN")
+  const rating = Number(p.avg_rating ?? 0)
+  const count = Number(p.rating_count ?? 0)
+  return (
+    <div
+      style={{
+        width: W,
+        minWidth: W,
+        height: W * (1300 / 968),
+        flexShrink: 0,
+        background: "#fff",
+        borderRadius: px(40),
+        boxShadow: "0 6px 18px rgba(27,37,64,0.10)",
+        padding: `${px(33)}px ${px(33)}px ${px(30)}px`,
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: "inherit",
+      }}
+    >
+      <div style={{ flex: 1, position: "relative", display: "grid", placeItems: "center", minHeight: 0 }}>
+        {product.thumbnail_url ? (
+          <img src={product.thumbnail_url} alt="" style={{ maxWidth: "78%", maxHeight: "92%", objectFit: "contain" }} />
+        ) : null}
+        <span style={{ position: "absolute", left: 0, top: 2, background: "#12B047", color: "#fff", fontSize: px(38), fontWeight: 800, borderRadius: 99, padding: `${px(22)}px ${px(36)}px`, display: product.is_featured ? "block" : "none" }}>NEW</span>
+        <span style={{ position: "absolute", right: 2, top: 0, width: px(112), height: px(112), borderRadius: 99, border: "1px solid #E3E5EB", background: "#fff", display: "grid", placeItems: "center", fontSize: px(56), color: "#2A2B33" }}>♡</span>
+      </div>
+      <div style={{ fontSize: px(62), fontWeight: 800, color: "#101114", marginTop: px(14), whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: -0.3 }}>{product.name}</div>
+      {p.sold_by ? (
+        <div style={{ fontSize: px(33), color: "#6C6E78", marginTop: px(16) }}>
+          Sold by: <b style={{ color: "#1B5BF2", fontWeight: 600 }}>{p.sold_by}</b> ›
+        </div>
+      ) : null}
+      <div style={{ display: "flex", alignItems: "center", gap: px(40), marginTop: px(22) }}>
+        <span style={{ fontSize: px(78), fontWeight: 800, color: "#101114" }}>{money(price)}</span>
+        {onSale ? <span style={{ fontSize: px(42), fontWeight: 700, color: "#8C8E98", textDecoration: "line-through" }}>{money(product.price)}</span> : null}
+        {discount > 0 ? <span style={{ fontSize: px(34), fontWeight: 800, color: "#14A241", background: "#E5F6EA", borderRadius: 99, padding: `${px(28)}px ${px(26)}px` }}>{discount}% OFF</span> : null}
+      </div>
+      {rating > 0 ? (
+        <div style={{ fontSize: px(45), fontWeight: 800, color: "#101114", marginTop: px(12) }}>
+          <span style={{ color: "#F7A81B" }}>★</span> {rating.toFixed(1)}
+          {count > 10 ? <span style={{ fontSize: px(34), fontWeight: 500, color: "#6C6E78" }}> | ({count >= 1000 ? (count / 1000).toFixed(1) + "K" : count} reviews)</span> : null}
+        </div>
+      ) : null}
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: px(32), color: "#55575F", marginTop: px(22) }}>
+        {inStock ? <span>🚚 Fast delivery</span> : null}
+        <span style={{ color: "#14A241" }}>✓ Assured</span>
+        <span style={{ color: inStock ? "#14A241" : "#D93025", fontWeight: 700 }}>● {inStock ? "In Stock" : "Out of stock"}</span>
+      </div>
+      <div style={{ marginTop: px(20), height: px(96), borderRadius: px(22), background: "#1B5BF2", color: "#fff", display: "grid", placeItems: "center", fontSize: px(36.5), fontWeight: 700 }}>🛒 Add to Cart</div>
     </div>
   )
 }
