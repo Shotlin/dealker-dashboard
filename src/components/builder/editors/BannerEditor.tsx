@@ -1,45 +1,50 @@
-"use client"
+"use client";
 
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
-import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
-import { LinkPicker } from "../LinkPicker"
-import AnimationPicker from "./AnimationPicker"
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker";
+import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader";
+import { LinkPicker } from "../LinkPicker";
+import AnimationPicker from "./AnimationPicker";
 
 interface BannerEditorProps {
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
 }
 
 function getGradient(config: Record<string, unknown>): [string, string] {
   const gradient = Array.isArray(config.gradient)
-    ? config.gradient.filter((entry): entry is string => typeof entry === "string")
-    : []
+    ? config.gradient.filter(
+        (entry): entry is string => typeof entry === "string",
+      )
+    : [];
 
-  return [gradient[0] ?? "#E8F5E9", gradient[1] ?? "#C8E6C9"]
+  return [gradient[0] ?? "#E8F5E9", gradient[1] ?? "#C8E6C9"];
 }
 
 export default function BannerEditor({ config, onChange }: BannerEditorProps) {
-  const [gradientStart, gradientEnd] = getGradient(config)
+  const [gradientStart, gradientEnd] = getGradient(config);
   const containerColor =
-    typeof config.container_color === "string" ? config.container_color : "#E8F5E9"
+    typeof config.container_color === "string"
+      ? config.container_color
+      : "#E8F5E9";
   const contentSource =
     typeof config.content_source === "string"
       ? config.content_source
       : typeof config.lottie_url === "string" && config.lottie_url
         ? "lottie"
-        : "image"
-  const lottieUrl = typeof config.lottie_url === "string" ? config.lottie_url : ""
-  const height = typeof config.height === "number" ? config.height : 220
+        : "image";
+  const lottieUrl =
+    typeof config.lottie_url === "string" ? config.lottie_url : "";
+  const height = typeof config.height === "number" ? config.height : 220;
 
   const patchConfig = (patch: Partial<Record<string, unknown>>) => {
     onChange({
       ...config,
       ...patch,
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -50,8 +55,8 @@ export default function BannerEditor({ config, onChange }: BannerEditorProps) {
           onValueChange={(value) =>
             patchConfig({
               content_source: value,
-              image_url: value === "image" ? config.image_url ?? null : null,
-              lottie_url: value === "lottie" ? config.lottie_url ?? "" : null,
+              image_url: value === "image" ? (config.image_url ?? null) : null,
+              lottie_url: value === "lottie" ? (config.lottie_url ?? "") : null,
             })
           }
           className="grid grid-cols-2 gap-3"
@@ -74,8 +79,11 @@ export default function BannerEditor({ config, onChange }: BannerEditorProps) {
       {contentSource === "image" ? (
         <ThemeImageUploader
           label="Banner Image"
+          kind="banner"
           value={typeof config.image_url === "string" ? config.image_url : null}
-          onChange={(value) => patchConfig({ image_url: value, lottie_url: null })}
+          onChange={(value) =>
+            patchConfig({ image_url: value, lottie_url: null })
+          }
         />
       ) : (
         <ThemeImageUploader
@@ -95,7 +103,9 @@ export default function BannerEditor({ config, onChange }: BannerEditorProps) {
         <ThemeColorPicker
           label="Gradient End"
           value={gradientEnd}
-          onChange={(value) => patchConfig({ gradient: [gradientStart, value] })}
+          onChange={(value) =>
+            patchConfig({ gradient: [gradientStart, value] })
+          }
         />
       </div>
 
@@ -137,5 +147,5 @@ export default function BannerEditor({ config, onChange }: BannerEditorProps) {
         />
       </div>
     </div>
-  )
+  );
 }

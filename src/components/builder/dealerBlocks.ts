@@ -1,4 +1,4 @@
-import type { SectionType } from "@/types/theme.types"
+import type { SectionType } from "@/types/theme.types";
 
 /**
  * Home-design blocks of `05-home-below-fold.jpg`. Their content lives in the
@@ -10,7 +10,7 @@ export type DealerBlockType =
   | "deal_of_day"
   | "mega_sale"
   | "exchange_sell"
-  | "recent_recommended"
+  | "recent_recommended";
 
 export const DEALER_BLOCK_TYPES: DealerBlockType[] = [
   "live_auction",
@@ -18,27 +18,33 @@ export const DEALER_BLOCK_TYPES: DealerBlockType[] = [
   "mega_sale",
   "exchange_sell",
   "recent_recommended",
-]
+];
 
-export function isDealerBlock(type: SectionType | string): type is DealerBlockType {
-  return (DEALER_BLOCK_TYPES as string[]).includes(type)
+export function isDealerBlock(
+  type: SectionType | string,
+): type is DealerBlockType {
+  return (DEALER_BLOCK_TYPES as string[]).includes(type);
 }
 
 export interface BlockField {
-  key: string
-  label: string
-  kind: "text" | "color" | "datetime"
-  placeholder?: string
+  key: string;
+  label: string;
+  kind: "text" | "color" | "datetime";
+  placeholder?: string;
 }
 
-export const DEALER_BLOCK_DEFAULTS: Record<DealerBlockType, Record<string, unknown>> = {
+export const DEALER_BLOCK_DEFAULTS: Record<
+  DealerBlockType,
+  Record<string, unknown>
+> = {
   live_auction: {
     title: "LIVE AUCTION",
     subtitle: "Real Bids · Genuine Buyers · Best Deals",
     view_all_label: "View All →",
     button_label: "Bid Now →",
     bg_color: "#FFFFFF",
-    text_color: "#111111",
+    header_bg_color: "#EEE9FB",
+    text_color: "#1B1B4B",
     live_color: "#E0262F",
     button_color: "#4F3FE0",
     winning_color: "#1FB454",
@@ -87,10 +93,19 @@ export const DEALER_BLOCK_DEFAULTS: Record<DealerBlockType, Record<string, unkno
     bg_color: "#FFFFFF",
     text_color: "#111111",
   },
-}
+};
 
-const col = (key: string, label: string): BlockField => ({ key, label, kind: "color" })
-const txt = (key: string, label: string, placeholder?: string): BlockField => ({ key, label, kind: "text", placeholder })
+const col = (key: string, label: string): BlockField => ({
+  key,
+  label,
+  kind: "color",
+});
+const txt = (key: string, label: string, placeholder?: string): BlockField => ({
+  key,
+  label,
+  kind: "text",
+  placeholder,
+});
 
 export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
   live_auction: [
@@ -99,6 +114,7 @@ export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
     txt("view_all_label", "“View all” label"),
     txt("button_label", "Bid button label"),
     col("bg_color", "Card background"),
+    col("header_bg_color", "Header strip / image box color"),
     col("text_color", "Text color"),
     col("live_color", "LIVE badge / timer color"),
     col("button_color", "Bid button color"),
@@ -106,7 +122,11 @@ export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
   ],
   deal_of_day: [
     txt("title", "Title"),
-    { key: "ends_at", label: "Deal ends at (countdown; empty = end of today)", kind: "datetime" },
+    {
+      key: "ends_at",
+      label: "Deal ends at (countdown; empty = end of today)",
+      kind: "datetime",
+    },
     txt("button_label", "Button label"),
     col("bg_color", "Strip background"),
     col("card_color", "Card background"),
@@ -147,11 +167,15 @@ export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
     col("bg_color", "Card background"),
     col("text_color", "Text color"),
   ],
-}
+};
 
-export function blockValue(config: Record<string, unknown>, type: DealerBlockType, key: string): string {
-  const v = config[key]
-  if (typeof v === "string") return v
-  const d = DEALER_BLOCK_DEFAULTS[type][key]
-  return typeof d === "string" ? d : ""
+export function blockValue(
+  config: Record<string, unknown>,
+  type: DealerBlockType,
+  key: string,
+): string {
+  const v = config[key];
+  if (typeof v === "string") return v;
+  const d = DEALER_BLOCK_DEFAULTS[type][key];
+  return typeof d === "string" ? d : "";
 }

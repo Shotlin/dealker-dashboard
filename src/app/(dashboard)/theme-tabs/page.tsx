@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
-import Image from "next/image"
+import { useMemo, useState } from "react";
+import Image from "next/image";
 import {
   ArrowDown,
   ArrowUp,
@@ -17,15 +17,21 @@ import {
   Star,
   Tags,
   Trash2,
-} from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import { EmptyState } from "@/components/shared/EmptyState"
-import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton"
-import { PageHeader } from "@/components/shared/PageHeader"
-import { ImageUpload } from "@/components/products/ImageUpload"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { ImageUpload } from "@/components/products/ImageUpload";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -33,25 +39,25 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -59,20 +65,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useCategories } from "@/hooks/useCategories"
+} from "@/components/ui/table";
+import { useCategories } from "@/hooks/useCategories";
 import {
   useArchiveThemeTab,
   useCreateThemeTab,
   useRestoreThemeTab,
   useThemeTabs,
   useUpdateThemeTab,
-} from "@/hooks/useThemeTabs"
-import { useDebounce } from "@/hooks/useDebounce"
-import { getProducts } from "@/services/products.service"
-import { defaultMerchConfig } from "@/services/theme-tabs.service"
-import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
-import type { Category, Product } from "@/types"
+} from "@/hooks/useThemeTabs";
+import { useDebounce } from "@/hooks/useDebounce";
+import { getProducts } from "@/services/products.service";
+import { defaultMerchConfig } from "@/services/theme-tabs.service";
+import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker";
+import type { Category, Product } from "@/types";
 import type {
   CategoryRailConfig,
   MerchSectionConfig,
@@ -80,7 +86,7 @@ import type {
   ThemeStoreKey,
   ThemeTab,
   ThemeTabMerchConfig,
-} from "@/types/theme.types"
+} from "@/types/theme.types";
 
 const STORE_OPTIONS: Array<{ value: ThemeStoreKey; label: string }> = [
   { value: "mobile", label: "Mobile" },
@@ -92,13 +98,13 @@ const STORE_OPTIONS: Array<{ value: ThemeStoreKey; label: string }> = [
   { value: "deals", label: "Mega Deals" },
   { value: "brand_store", label: "Brand Store" },
   { value: "new_arrivals", label: "New Arrivals" },
-]
+];
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
   { value: "active", label: "Active" },
   { value: "archived", label: "Archived" },
-] as const
+] as const;
 
 // Mirrors HOME_CAPS in dealker-backend/src/modules/themes/public.controller.js.
 // The mobile home API always clamps to these caps regardless of what's saved
@@ -109,26 +115,26 @@ const MERCH_LIMIT_CAPS = {
   featured: 12,
   deals: 12,
   trending: 12,
-} as const
-const CATEGORY_RAIL_LIMIT_CAP = 8
+} as const;
+const CATEGORY_RAIL_LIMIT_CAP = 8;
 
 interface ThemeTabFormData {
-  store_key: ThemeStoreKey
-  key: string
-  label: string
-  image_url: string
-  text_color: string
-  sort_order: number
-  status: ThemeTab["status"]
-  is_default: boolean
-  merch_config: ThemeTabMerchConfig
+  store_key: ThemeStoreKey;
+  key: string;
+  label: string;
+  image_url: string;
+  text_color: string;
+  sort_order: number;
+  status: ThemeTab["status"];
+  is_default: boolean;
+  merch_config: ThemeTabMerchConfig;
   /** Immutable after creation — see the disabled Select in the dialog. */
-  audience: ThemeAudience
+  audience: ThemeAudience;
 }
 
 function createEmptyForm(
   storeKey: ThemeStoreKey = "marketplace",
-  audience: ThemeAudience = "B2C"
+  audience: ThemeAudience = "B2C",
 ): ThemeTabFormData {
   return {
     store_key: storeKey,
@@ -141,7 +147,7 @@ function createEmptyForm(
     is_default: false,
     merch_config: defaultMerchConfig(),
     audience,
-  }
+  };
 }
 
 function buildFormFromTab(tab: ThemeTab): ThemeTabFormData {
@@ -156,45 +162,65 @@ function buildFormFromTab(tab: ThemeTab): ThemeTabFormData {
     is_default: tab.is_default,
     merch_config: mergeMerchConfig(tab.merch_config),
     audience: tab.audience,
-  }
+  };
 }
 
 function mergeMerchConfig(
-  config?: Partial<ThemeTabMerchConfig> | null
+  config?: Partial<ThemeTabMerchConfig> | null,
 ): ThemeTabMerchConfig {
-  const defaults = defaultMerchConfig()
+  const defaults = defaultMerchConfig();
   return {
     seasonal_mosaic: {
       ...defaults.seasonal_mosaic,
       ...(config?.seasonal_mosaic ?? {}),
-      category_ids: [...(config?.seasonal_mosaic?.category_ids ?? defaults.seasonal_mosaic.category_ids)],
-      product_ids: [...(config?.seasonal_mosaic?.product_ids ?? defaults.seasonal_mosaic.product_ids)],
+      category_ids: [
+        ...(config?.seasonal_mosaic?.category_ids ??
+          defaults.seasonal_mosaic.category_ids),
+      ],
+      product_ids: [
+        ...(config?.seasonal_mosaic?.product_ids ??
+          defaults.seasonal_mosaic.product_ids),
+      ],
     },
     featured: {
       ...defaults.featured,
       ...(config?.featured ?? {}),
-      category_ids: [...(config?.featured?.category_ids ?? defaults.featured.category_ids)],
-      product_ids: [...(config?.featured?.product_ids ?? defaults.featured.product_ids)],
+      category_ids: [
+        ...(config?.featured?.category_ids ?? defaults.featured.category_ids),
+      ],
+      product_ids: [
+        ...(config?.featured?.product_ids ?? defaults.featured.product_ids),
+      ],
     },
     deals: {
       ...defaults.deals,
       ...(config?.deals ?? {}),
-      category_ids: [...(config?.deals?.category_ids ?? defaults.deals.category_ids)],
-      product_ids: [...(config?.deals?.product_ids ?? defaults.deals.product_ids)],
+      category_ids: [
+        ...(config?.deals?.category_ids ?? defaults.deals.category_ids),
+      ],
+      product_ids: [
+        ...(config?.deals?.product_ids ?? defaults.deals.product_ids),
+      ],
     },
     trending: {
       ...defaults.trending,
       ...(config?.trending ?? {}),
-      category_ids: [...(config?.trending?.category_ids ?? defaults.trending.category_ids)],
-      product_ids: [...(config?.trending?.product_ids ?? defaults.trending.product_ids)],
+      category_ids: [
+        ...(config?.trending?.category_ids ?? defaults.trending.category_ids),
+      ],
+      product_ids: [
+        ...(config?.trending?.product_ids ?? defaults.trending.product_ids),
+      ],
     },
-    category_rails: (config?.category_rails ?? defaults.category_rails).map((rail) => ({
-      category_id: rail.category_id ?? "",
-      product_ids: [...(rail.product_ids ?? [])],
-      limit: rail.limit ?? 6,
-      title: rail.title ?? null,
-    })),
-  }
+    category_rails: (config?.category_rails ?? defaults.category_rails).map(
+      (rail) => ({
+        category_id: rail.category_id ?? "",
+        product_ids: [...(rail.product_ids ?? [])],
+        limit: rail.limit ?? 6,
+        title: rail.title ?? null,
+      }),
+    ),
+  };
 }
 
 function slugifyTabKey(value: string) {
@@ -202,122 +228,128 @@ function slugifyTabKey(value: string) {
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
+    .replace(/^_+|_+$/g, "");
 }
 
 function moveItem<T>(items: T[], from: number, to: number) {
-  const next = [...items]
-  const [item] = next.splice(from, 1)
-  next.splice(to, 0, item)
-  return next
+  const next = [...items];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
 }
 
 function categoryNameMap(categories: Category[] | undefined) {
-  return new Map((categories ?? []).map((category) => [category.id, category.name]))
+  return new Map(
+    (categories ?? []).map((category) => [category.id, category.name]),
+  );
 }
 
 function productLookup(products: Product[] | undefined) {
-  return new Map((products ?? []).map((product) => [product.id, product]))
+  return new Map((products ?? []).map((product) => [product.id, product]));
 }
 
 export default function ThemeTabsPage() {
-  const [storeFilter, setStoreFilter] = useState<"all" | ThemeStoreKey>("all")
-  const [statusFilter, setStatusFilter] = useState<"all" | ThemeTab["status"]>("all")
+  const [storeFilter, setStoreFilter] = useState<"all" | ThemeStoreKey>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | ThemeTab["status"]>(
+    "all",
+  );
   // Storefront has a single (B2C) audience; the field is kept constant for the API.
-  const audienceFilter: ThemeAudience = "B2C"
-  const [search, setSearch] = useState("")
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingTab, setEditingTab] = useState<ThemeTab | null>(null)
-  const [form, setForm] = useState<ThemeTabFormData>(() => createEmptyForm())
+  const audienceFilter: ThemeAudience = "B2C";
+  const [search, setSearch] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingTab, setEditingTab] = useState<ThemeTab | null>(null);
+  const [form, setForm] = useState<ThemeTabFormData>(() => createEmptyForm());
 
   const { data: themeTabs, isLoading } = useThemeTabs({
     ...(storeFilter !== "all" ? { store_key: storeFilter } : {}),
     ...(statusFilter !== "all" ? { status: statusFilter } : {}),
     audience: audienceFilter,
-  })
-  const { data: categories } = useCategories()
+  });
+  const { data: categories } = useCategories();
   const { data: productPage } = useQuery({
     queryKey: ["theme-tabs", "product-lookup"],
     queryFn: () => getProducts({ page: 1, limit: 100, status: "active" }),
     staleTime: 30_000,
-  })
-  const createThemeTab = useCreateThemeTab()
-  const updateThemeTab = useUpdateThemeTab()
-  const archiveThemeTab = useArchiveThemeTab()
-  const restoreThemeTab = useRestoreThemeTab()
+  });
+  const createThemeTab = useCreateThemeTab();
+  const updateThemeTab = useUpdateThemeTab();
+  const archiveThemeTab = useArchiveThemeTab();
+  const restoreThemeTab = useRestoreThemeTab();
 
-  const categoryMap = useMemo(() => categoryNameMap(categories), [categories])
+  const categoryMap = useMemo(() => categoryNameMap(categories), [categories]);
   const productMap = useMemo(
     () => productLookup(productPage?.products),
-    [productPage?.products]
-  )
+    [productPage?.products],
+  );
 
   const filteredTabs = useMemo(() => {
-    const query = search.trim().toLowerCase()
+    const query = search.trim().toLowerCase();
     return (themeTabs ?? []).filter((tab) => {
-      if (!query) return true
+      if (!query) return true;
       return (
         tab.label.toLowerCase().includes(query) ||
         tab.key.toLowerCase().includes(query) ||
         tab.store_key.toLowerCase().includes(query)
-      )
-    })
-  }, [search, themeTabs])
+      );
+    });
+  }, [search, themeTabs]);
 
   const activeTabsByStore = useMemo(() => {
-    const grouped = new Map<ThemeStoreKey, ThemeTab[]>()
+    const grouped = new Map<ThemeStoreKey, ThemeTab[]>();
 
     STORE_OPTIONS.forEach((store) => {
-      grouped.set(store.value, [])
-    })
+      grouped.set(store.value, []);
+    });
 
-    ;(themeTabs ?? []).forEach((tab) => {
-      if (tab.status !== "active") return
-      const storeTabs = grouped.get(tab.store_key)
-      if (!storeTabs) return
-      storeTabs.push(tab)
-    })
+    (themeTabs ?? []).forEach((tab) => {
+      if (tab.status !== "active") return;
+      const storeTabs = grouped.get(tab.store_key);
+      if (!storeTabs) return;
+      storeTabs.push(tab);
+    });
 
     grouped.forEach((tabs, storeKey) => {
       grouped.set(
         storeKey,
         [...tabs].sort(
-          (a, b) => a.sort_order - b.sort_order || a.label.localeCompare(b.label)
-        )
-      )
-    })
+          (a, b) =>
+            a.sort_order - b.sort_order || a.label.localeCompare(b.label),
+        ),
+      );
+    });
 
-    return grouped
-  }, [themeTabs])
+    return grouped;
+  }, [themeTabs]);
 
-  const isSaving = createThemeTab.isPending || updateThemeTab.isPending
+  const isSaving = createThemeTab.isPending || updateThemeTab.isPending;
 
   const openCreate = () => {
-    setEditingTab(null)
-    setForm(createEmptyForm(storeFilter === "all" ? "marketplace" : storeFilter, audienceFilter))
-    setDialogOpen(true)
-  }
+    setEditingTab(null);
+    setForm(
+      createEmptyForm(
+        storeFilter === "all" ? "marketplace" : storeFilter,
+        audienceFilter,
+      ),
+    );
+    setDialogOpen(true);
+  };
 
   const openEdit = (tab: ThemeTab) => {
-    setEditingTab(tab)
-    setForm(buildFormFromTab(tab))
-    setDialogOpen(true)
-  }
+    setEditingTab(tab);
+    setForm(buildFormFromTab(tab));
+    setDialogOpen(true);
+  };
 
   const updateForm = <K extends keyof ThemeTabFormData>(
     field: K,
-    value: ThemeTabFormData[K]
+    value: ThemeTabFormData[K],
   ) => {
-    setForm((current) => ({ ...current, [field]: value }))
-  }
+    setForm((current) => ({ ...current, [field]: value }));
+  };
 
   const updateMerchSection = (
-    section:
-      | "seasonal_mosaic"
-      | "featured"
-      | "deals"
-      | "trending",
-    nextValue: MerchSectionConfig
+    section: "seasonal_mosaic" | "featured" | "deals" | "trending",
+    nextValue: MerchSectionConfig,
   ) => {
     setForm((current) => ({
       ...current,
@@ -325,20 +357,20 @@ export default function ThemeTabsPage() {
         ...current.merch_config,
         [section]: nextValue,
       },
-    }))
-  }
+    }));
+  };
 
   const updateRail = (index: number, nextRail: CategoryRailConfig) => {
     setForm((current) => ({
       ...current,
       merch_config: {
         ...current.merch_config,
-        category_rails: current.merch_config.category_rails.map((rail, railIndex) =>
-          railIndex === index ? nextRail : rail
+        category_rails: current.merch_config.category_rails.map(
+          (rail, railIndex) => (railIndex === index ? nextRail : rail),
         ),
       },
-    }))
-  }
+    }));
+  };
 
   const addRail = () => {
     setForm((current) => ({
@@ -355,8 +387,8 @@ export default function ThemeTabsPage() {
           },
         ],
       },
-    }))
-  }
+    }));
+  };
 
   const removeRail = (index: number) => {
     setForm((current) => ({
@@ -364,11 +396,11 @@ export default function ThemeTabsPage() {
       merch_config: {
         ...current.merch_config,
         category_rails: current.merch_config.category_rails.filter(
-          (_, railIndex) => railIndex !== index
+          (_, railIndex) => railIndex !== index,
         ),
       },
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = () => {
     const payload = {
@@ -383,56 +415,58 @@ export default function ThemeTabsPage() {
       merch_config: form.merch_config,
       // Audience is immutable after creation — only sent when creating.
       ...(editingTab ? {} : { audience: form.audience }),
-    }
+    };
 
     if (editingTab) {
       updateThemeTab.mutate(
         { id: editingTab.id, payload },
-        { onSuccess: () => setDialogOpen(false) }
-      )
-      return
+        { onSuccess: () => setDialogOpen(false) },
+      );
+      return;
     }
 
     createThemeTab.mutate(payload, {
       onSuccess: () => setDialogOpen(false),
-    })
-  }
+    });
+  };
 
   const handleMoveTab = (tab: ThemeTab, direction: -1 | 1) => {
-    if (tab.status !== "active") return
+    if (tab.status !== "active") return;
 
-    const storeTabs = activeTabsByStore.get(tab.store_key) ?? []
-    const currentIndex = storeTabs.findIndex((storeTab) => storeTab.id === tab.id)
-    const nextIndex = currentIndex + direction
+    const storeTabs = activeTabsByStore.get(tab.store_key) ?? [];
+    const currentIndex = storeTabs.findIndex(
+      (storeTab) => storeTab.id === tab.id,
+    );
+    const nextIndex = currentIndex + direction;
 
     if (currentIndex < 0 || nextIndex < 0 || nextIndex >= storeTabs.length) {
-      return
+      return;
     }
 
     updateThemeTab.mutate({
       id: tab.id,
       payload: { sort_order: nextIndex },
-    })
-  }
+    });
+  };
 
   const handleSetDefaultTab = (tab: ThemeTab) => {
     updateThemeTab.mutate({
       id: tab.id,
       payload: { is_default: true },
-    })
-  }
+    });
+  };
 
   const handleArchiveTab = (tab: ThemeTab) => {
     if (
       !window.confirm(
-        `Remove "${tab.label}" from the active tab strip? You can restore it later from Archived tabs.`
+        `Remove "${tab.label}" from the active tab strip? You can restore it later from Archived tabs.`,
       )
     ) {
-      return
+      return;
     }
 
-    archiveThemeTab.mutate(tab.id)
-  }
+    archiveThemeTab.mutate(tab.id);
+  };
 
   return (
     <div className="space-y-6">
@@ -519,175 +553,185 @@ export default function ThemeTabsPage() {
             </TableHeader>
             <TableBody>
               {filteredTabs.map((tab) => {
-                const storeTabs = activeTabsByStore.get(tab.store_key) ?? []
+                const storeTabs = activeTabsByStore.get(tab.store_key) ?? [];
                 const activeIndex = storeTabs.findIndex(
-                  (storeTab) => storeTab.id === tab.id
-                )
+                  (storeTab) => storeTab.id === tab.id,
+                );
                 const displayOrder =
                   tab.status === "active" && activeIndex >= 0
                     ? activeIndex
-                    : tab.sort_order
-                const canMoveUp = tab.status === "active" && activeIndex > 0
+                    : tab.sort_order;
+                const canMoveUp = tab.status === "active" && activeIndex > 0;
                 const canMoveDown =
                   tab.status === "active" &&
                   activeIndex >= 0 &&
-                  activeIndex < storeTabs.length - 1
+                  activeIndex < storeTabs.length - 1;
 
                 return (
-                <TableRow key={tab.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border bg-transparent">
-                        {tab.image_url ? (
-                          <Image
-                            src={tab.image_url}
-                            alt={tab.label}
-                            fill
-                            className="object-cover"
-                            sizes="48px"
-                          />
-                        ) : (
-                          <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="space-y-1">
-                        <div className="font-medium">{tab.label}</div>
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                          <Badge variant="outline">{tab.key}</Badge>
-                          {tab.is_default ? (
-                            <Badge className="border-amber-200 bg-amber-500/15 text-amber-700">
-                              <Star className="mr-1 h-3 w-3" />
-                              Default
-                            </Badge>
-                          ) : null}
-                          <span>{tab.id.slice(0, 8)}...</span>
+                  <TableRow key={tab.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border bg-transparent">
+                          {tab.image_url ? (
+                            <Image
+                              src={tab.image_url}
+                              alt={tab.label}
+                              fill
+                              className="object-cover"
+                              sizes="48px"
+                            />
+                          ) : (
+                            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <div className="font-medium">{tab.label}</div>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <Badge variant="outline">{tab.key}</Badge>
+                            {tab.is_default ? (
+                              <Badge className="border-amber-200 bg-amber-500/15 text-amber-700">
+                                <Star className="mr-1 h-3 w-3" />
+                                Default
+                              </Badge>
+                            ) : null}
+                            <span>{tab.id.slice(0, 8)}...</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      {STORE_OPTIONS.find((store) => store.value === tab.store_key)?.label ??
-                        tab.store_key}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        tab.status === "active"
-                          ? "border-emerald-200 bg-emerald-500/15 text-emerald-700"
-                          : "border-red-200 bg-red-500/15 text-red-700"
-                      }
-                    >
-                      {tab.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-sm text-muted-foreground">
-                        #{displayOrder}
-                      </span>
-                      {tab.status === "active" ? (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            onClick={() => handleMoveTab(tab, -1)}
-                            disabled={!canMoveUp || updateThemeTab.isPending}
-                            aria-label={`Move ${tab.label} up`}
-                          >
-                            <ArrowUp className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            onClick={() => handleMoveTab(tab, 1)}
-                            disabled={!canMoveDown || updateThemeTab.isPending}
-                            aria-label={`Move ${tab.label} down`}
-                          >
-                            <ArrowDown className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-2">
-                      <ThemeLinkPill label="A" theme={tab.theme_a} />
-                      <ThemeLinkPill label="B" theme={tab.theme_b} />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <div>
-                        Seasonal:{" "}
-                        {tab.merch_config.seasonal_mosaic.product_ids.length} manual /{" "}
-                        {tab.merch_config.seasonal_mosaic.category_ids.length} categories
-                      </div>
-                      <div>
-                        Featured:{" "}
-                        {tab.merch_config.featured.product_ids.length} manual /{" "}
-                        {tab.merch_config.featured.category_ids.length} categories
-                      </div>
-                      <div>
-                        Rails: {tab.merch_config.category_rails.length}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEdit(tab)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        {tab.status === "active" && !tab.is_default ? (
-                          <DropdownMenuItem
-                            onClick={() => handleSetDefaultTab(tab)}
-                            disabled={updateThemeTab.isPending}
-                          >
-                            <Star className="mr-2 h-4 w-4" />
-                            Set as default
-                          </DropdownMenuItem>
-                        ) : null}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {STORE_OPTIONS.find(
+                          (store) => store.value === tab.store_key,
+                        )?.label ?? tab.store_key}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          tab.status === "active"
+                            ? "border-emerald-200 bg-emerald-500/15 text-emerald-700"
+                            : "border-red-200 bg-red-500/15 text-red-700"
+                        }
+                      >
+                        {tab.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-sm text-muted-foreground">
+                          #{displayOrder}
+                        </span>
                         {tab.status === "active" ? (
-                          <DropdownMenuItem
-                            onClick={() => handleArchiveTab(tab)}
-                            disabled={archiveThemeTab.isPending}
-                            className="text-red-600 focus:text-red-600"
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              onClick={() => handleMoveTab(tab, -1)}
+                              disabled={!canMoveUp || updateThemeTab.isPending}
+                              aria-label={`Move ${tab.label} up`}
+                            >
+                              <ArrowUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              onClick={() => handleMoveTab(tab, 1)}
+                              disabled={
+                                !canMoveDown || updateThemeTab.isPending
+                              }
+                              aria-label={`Move ${tab.label} down`}
+                            >
+                              <ArrowDown className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-2">
+                        <ThemeLinkPill label="A" theme={tab.theme_a} />
+                        <ThemeLinkPill label="B" theme={tab.theme_b} />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1 text-sm text-muted-foreground">
+                        <div>
+                          Seasonal:{" "}
+                          {tab.merch_config.seasonal_mosaic.product_ids.length}{" "}
+                          manual /{" "}
+                          {tab.merch_config.seasonal_mosaic.category_ids.length}{" "}
+                          categories
+                        </div>
+                        <div>
+                          Featured:{" "}
+                          {tab.merch_config.featured.product_ids.length} manual
+                          / {tab.merch_config.featured.category_ids.length}{" "}
+                          categories
+                        </div>
+                        <div>
+                          Rails: {tab.merch_config.category_rails.length}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Remove Tab
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEdit(tab)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
                           </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem
-                            onClick={() => restoreThemeTab.mutate(tab.id)}
-                            disabled={restoreThemeTab.isPending}
-                          >
-                            <RotateCcw className="mr-2 h-4 w-4" />
-                            Restore
+                          {tab.status === "active" && !tab.is_default ? (
+                            <DropdownMenuItem
+                              onClick={() => handleSetDefaultTab(tab)}
+                              disabled={updateThemeTab.isPending}
+                            >
+                              <Star className="mr-2 h-4 w-4" />
+                              Set as default
+                            </DropdownMenuItem>
+                          ) : null}
+                          {tab.status === "active" ? (
+                            <DropdownMenuItem
+                              onClick={() => handleArchiveTab(tab)}
+                              disabled={archiveThemeTab.isPending}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Remove Tab
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => restoreThemeTab.mutate(tab.id)}
+                              disabled={restoreThemeTab.isPending}
+                            >
+                              <RotateCcw className="mr-2 h-4 w-4" />
+                              Restore
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => openEdit(tab)}>
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Open Merchandising
                           </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => openEdit(tab)}>
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          Open Merchandising
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-                )
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
               })}
             </TableBody>
           </Table>
@@ -701,7 +745,8 @@ export default function ThemeTabsPage() {
               {editingTab ? "Edit Theme Tab" : "Create Theme Tab"}
             </DialogTitle>
             <DialogDescription>
-              Configure store-specific tab metadata, iconography, linked theme context, and manual-first product merchandising.
+              Configure store-specific tab metadata, iconography, linked theme
+              context, and manual-first product merchandising.
             </DialogDescription>
           </DialogHeader>
 
@@ -736,18 +781,17 @@ export default function ThemeTabsPage() {
                     </Select>
                   </div>
 
-
                   <div className="space-y-2">
                     <Label>Tab Label</Label>
                     <Input
                       value={form.label}
                       onChange={(event) => {
-                        const label = event.target.value
+                        const label = event.target.value;
                         setForm((current) => ({
                           ...current,
                           label,
                           key: current.key ? current.key : slugifyTabKey(label),
-                        }))
+                        }));
                       }}
                       placeholder="e.g. Navratri"
                     />
@@ -757,7 +801,9 @@ export default function ThemeTabsPage() {
                     <Label>Tab Key</Label>
                     <Input
                       value={form.key}
-                      onChange={(event) => updateForm("key", slugifyTabKey(event.target.value))}
+                      onChange={(event) =>
+                        updateForm("key", slugifyTabKey(event.target.value))
+                      }
                       placeholder="navratri"
                     />
                   </div>
@@ -770,7 +816,10 @@ export default function ThemeTabsPage() {
                         min={0}
                         value={form.sort_order}
                         onChange={(event) =>
-                          updateForm("sort_order", Number(event.target.value) || 0)
+                          updateForm(
+                            "sort_order",
+                            Number(event.target.value) || 0,
+                          )
                         }
                       />
                     </div>
@@ -798,12 +847,15 @@ export default function ThemeTabsPage() {
                     <div className="space-y-0.5">
                       <Label>Default landing tab</Label>
                       <p className="text-xs text-muted-foreground">
-                        Customers see this tab first when they open the app for this store.
+                        Customers see this tab first when they open the app for
+                        this store.
                       </p>
                     </div>
                     <Switch
                       checked={form.is_default}
-                      onCheckedChange={(checked) => updateForm("is_default", checked)}
+                      onCheckedChange={(checked) =>
+                        updateForm("is_default", checked)
+                      }
                     />
                   </div>
 
@@ -813,11 +865,16 @@ export default function ThemeTabsPage() {
                       value={form.image_url || null}
                       onChange={(url) => updateForm("image_url", url ?? "")}
                       label="Upload Tab Icon"
+                      kind="theme"
                       helperText={
                         <div className="flex flex-col gap-0.5">
                           <span>• Use your real PNG / 3D icon image here</span>
-                          <span>• Transparent PNG works best for the app tab strip</span>
-                          <span>• Recommended square asset for consistent sizing</span>
+                          <span>
+                            • Transparent PNG works best for the app tab strip
+                          </span>
+                          <span>
+                            • Recommended square asset for consistent sizing
+                          </span>
                         </div>
                       }
                     />
@@ -835,12 +892,19 @@ export default function ThemeTabsPage() {
                 <CardHeader>
                   <CardTitle className="text-base">Linked Themes</CardTitle>
                   <CardDescription>
-                    Themes are linked from the Theme Editor by selecting this managed tab.
+                    Themes are linked from the Theme Editor by selecting this
+                    managed tab.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <ThemeLinkSummaryCard label="Variant A" theme={editingTab?.theme_a ?? null} />
-                  <ThemeLinkSummaryCard label="Variant B" theme={editingTab?.theme_b ?? null} />
+                  <ThemeLinkSummaryCard
+                    label="Variant A"
+                    theme={editingTab?.theme_a ?? null}
+                  />
+                  <ThemeLinkSummaryCard
+                    label="Variant B"
+                    theme={editingTab?.theme_b ?? null}
+                  />
                 </CardContent>
               </Card>
             </div>
@@ -848,9 +912,13 @@ export default function ThemeTabsPage() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Merchandising Builder</CardTitle>
+                  <CardTitle className="text-base">
+                    Merchandising Builder
+                  </CardTitle>
                   <CardDescription>
-                    Manual products appear first in saved order. Remaining slots are filled from selected categories with product deduplication.
+                    Manual products appear first in saved order. Remaining slots
+                    are filled from selected categories with product
+                    deduplication.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -862,7 +930,9 @@ export default function ThemeTabsPage() {
                     categories={categories ?? []}
                     categoryMap={categoryMap}
                     productMap={productMap}
-                    onChange={(value) => updateMerchSection("seasonal_mosaic", value)}
+                    onChange={(value) =>
+                      updateMerchSection("seasonal_mosaic", value)
+                    }
                   />
                   <Separator />
                   <MerchSectionEditor
@@ -903,12 +973,20 @@ export default function ThemeTabsPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-semibold">Category Rails</h3>
+                        <h3 className="text-sm font-semibold">
+                          Category Rails
+                        </h3>
                         <p className="text-sm text-muted-foreground">
-                          Add reusable product grids for the lower half of the home screen.
+                          Add reusable product grids for the lower half of the
+                          home screen.
                         </p>
                       </div>
-                      <Button type="button" variant="outline" size="sm" onClick={addRail}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addRail}
+                      >
                         <Plus className="mr-2 h-4 w-4" />
                         Add Rail
                       </Button>
@@ -917,7 +995,8 @@ export default function ThemeTabsPage() {
                     <div className="space-y-4">
                       {form.merch_config.category_rails.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-border/80 p-4 text-sm text-muted-foreground">
-                          No category rails yet. Add one to drive lower product sections for this tab.
+                          No category rails yet. Add one to drive lower product
+                          sections for this tab.
                         </div>
                       ) : (
                         form.merch_config.category_rails.map((rail, index) => (
@@ -948,7 +1027,9 @@ export default function ThemeTabsPage() {
             <Button
               onClick={handleSubmit}
               disabled={
-                isSaving || !form.label.trim() || !slugifyTabKey(form.key || form.label)
+                isSaving ||
+                !form.label.trim() ||
+                !slugifyTabKey(form.key || form.label)
               }
             >
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -958,15 +1039,15 @@ export default function ThemeTabsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
 
 function ThemeLinkPill({
   label,
   theme,
 }: {
-  label: string
-  theme: ThemeTab["theme_a"]
+  label: string;
+  theme: ThemeTab["theme_a"];
 }) {
   return (
     <div className="flex items-center gap-2 text-sm">
@@ -979,15 +1060,15 @@ function ThemeLinkPill({
         <span className="text-muted-foreground">Unlinked</span>
       )}
     </div>
-  )
+  );
 }
 
 function ThemeLinkSummaryCard({
   label,
   theme,
 }: {
-  label: string
-  theme: ThemeTab["theme_a"]
+  label: string;
+  theme: ThemeTab["theme_a"];
 }) {
   return (
     <div className="rounded-xl border border-border/80 p-4">
@@ -1000,7 +1081,8 @@ function ThemeLinkSummaryCard({
         )}
       </div>
       <p className="mt-2 text-sm">
-        {theme?.name ?? "Select this tab inside the Theme Editor to attach a theme variant."}
+        {theme?.name ??
+          "Select this tab inside the Theme Editor to attach a theme variant."}
       </p>
       {theme?.updated_at && (
         <p className="mt-1 text-xs text-muted-foreground">
@@ -1008,7 +1090,7 @@ function ThemeLinkSummaryCard({
         </p>
       )}
     </div>
-  )
+  );
 }
 
 function MerchSectionEditor({
@@ -1021,27 +1103,31 @@ function MerchSectionEditor({
   productMap,
   onChange,
 }: {
-  title: string
-  description: string
-  value: MerchSectionConfig
-  maxLimit: number
-  categories: Category[]
-  categoryMap: Map<string, string>
-  productMap: Map<string, Product>
-  onChange: (nextValue: MerchSectionConfig) => void
+  title: string;
+  description: string;
+  value: MerchSectionConfig;
+  maxLimit: number;
+  categories: Category[];
+  categoryMap: Map<string, string>;
+  productMap: Map<string, Product>;
+  onChange: (nextValue: MerchSectionConfig) => void;
 }) {
-  const [selectedCategoryToAdd, setSelectedCategoryToAdd] = useState<string>("")
+  const [selectedCategoryToAdd, setSelectedCategoryToAdd] =
+    useState<string>("");
 
   const addCategory = () => {
-    if (!selectedCategoryToAdd || value.category_ids.includes(selectedCategoryToAdd)) {
-      return
+    if (
+      !selectedCategoryToAdd ||
+      value.category_ids.includes(selectedCategoryToAdd)
+    ) {
+      return;
     }
     onChange({
       ...value,
       category_ids: [...value.category_ids, selectedCategoryToAdd],
-    })
-    setSelectedCategoryToAdd("")
-  }
+    });
+    setSelectedCategoryToAdd("");
+  };
 
   return (
     <div className="space-y-4">
@@ -1060,7 +1146,10 @@ function MerchSectionEditor({
             onChange={(event) =>
               onChange({
                 ...value,
-                limit: Math.max(1, Math.min(maxLimit, Number(event.target.value) || 1)),
+                limit: Math.max(
+                  1,
+                  Math.min(maxLimit, Number(event.target.value) || 1),
+                ),
               })
             }
           />
@@ -1078,7 +1167,9 @@ function MerchSectionEditor({
                 onClick={() =>
                   onChange({
                     ...value,
-                    category_ids: value.category_ids.filter((id) => id !== categoryId),
+                    category_ids: value.category_ids.filter(
+                      (id) => id !== categoryId,
+                    ),
                   })
                 }
               >
@@ -1122,7 +1213,7 @@ function MerchSectionEditor({
         }
       />
     </div>
-  )
+  );
 }
 
 function CategoryRailEditor({
@@ -1135,14 +1226,14 @@ function CategoryRailEditor({
   onChange,
   onRemove,
 }: {
-  index: number
-  value: CategoryRailConfig
-  maxLimit: number
-  categories: Category[]
-  categoryMap: Map<string, string>
-  productMap: Map<string, Product>
-  onChange: (value: CategoryRailConfig) => void
-  onRemove: () => void
+  index: number;
+  value: CategoryRailConfig;
+  maxLimit: number;
+  categories: Category[];
+  categoryMap: Map<string, string>;
+  productMap: Map<string, Product>;
+  onChange: (value: CategoryRailConfig) => void;
+  onRemove: () => void;
 }) {
   return (
     <Card className="border-border/70">
@@ -1210,7 +1301,10 @@ function CategoryRailEditor({
               onChange={(event) =>
                 onChange({
                   ...value,
-                  limit: Math.max(1, Math.min(maxLimit, Number(event.target.value) || 1)),
+                  limit: Math.max(
+                    1,
+                    Math.min(maxLimit, Number(event.target.value) || 1),
+                  ),
                 })
               }
             />
@@ -1219,11 +1313,13 @@ function CategoryRailEditor({
 
         {value.category_id ? (
           <Badge variant="outline">
-            Fill source: {categoryMap.get(value.category_id) ?? value.category_id}
+            Fill source:{" "}
+            {categoryMap.get(value.category_id) ?? value.category_id}
           </Badge>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Select a category to enable category-based fill after manual products.
+            Select a category to enable category-based fill after manual
+            products.
           </p>
         )}
 
@@ -1241,7 +1337,7 @@ function CategoryRailEditor({
         />
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function ProductOrderEditor({
@@ -1251,11 +1347,11 @@ function ProductOrderEditor({
   productMap,
   onChange,
 }: {
-  label: string
-  description: string
-  productIds: string[]
-  productMap: Map<string, Product>
-  onChange: (productIds: string[]) => void
+  label: string;
+  description: string;
+  productIds: string[];
+  productMap: Map<string, Product>;
+  onChange: (productIds: string[]) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -1267,8 +1363,8 @@ function ProductOrderEditor({
       <ProductSearchPicker
         productIds={productIds}
         onAdd={(productId) => {
-          if (productIds.includes(productId)) return
-          onChange([...productIds, productId])
+          if (productIds.includes(productId)) return;
+          onChange([...productIds, productId]);
         }}
       />
 
@@ -1279,7 +1375,7 @@ function ProductOrderEditor({
       ) : (
         <div className="space-y-2">
           {productIds.map((productId, index) => {
-            const product = productMap.get(productId)
+            const product = productMap.get(productId);
             return (
               <div
                 key={`${productId}-${index}`}
@@ -1303,7 +1399,9 @@ function ProductOrderEditor({
                     size="icon"
                     className="h-8 w-8"
                     disabled={index === 0}
-                    onClick={() => onChange(moveItem(productIds, index, index - 1))}
+                    onClick={() =>
+                      onChange(moveItem(productIds, index, index - 1))
+                    }
                   >
                     <ArrowUp className="h-4 w-4" />
                   </Button>
@@ -1313,7 +1411,9 @@ function ProductOrderEditor({
                     size="icon"
                     className="h-8 w-8"
                     disabled={index === productIds.length - 1}
-                    onClick={() => onChange(moveItem(productIds, index, index + 1))}
+                    onClick={() =>
+                      onChange(moveItem(productIds, index, index + 1))
+                    }
                   >
                     <ArrowDown className="h-4 w-4" />
                   </Button>
@@ -1330,24 +1430,24 @@ function ProductOrderEditor({
                   </Button>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function ProductSearchPicker({
   productIds,
   onAdd,
 }: {
-  productIds: string[]
-  onAdd: (productId: string) => void
+  productIds: string[];
+  onAdd: (productId: string) => void;
 }) {
-  const [search, setSearch] = useState("")
-  const debouncedSearch = useDebounce(search, 250)
-  const shouldSearch = debouncedSearch.trim().length >= 2
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 250);
+  const shouldSearch = debouncedSearch.trim().length >= 2;
 
   const { data, isFetching } = useQuery({
     queryKey: ["theme-tab-product-search", debouncedSearch],
@@ -1360,7 +1460,7 @@ function ProductSearchPicker({
       }),
     enabled: shouldSearch,
     staleTime: 30_000,
-  })
+  });
 
   return (
     <div className="space-y-2">
@@ -1380,7 +1480,7 @@ function ProductSearchPicker({
           ) : data?.products?.length ? (
             <div className="divide-y">
               {data.products.map((product) => {
-                const alreadyAdded = productIds.includes(product.id)
+                const alreadyAdded = productIds.includes(product.id);
                 return (
                   <button
                     key={product.id}
@@ -1388,8 +1488,8 @@ function ProductSearchPicker({
                     className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={alreadyAdded}
                     onClick={() => {
-                      onAdd(product.id)
-                      setSearch("")
+                      onAdd(product.id);
+                      setSearch("");
                     }}
                   >
                     <div className="min-w-0">
@@ -1404,7 +1504,7 @@ function ProductSearchPicker({
                       <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                     )}
                   </button>
-                )
+                );
               })}
             </div>
           ) : (
@@ -1415,5 +1515,5 @@ function ProductSearchPicker({
         </div>
       )}
     </div>
-  )
+  );
 }

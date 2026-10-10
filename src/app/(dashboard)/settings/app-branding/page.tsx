@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * App Branding — the splash screen image and header logo shown by the
@@ -8,55 +8,55 @@
  * falls back to its bundled default PNG for that slot.
  */
 
-import { useEffect, useState } from "react"
-import { Image as ImageIcon, Loader2, Save, Sparkles } from "lucide-react"
+import { useEffect, useState } from "react";
+import { Image as ImageIcon, Loader2, Save, Sparkles } from "lucide-react";
 
-import { PageHeader } from "@/components/shared/PageHeader"
-import { Button } from "@/components/ui/button"
+import { PageHeader } from "@/components/shared/PageHeader";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
-import { usePermissions } from "@/hooks/usePermissions"
-import { useBranding, useUpdateBranding } from "@/hooks/useBranding"
-import type { BrandingConfig } from "@/types/branding.types"
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useBranding, useUpdateBranding } from "@/hooks/useBranding";
+import type { BrandingConfig } from "@/types/branding.types";
 
 function toDraft(config: BrandingConfig): BrandingConfig {
   return {
     splashImageUrl: config.splashImageUrl,
     logoImageUrl: config.logoImageUrl,
-  }
+  };
 }
 
 export default function AppBrandingPage() {
-  const { can } = usePermissions()
-  const canManage = can("settings.manage")
+  const { can } = usePermissions();
+  const canManage = can("settings.manage");
 
-  const { data: branding, isLoading } = useBranding()
-  const updateMutation = useUpdateBranding()
+  const { data: branding, isLoading } = useBranding();
+  const updateMutation = useUpdateBranding();
 
   const [draft, setDraft] = useState<BrandingConfig>({
     splashImageUrl: null,
     logoImageUrl: null,
-  })
-  const [isDirty, setIsDirty] = useState(false)
+  });
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
-    if (!branding) return
-    setDraft(toDraft(branding))
-    setIsDirty(false)
-  }, [branding])
+    if (!branding) return;
+    setDraft(toDraft(branding));
+    setIsDirty(false);
+  }, [branding]);
 
   const handleSave = () => {
     updateMutation.mutate(draft, {
       onSuccess: () => setIsDirty(false),
-    })
-  }
+    });
+  };
 
   if (isLoading || !branding) {
     return (
@@ -79,7 +79,7 @@ export default function AppBrandingPage() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -117,8 +117,8 @@ export default function AppBrandingPage() {
               label="Splash Screen Image"
               value={draft.splashImageUrl}
               onChange={(splashImageUrl) => {
-                setDraft((current) => ({ ...current, splashImageUrl }))
-                setIsDirty(true)
+                setDraft((current) => ({ ...current, splashImageUrl }));
+                setIsDirty(true);
               }}
             />
             <p className="mt-3 text-xs text-muted-foreground">
@@ -144,10 +144,11 @@ export default function AppBrandingPage() {
           <CardContent>
             <ThemeImageUploader
               label="App Logo"
+              kind="icon"
               value={draft.logoImageUrl}
               onChange={(logoImageUrl) => {
-                setDraft((current) => ({ ...current, logoImageUrl }))
-                setIsDirty(true)
+                setDraft((current) => ({ ...current, logoImageUrl }));
+                setIsDirty(true);
               }}
             />
             <p className="mt-3 text-xs text-muted-foreground">
@@ -175,5 +176,5 @@ export default function AppBrandingPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,30 +1,38 @@
-"use client"
+"use client";
 
-import { useMemo, useRef, useState } from "react"
-import { Loader2, Trash2, FileImage, FileJson } from "lucide-react"
-import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
-import { uploadFile, uploadImage } from "@/services/uploads.service"
+import { useMemo, useRef, useState } from "react";
+import { Loader2, Trash2, FileImage, FileJson } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+import {
+  uploadFile,
+  uploadImage,
+  type UploadKind,
+} from "@/services/uploads.service";
 
 interface ThemeImageUploaderProps {
-  label: string
-  value: string | null
-  onChange: (url: string | null) => void
-  accept?: string
+  label: string;
+  value: string | null;
+  onChange: (url: string | null) => void;
+  accept?: string;
+  /** Cloudinary folder: dealker/<kind>. Defaults to "theme". */
+  kind?: UploadKind;
 }
 
 function isImageUpload(accept?: string) {
-  if (!accept) return true
-  return !accept.includes(".lottie") && !accept.includes(".json")
+  if (!accept) return true;
+  return !accept.includes(".lottie") && !accept.includes(".json");
 }
 
 function looksLikeImageUrl(value: string | null) {
-  if (!value) return false
-  return /\.(png|jpe?g|gif|webp|svg|avif)(\?|$)/i.test(value)
-    || value.includes("/image/upload/")
+  if (!value) return false;
+  return (
+    /\.(png|jpe?g|gif|webp|svg|avif)(\?|$)/i.test(value) ||
+    value.includes("/image/upload/")
+  );
 }
 
 export function ThemeImageUploader({
@@ -32,33 +40,34 @@ export function ThemeImageUploader({
   value,
   onChange,
   accept = "image/*",
+  kind = "theme",
 }: ThemeImageUploaderProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const shouldUseImageUpload = useMemo(() => isImageUpload(accept), [accept])
-  const showImagePreview = shouldUseImageUpload && looksLikeImageUrl(value)
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const shouldUseImageUpload = useMemo(() => isImageUpload(accept), [accept]);
+  const showImagePreview = shouldUseImageUpload && looksLikeImageUrl(value);
 
   const handleFile = async (file: File) => {
-    setIsUploading(true)
-    setProgress(0)
+    setIsUploading(true);
+    setProgress(0);
 
     try {
       const result = shouldUseImageUpload
-        ? await uploadImage(file, setProgress)
-        : await uploadFile(file, setProgress)
-      setProgress(100)
-      onChange(result.url)
-      toast.success("Asset uploaded")
+        ? await uploadImage(file, setProgress, kind)
+        : await uploadFile(file, setProgress, kind);
+      setProgress(100);
+      onChange(result.url);
+      toast.success("Asset uploaded");
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to upload asset"
-      toast.error(message)
+        error instanceof Error ? error.message : "Failed to upload asset";
+      toast.error(message);
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-2">
@@ -71,22 +80,22 @@ export function ThemeImageUploader({
             "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors",
             isDragging
               ? "border-primary bg-primary/5"
-              : "border-border hover:border-primary/50 hover:bg-muted/30"
+              : "border-border hover:border-primary/50 hover:bg-muted/30",
           )}
           onClick={() => inputRef.current?.click()}
           onDragOver={(event) => {
-            event.preventDefault()
-            setIsDragging(true)
+            event.preventDefault();
+            setIsDragging(true);
           }}
           onDragLeave={(event) => {
-            event.preventDefault()
-            setIsDragging(false)
+            event.preventDefault();
+            setIsDragging(false);
           }}
           onDrop={(event) => {
-            event.preventDefault()
-            setIsDragging(false)
-            const file = event.dataTransfer.files?.[0]
-            if (file) void handleFile(file)
+            event.preventDefault();
+            setIsDragging(false);
+            const file = event.dataTransfer.files?.[0];
+            if (file) void handleFile(file);
           }}
         >
           {isUploading ? (
@@ -102,17 +111,19 @@ export function ThemeImageUploader({
           ) : shouldUseImageUpload ? (
             <>
               <FileImage className="h-6 w-6 text-muted-foreground" />
-              <p className="text-sm font-medium">Drop an image here or click to upload</p>
+              <p className="text-sm font-medium">
+                Drop an image here or click to upload
+              </p>
             </>
           ) : (
             <>
               <FileJson className="h-6 w-6 text-muted-foreground" />
-              <p className="text-sm font-medium">Drop a Lottie or JSON file here</p>
+              <p className="text-sm font-medium">
+                Drop a Lottie or JSON file here
+              </p>
             </>
           )}
-          <p className="text-xs text-muted-foreground">
-            Accepted: {accept}
-          </p>
+          <p className="text-xs text-muted-foreground">Accepted: {accept}</p>
         </button>
 
         <input
@@ -121,9 +132,9 @@ export function ThemeImageUploader({
           accept={accept}
           className="hidden"
           onChange={(event) => {
-            const file = event.target.files?.[0]
-            if (file) void handleFile(file)
-            event.currentTarget.value = ""
+            const file = event.target.files?.[0];
+            if (file) void handleFile(file);
+            event.currentTarget.value = "";
           }}
         />
 
@@ -167,5 +178,5 @@ export function ThemeImageUploader({
         )}
       </div>
     </div>
-  )
+  );
 }

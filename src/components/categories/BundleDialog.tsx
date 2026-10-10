@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * Bundle creation — deliberately a separate, simpler dialog from the
@@ -8,7 +8,7 @@
  * bundle is a fast two-field action.
  */
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,40 +16,40 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
-import { ImageUpload } from "@/components/products/ImageUpload"
-import { useCreateBundle } from "@/hooks/useCategories"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { ImageUpload } from "@/components/products/ImageUpload";
+import { useCreateBundle } from "@/hooks/useCategories";
 
 interface BundleDialogProps {
-  open: boolean
-  onClose: () => void
+  open: boolean;
+  onClose: () => void;
 }
 
-const INITIAL = { name: "", description: "", image_url: "" }
+const INITIAL = { name: "", description: "", image_url: "" };
 
 export function BundleDialog({ open, onClose }: BundleDialogProps) {
-  const [form, setForm] = useState(INITIAL)
-  const createBundle = useCreateBundle()
+  const [form, setForm] = useState(INITIAL);
+  const createBundle = useCreateBundle();
 
   function handleClose() {
-    setForm(INITIAL)
-    onClose()
+    setForm(INITIAL);
+    onClose();
   }
 
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
     createBundle.mutate(
       {
         name: form.name,
         description: form.description || undefined,
         image_url: form.image_url || undefined,
       },
-      { onSuccess: handleClose }
-    )
+      { onSuccess: handleClose },
+    );
   }
 
   return (
@@ -58,9 +58,9 @@ export function BundleDialog({ open, onClose }: BundleDialogProps) {
         <DialogHeader>
           <DialogTitle>New Bundle</DialogTitle>
           <DialogDescription>
-            A promo grouping of products (e.g. &ldquo;Milkshake Offer&rdquo;) — hidden from the
-            normal category list, surfaced only through a banner you link to it. Add products
-            after creating it.
+            A promo grouping of products (e.g. &ldquo;Milkshake Offer&rdquo;) —
+            hidden from the normal category list, surfaced only through a banner
+            you link to it. Add products after creating it.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -80,7 +80,9 @@ export function BundleDialog({ open, onClose }: BundleDialogProps) {
             <Input
               id="bundle-desc"
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               placeholder="Brief description"
               maxLength={500}
             />
@@ -91,8 +93,12 @@ export function BundleDialog({ open, onClose }: BundleDialogProps) {
               value={form.image_url || null}
               onChange={(url) => setForm({ ...form, image_url: url ?? "" })}
               label="Upload Bundle Image"
+              kind="category"
               helperText={
-                <span>Shown in admin tooling only — customers see the banner you link to this bundle.</span>
+                <span>
+                  Shown in admin tooling only — customers see the banner you
+                  link to this bundle.
+                </span>
               }
             />
           </div>
@@ -101,12 +107,14 @@ export function BundleDialog({ open, onClose }: BundleDialogProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={createBundle.isPending}>
-              {createBundle.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {createBundle.isPending && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
               Create Bundle
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * ProductGalleryUpload — manage a product's image gallery (1–5 images).
@@ -20,9 +20,9 @@
  * order / pricing logic — it only edits the image URL list.
  */
 
-import { useCallback, useRef, useState } from "react"
-import Image from "next/image"
-import { ImagePlus, Loader2, Star, X, GripVertical, Plus } from "lucide-react"
+import { useCallback, useRef, useState } from "react";
+import Image from "next/image";
+import { ImagePlus, Loader2, Star, X, GripVertical, Plus } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -31,31 +31,31 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-} from "@dnd-kit/core"
+} from "@dnd-kit/core";
 import {
   SortableContext,
   rectSortingStrategy,
   useSortable,
   arrayMove,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useUploadImage } from "@/hooks/useUploads"
-import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useUploadImage } from "@/hooks/useUploads";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-const MAX_IMAGES = 5
+const MAX_IMAGES = 5;
 
 function sanitizeCloudinaryUrl(value: string | null | undefined) {
-  if (!value) return null
-  const trimmed = value.trim()
-  if (!trimmed) return null
-  const httpsIndex = trimmed.lastIndexOf("https://res.cloudinary.com/")
-  const httpIndex = trimmed.lastIndexOf("http://res.cloudinary.com/")
-  const startIndex = Math.max(httpsIndex, httpIndex)
-  if (startIndex >= 0) return trimmed.slice(startIndex)
-  return trimmed
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const httpsIndex = trimmed.lastIndexOf("https://res.cloudinary.com/");
+  const httpIndex = trimmed.lastIndexOf("http://res.cloudinary.com/");
+  const startIndex = Math.max(httpsIndex, httpIndex);
+  if (startIndex >= 0) return trimmed.slice(startIndex);
+  return trimmed;
 }
 
 function SortableGalleryItem({
@@ -66,22 +66,28 @@ function SortableGalleryItem({
   onRemove,
   onSetPrimary,
 }: {
-  id: string
-  url: string
-  index: number
-  isPrimary: boolean
-  onRemove: () => void
-  onSetPrimary: () => void
+  id: string;
+  url: string;
+  index: number;
+  isPrimary: boolean;
+  onRemove: () => void;
+  onSetPrimary: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 50 : undefined,
-  }
+  };
 
   return (
     <div
@@ -89,7 +95,7 @@ function SortableGalleryItem({
       style={style}
       className={cn(
         "relative group aspect-square rounded-lg overflow-hidden border-2",
-        isPrimary ? "border-brand-500" : "border-border"
+        isPrimary ? "border-brand-500" : "border-border",
       )}
     >
       <Image
@@ -142,13 +148,13 @@ function SortableGalleryItem({
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 interface ProductGalleryUploadProps {
-  value: string[]
-  onChange: (urls: string[]) => void
-  className?: string
+  value: string[];
+  onChange: (urls: string[]) => void;
+  className?: string;
 }
 
 export function ProductGalleryUpload({
@@ -156,63 +162,63 @@ export function ProductGalleryUpload({
   onChange,
   className,
 }: ProductGalleryUploadProps) {
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [uploading, setUploading] = useState(false)
-  const [urlInput, setUrlInput] = useState("")
-  const uploadMutation = useUploadImage()
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const uploadMutation = useUploadImage("product");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor)
-  )
+    useSensor(KeyboardSensor),
+  );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event
-      if (!over || active.id === over.id) return
-      const oldIndex = value.indexOf(active.id as string)
-      const newIndex = value.indexOf(over.id as string)
-      if (oldIndex === -1 || newIndex === -1) return
-      onChange(arrayMove(value, oldIndex, newIndex))
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = value.indexOf(active.id as string);
+      const newIndex = value.indexOf(over.id as string);
+      if (oldIndex === -1 || newIndex === -1) return;
+      onChange(arrayMove(value, oldIndex, newIndex));
     },
-    [value, onChange]
-  )
+    [value, onChange],
+  );
 
   const handleFiles = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files ?? [])
-      if (!files.length) return
+      const files = Array.from(e.target.files ?? []);
+      if (!files.length) return;
 
-      const remaining = MAX_IMAGES - value.length
+      const remaining = MAX_IMAGES - value.length;
       if (remaining <= 0) {
-        toast.error(`Maximum ${MAX_IMAGES} images allowed`)
-        if (fileRef.current) fileRef.current.value = ""
-        return
+        toast.error(`Maximum ${MAX_IMAGES} images allowed`);
+        if (fileRef.current) fileRef.current.value = "";
+        return;
       }
 
-      const toUpload = files.slice(0, remaining)
+      const toUpload = files.slice(0, remaining);
       if (toUpload.length < files.length) {
         toast.warning(
-          `Only uploading ${toUpload.length} of ${files.length} (max ${MAX_IMAGES} images)`
-        )
+          `Only uploading ${toUpload.length} of ${files.length} (max ${MAX_IMAGES} images)`,
+        );
       }
 
       // Reject oversize files up-front
       const valid = toUpload.filter((f) => {
         if (f.size > 5 * 1024 * 1024) {
-          toast.error(`${f.name} is over 5MB — skipped`)
-          return false
+          toast.error(`${f.name} is over 5MB — skipped`);
+          return false;
         }
-        return true
-      })
+        return true;
+      });
 
-      setUploading(true)
-      const newUrls: string[] = []
+      setUploading(true);
+      const newUrls: string[] = [];
       for (const file of valid) {
         try {
-          const result = await uploadMutation.mutateAsync(file)
+          const result = await uploadMutation.mutateAsync(file);
           if (result?.url && !value.includes(result.url)) {
-            newUrls.push(result.url)
+            newUrls.push(result.url);
           }
         } catch {
           // error toast handled by the mutation
@@ -220,40 +226,40 @@ export function ProductGalleryUpload({
       }
 
       if (newUrls.length) {
-        onChange([...value, ...newUrls])
-        toast.success(`${newUrls.length} image(s) uploaded`)
+        onChange([...value, ...newUrls]);
+        toast.success(`${newUrls.length} image(s) uploaded`);
       }
-      setUploading(false)
-      if (fileRef.current) fileRef.current.value = ""
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
     },
-    [value, onChange, uploadMutation]
-  )
+    [value, onChange, uploadMutation],
+  );
 
   const addUrl = useCallback(() => {
-    const url = urlInput.trim()
-    if (!url) return
+    const url = urlInput.trim();
+    if (!url) return;
     if (value.length >= MAX_IMAGES) {
-      toast.error(`Maximum ${MAX_IMAGES} images allowed`)
-      return
+      toast.error(`Maximum ${MAX_IMAGES} images allowed`);
+      return;
     }
     if (value.includes(url)) {
-      toast.warning("That image is already in the gallery")
-      return
+      toast.warning("That image is already in the gallery");
+      return;
     }
-    onChange([...value, url])
-    setUrlInput("")
-  }, [urlInput, value, onChange])
+    onChange([...value, url]);
+    setUrlInput("");
+  }, [urlInput, value, onChange]);
 
   const removeImage = (index: number) =>
-    onChange(value.filter((_, i) => i !== index))
+    onChange(value.filter((_, i) => i !== index));
 
   const setPrimary = (index: number) => {
-    if (index === 0) return
-    const next = [...value]
-    const [picked] = next.splice(index, 1)
-    next.unshift(picked)
-    onChange(next)
-  }
+    if (index === 0) return;
+    const next = [...value];
+    const [picked] = next.splice(index, 1);
+    next.unshift(picked);
+    onChange(next);
+  };
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -319,8 +325,8 @@ export function ProductGalleryUpload({
           onChange={(e) => setUrlInput(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              e.preventDefault()
-              addUrl()
+              e.preventDefault();
+              addUrl();
             }
           }}
           placeholder="Or paste an image URL (https://res.cloudinary.com/...)"
@@ -348,5 +354,5 @@ export function ProductGalleryUpload({
         className="hidden"
       />
     </div>
-  )
+  );
 }

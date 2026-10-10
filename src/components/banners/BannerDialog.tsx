@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { ImageUpload } from "@/components/products/ImageUpload"
-import { useCreateBanner, useUpdateBanner } from "@/hooks/useBanners"
-import { useCategories, useBundles } from "@/hooks/useCategories"
-import { useCustomerSegments } from "@/hooks/useCustomerSegments"
-import type { Banner, CreateBannerPayload } from "@/types/banner.types"
+} from "@/components/ui/select";
+import { ImageUpload } from "@/components/products/ImageUpload";
+import { useCreateBanner, useUpdateBanner } from "@/hooks/useBanners";
+import { useCategories, useBundles } from "@/hooks/useCategories";
+import { useCustomerSegments } from "@/hooks/useCustomerSegments";
+import type { Banner, CreateBannerPayload } from "@/types/banner.types";
 
 /** Declared width x height for each placement's slot, shown as a guide next
  * to the dimension inputs — not enforced server-side, just what the
@@ -34,13 +34,16 @@ const PLACEMENT_GUIDE: Record<
   { label: string; suggested: string }
 > = {
   HOME: { label: "Home screen", suggested: "1080 × 480 (9:4 wide carousel)" },
-  PROFILE: { label: "Profile screen", suggested: "1080 × 360 (3:1 wide strip)" },
-}
+  PROFILE: {
+    label: "Profile screen",
+    suggested: "1080 × 360 (3:1 wide strip)",
+  },
+};
 
 interface BannerDialogProps {
-  open: boolean
-  onClose: () => void
-  banner?: Banner | null
+  open: boolean;
+  onClose: () => void;
+  banner?: Banner | null;
 }
 
 const INITIAL: CreateBannerPayload & { isActive: boolean } = {
@@ -58,7 +61,7 @@ const INITIAL: CreateBannerPayload & { isActive: boolean } = {
   targetSegmentId: undefined,
   imageWidth: undefined,
   imageHeight: undefined,
-}
+};
 
 /** Loads the uploaded image and reports its natural pixel size back, so the
  * form can warn when it doesn't match what the admin declared — the actual
@@ -71,40 +74,51 @@ function BannerSizeCheck({
   declaredHeight,
   placement,
 }: {
-  imageUrl: string
-  declaredWidth?: number
-  declaredHeight?: number
-  placement: NonNullable<CreateBannerPayload["placement"]>
+  imageUrl: string;
+  declaredWidth?: number;
+  declaredHeight?: number;
+  placement: NonNullable<CreateBannerPayload["placement"]>;
 }) {
-  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null)
-  const [failed, setFailed] = useState(false)
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setNatural(null)
-    setFailed(false)
-    if (!imageUrl) return
-    const img = new window.Image()
-    img.onload = () => setNatural({ w: img.naturalWidth, h: img.naturalHeight })
-    img.onerror = () => setFailed(true)
-    img.src = imageUrl
-  }, [imageUrl])
+    setNatural(null);
+    setFailed(false);
+    if (!imageUrl) return;
+    const img = new window.Image();
+    img.onload = () =>
+      setNatural({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => setFailed(true);
+    img.src = imageUrl;
+  }, [imageUrl]);
 
-  if (!imageUrl) return null
+  if (!imageUrl) return null;
   if (failed) {
-    return <p className="text-xs text-destructive">Couldn&apos;t load this image URL to check its size.</p>
+    return (
+      <p className="text-xs text-destructive">
+        Couldn&apos;t load this image URL to check its size.
+      </p>
+    );
   }
   if (!natural) {
-    return <p className="text-xs text-muted-foreground">Checking image size…</p>
+    return (
+      <p className="text-xs text-muted-foreground">Checking image size…</p>
+    );
   }
 
-  const declared = declaredWidth && declaredHeight ? { w: declaredWidth, h: declaredHeight } : null
-  const naturalRatio = natural.w / natural.h
-  const declaredRatio = declared ? declared.w / declared.h : null
+  const declared =
+    declaredWidth && declaredHeight
+      ? { w: declaredWidth, h: declaredHeight }
+      : null;
+  const naturalRatio = natural.w / natural.h;
+  const declaredRatio = declared ? declared.w / declared.h : null;
   // >8% off the declared aspect ratio is enough to visibly crop or letterbox
   // on the actual screen — anything tighter than that is normal
   // compression/export noise, not a real mismatch.
   const ratioMismatch =
-    declaredRatio !== null && Math.abs(naturalRatio - declaredRatio) / declaredRatio > 0.08
+    declaredRatio !== null &&
+    Math.abs(naturalRatio - declaredRatio) / declaredRatio > 0.08;
 
   return (
     <div className="rounded-md border bg-muted/30 p-2.5 space-y-2">
@@ -113,55 +127,63 @@ function BannerSizeCheck({
         style={{ aspectRatio: `${natural.w} / ${natural.h}`, maxHeight: 140 }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="Banner preview" className="w-full h-full object-cover" />
+        <img
+          src={imageUrl}
+          alt="Banner preview"
+          className="w-full h-full object-cover"
+        />
       </div>
       <p className="text-xs text-muted-foreground">
-        Uploaded image is {natural.w} × {natural.h}px for {PLACEMENT_GUIDE[placement].label}.
+        Uploaded image is {natural.w} × {natural.h}px for{" "}
+        {PLACEMENT_GUIDE[placement].label}.
       </p>
       {declared && ratioMismatch && (
         <p className="text-xs text-amber-600">
-          This doesn&apos;t match the declared {declared.w} × {declared.h}px — the app will crop or
-          letterbox it to fit. Re-export at that size, or update the width/height above.
+          This doesn&apos;t match the declared {declared.w} × {declared.h}px —
+          the app will crop or letterbox it to fit. Re-export at that size, or
+          update the width/height above.
         </p>
       )}
       {declared && !ratioMismatch && (
-        <p className="text-xs text-emerald-600">Matches the declared size — safe to publish.</p>
+        <p className="text-xs text-emerald-600">
+          Matches the declared size — safe to publish.
+        </p>
       )}
       {!declared && (
         <p className="text-xs text-muted-foreground">
-          Set width/height above to check this image against the {PLACEMENT_GUIDE[placement].label}
-          {" "}slot before publishing.
+          Set width/height above to check this image against the{" "}
+          {PLACEMENT_GUIDE[placement].label} slot before publishing.
         </p>
       )}
     </div>
-  )
+  );
 }
 
 function sanitizeBannerImageUrl(value: string | null | undefined) {
-  if (!value) return ""
+  if (!value) return "";
 
-  const trimmed = value.trim()
-  if (!trimmed) return ""
+  const trimmed = value.trim();
+  if (!trimmed) return "";
 
-  const httpsIndex = trimmed.lastIndexOf("https://res.cloudinary.com/")
-  const httpIndex = trimmed.lastIndexOf("http://res.cloudinary.com/")
-  const startIndex = Math.max(httpsIndex, httpIndex)
+  const httpsIndex = trimmed.lastIndexOf("https://res.cloudinary.com/");
+  const httpIndex = trimmed.lastIndexOf("http://res.cloudinary.com/");
+  const startIndex = Math.max(httpsIndex, httpIndex);
 
   if (startIndex >= 0) {
-    return trimmed.slice(startIndex)
+    return trimmed.slice(startIndex);
   }
 
-  return trimmed
+  return trimmed;
 }
 
 export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
-  const [form, setForm] = useState(INITIAL)
-  const createMutation = useCreateBanner()
-  const updateMutation = useUpdateBanner()
-  const isEdit = !!banner
-  const { data: categories } = useCategories()
-  const { data: bundles } = useBundles()
-  const { data: segments } = useCustomerSegments()
+  const [form, setForm] = useState(INITIAL);
+  const createMutation = useCreateBanner();
+  const updateMutation = useUpdateBanner();
+  const isEdit = !!banner;
+  const { data: categories } = useCategories();
+  const { data: bundles } = useBundles();
+  const { data: segments } = useCustomerSegments();
 
   useEffect(() => {
     if (banner) {
@@ -180,14 +202,14 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
         targetSegmentId: banner.target_segment_id ?? undefined,
         imageWidth: banner.image_width ?? undefined,
         imageHeight: banner.image_height ?? undefined,
-      })
+      });
     } else {
-      setForm(INITIAL)
+      setForm(INITIAL);
     }
-  }, [banner, open])
+  }, [banner, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     const payload: CreateBannerPayload = {
       title: form.title.trim(),
       imageUrl: sanitizeBannerImageUrl(form.imageUrl),
@@ -198,7 +220,9 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
       // datetime-local gives "2026-07-13T15:53" (no seconds/timezone) —
       // the backend requires a full RFC3339 date-time, which rejects that
       // with "must match format \"date-time\"".
-      startDate: form.startDate ? new Date(form.startDate).toISOString() : undefined,
+      startDate: form.startDate
+        ? new Date(form.startDate).toISOString()
+        : undefined,
       endDate: form.endDate ? new Date(form.endDate).toISOString() : undefined,
       triggerType: form.triggerType,
       audience: form.audience,
@@ -206,19 +230,16 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
       targetSegmentId: form.targetSegmentId || undefined,
       imageWidth: form.imageWidth || undefined,
       imageHeight: form.imageHeight || undefined,
-    }
+    };
 
     if (isEdit && banner) {
-      updateMutation.mutate(
-        { id: banner.id, payload },
-        { onSuccess: onClose }
-      )
+      updateMutation.mutate({ id: banner.id, payload }, { onSuccess: onClose });
     } else {
-      createMutation.mutate(payload, { onSuccess: onClose })
+      createMutation.mutate(payload, { onSuccess: onClose });
     }
-  }
+  };
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -247,7 +268,10 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
             <Select
               value={form.bannerType ?? "carousel"}
               onValueChange={(v) =>
-                setForm({ ...form, bannerType: v as CreateBannerPayload["bannerType"] })
+                setForm({
+                  ...form,
+                  bannerType: v as CreateBannerPayload["bannerType"],
+                })
               }
             >
               <SelectTrigger>
@@ -268,7 +292,10 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
               <Select
                 value={form.triggerType ?? "ALWAYS"}
                 onValueChange={(v) =>
-                  setForm({ ...form, triggerType: v as CreateBannerPayload["triggerType"] })
+                  setForm({
+                    ...form,
+                    triggerType: v as CreateBannerPayload["triggerType"],
+                  })
                 }
               >
                 <SelectTrigger>
@@ -276,7 +303,9 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALWAYS">Always</SelectItem>
-                  <SelectItem value="STORE_CLOSED">Only when store is closed</SelectItem>
+                  <SelectItem value="STORE_CLOSED">
+                    Only when store is closed
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,7 +315,10 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
               <Select
                 value={form.audience ?? "B2C"}
                 onValueChange={(v) =>
-                  setForm({ ...form, audience: v as CreateBannerPayload["audience"] })
+                  setForm({
+                    ...form,
+                    audience: v as CreateBannerPayload["audience"],
+                  })
                 }
               >
                 <SelectTrigger>
@@ -308,7 +340,10 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
               <Select
                 value={form.placement ?? "HOME"}
                 onValueChange={(v) =>
-                  setForm({ ...form, placement: v as CreateBannerPayload["placement"] })
+                  setForm({
+                    ...form,
+                    placement: v as CreateBannerPayload["placement"],
+                  })
                 }
               >
                 <SelectTrigger>
@@ -320,7 +355,8 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Suggested size: {PLACEMENT_GUIDE[form.placement ?? "HOME"].suggested}
+                Suggested size:{" "}
+                {PLACEMENT_GUIDE[form.placement ?? "HOME"].suggested}
               </p>
             </div>
 
@@ -329,7 +365,10 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
               <Select
                 value={form.targetSegmentId ?? "__all__"}
                 onValueChange={(v) =>
-                  setForm({ ...form, targetSegmentId: v === "__all__" ? undefined : v })
+                  setForm({
+                    ...form,
+                    targetSegmentId: v === "__all__" ? undefined : v,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -346,7 +385,8 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
               </Select>
               {form.targetSegmentId && (
                 <p className="text-xs text-muted-foreground">
-                  Only signed-in members of this segment see this banner — combined with Audience above.
+                  Only signed-in members of this segment see this banner —
+                  combined with Audience above.
                 </p>
               )}
             </div>
@@ -365,7 +405,9 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    imageWidth: e.target.value ? Number(e.target.value) : undefined,
+                    imageWidth: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
                   })
                 }
               />
@@ -381,7 +423,9 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    imageHeight: e.target.value ? Number(e.target.value) : undefined,
+                    imageHeight: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
                   })
                 }
               />
@@ -395,11 +439,19 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
               value={form.imageUrl || null}
               onChange={(url) => setForm({ ...form, imageUrl: url ?? "" })}
               label="Upload Banner Image"
+              kind="banner"
               helperText={
                 <div className="flex flex-col gap-0.5">
-                  <span>• <strong>Size:</strong> Max 5MB</span>
-                  <span>• <strong>Format:</strong> JPG, PNG, WEBP</span>
-                  <span>• <strong>Recommended:</strong> Wide banner image (carousel ratio)</span>
+                  <span>
+                    • <strong>Size:</strong> Max 5MB
+                  </span>
+                  <span>
+                    • <strong>Format:</strong> JPG, PNG, WEBP
+                  </span>
+                  <span>
+                    • <strong>Recommended:</strong> Wide banner image (carousel
+                    ratio)
+                  </span>
                 </div>
               }
             />
@@ -481,9 +533,13 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
                 </Label>
                 <Input
                   id="linkValue"
-                  placeholder={form.linkType === "url" ? "https://..." : "Enter product ID"}
+                  placeholder={
+                    form.linkType === "url" ? "https://..." : "Enter product ID"
+                  }
                   value={form.linkValue ?? ""}
-                  onChange={(e) => setForm({ ...form, linkValue: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, linkValue: e.target.value })
+                  }
                 />
               </div>
             )}
@@ -497,7 +553,9 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
                 id="startDate"
                 type="datetime-local"
                 value={form.startDate ?? ""}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, startDate: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5">
@@ -531,5 +589,5 @@ export function BannerDialog({ open, onClose, banner }: BannerDialogProps) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

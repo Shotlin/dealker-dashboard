@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useRef, useCallback } from "react"
-import Image from "next/image"
-import { Upload, X, Loader2, ImagePlus, GripVertical } from "lucide-react"
+import { useState, useRef, useCallback } from "react";
+import Image from "next/image";
+import { Upload, X, Loader2, ImagePlus, GripVertical } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -11,42 +11,45 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-} from "@dnd-kit/core"
+} from "@dnd-kit/core";
 import {
   SortableContext,
   rectSortingStrategy,
   useSortable,
   arrayMove,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import { Button } from "@/components/ui/button"
-import { useUploadImage } from "@/hooks/useUploads"
-import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Button } from "@/components/ui/button";
+import { useUploadImage } from "@/hooks/useUploads";
+import type { UploadKind } from "@/services/uploads.service";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 function sanitizeCloudinaryUrl(value: string | null | undefined) {
-  if (!value) return null
+  if (!value) return null;
 
-  const trimmed = value.trim()
-  if (!trimmed) return null
+  const trimmed = value.trim();
+  if (!trimmed) return null;
 
-  const httpsIndex = trimmed.lastIndexOf("https://res.cloudinary.com/")
-  const httpIndex = trimmed.lastIndexOf("http://res.cloudinary.com/")
-  const startIndex = Math.max(httpsIndex, httpIndex)
+  const httpsIndex = trimmed.lastIndexOf("https://res.cloudinary.com/");
+  const httpIndex = trimmed.lastIndexOf("http://res.cloudinary.com/");
+  const startIndex = Math.max(httpsIndex, httpIndex);
 
   if (startIndex >= 0) {
-    return trimmed.slice(startIndex)
+    return trimmed.slice(startIndex);
   }
 
-  return trimmed
+  return trimmed;
 }
 
 interface ImageUploadProps {
-  value: string | null
-  onChange: (url: string | null) => void
-  className?: string
-  label?: string
-  helperText?: React.ReactNode
+  value: string | null;
+  onChange: (url: string | null) => void;
+  className?: string;
+  label?: string;
+  helperText?: React.ReactNode;
+  /** Cloudinary folder: dealker/<kind> */
+  kind?: UploadKind;
 }
 
 export function ImageUpload({
@@ -55,30 +58,31 @@ export function ImageUpload({
   className,
   label = "Upload Image",
   helperText,
+  kind,
 }: ImageUploadProps) {
-  const fileRef = useRef<HTMLInputElement>(null)
-  const uploadMutation = useUploadImage()
-  const previewSrc = sanitizeCloudinaryUrl(value)
+  const fileRef = useRef<HTMLInputElement>(null);
+  const uploadMutation = useUploadImage(kind);
+  const previewSrc = sanitizeCloudinaryUrl(value);
 
   const handleFile = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0]
-      if (!file) return
+      const file = e.target.files?.[0];
+      if (!file) return;
 
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image must be under 5MB")
-        return
+        toast.error("Image must be under 5MB");
+        return;
       }
 
       uploadMutation.mutate(file, {
         onSuccess: (data) => {
-          onChange(data.url)
-          toast.success("Image uploaded")
+          onChange(data.url);
+          toast.success("Image uploaded");
         },
-      })
+      });
     },
-    [onChange, uploadMutation]
-  )
+    [onChange, uploadMutation],
+  );
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -140,7 +144,7 @@ export function ImageUpload({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 /* ---------- Sortable Image Item ---------- */
@@ -150,20 +154,26 @@ function SortableImageItem({
   index,
   onRemove,
 }: {
-  id: string
-  url: string
-  index: number
-  onRemove: () => void
+  id: string;
+  url: string;
+  index: number;
+  onRemove: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 50 : undefined,
-  }
+  };
 
   return (
     <div
@@ -196,15 +206,16 @@ function SortableImageItem({
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 interface MultiImageUploadProps {
-  value: string[]
-  onChange: (urls: string[]) => void
-  maxImages?: number
-  className?: string
-  helperText?: React.ReactNode
+  value: string[];
+  onChange: (urls: string[]) => void;
+  maxImages?: number;
+  className?: string;
+  helperText?: React.ReactNode;
+  kind?: UploadKind;
 }
 
 export function MultiImageUpload({
@@ -213,68 +224,75 @@ export function MultiImageUpload({
   maxImages = 8,
   className,
   helperText,
+  kind,
 }: MultiImageUploadProps) {
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [uploading, setUploading] = useState(false)
-  const uploadMutation = useUploadImage()
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const uploadMutation = useUploadImage(kind);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor)
-  )
+    useSensor(KeyboardSensor),
+  );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event
-      if (!over || active.id === over.id) return
-      const oldIndex = value.indexOf(active.id as string)
-      const newIndex = value.indexOf(over.id as string)
-      if (oldIndex === -1 || newIndex === -1) return
-      onChange(arrayMove(value, oldIndex, newIndex))
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = value.indexOf(active.id as string);
+      const newIndex = value.indexOf(over.id as string);
+      if (oldIndex === -1 || newIndex === -1) return;
+      onChange(arrayMove(value, oldIndex, newIndex));
     },
-    [value, onChange]
-  )
+    [value, onChange],
+  );
 
   const handleFiles = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files ?? [])
-      if (!files.length) return
+      const files = Array.from(e.target.files ?? []);
+      if (!files.length) return;
 
-      const remaining = maxImages - value.length
-      const toUpload = files.slice(0, remaining)
+      const remaining = maxImages - value.length;
+      const toUpload = files.slice(0, remaining);
       if (toUpload.length < files.length) {
-        toast.warning(`Only uploading ${toUpload.length} of ${files.length} (max ${maxImages})`)
+        toast.warning(
+          `Only uploading ${toUpload.length} of ${files.length} (max ${maxImages})`,
+        );
       }
 
-      setUploading(true)
-      const newUrls: string[] = []
+      setUploading(true);
+      const newUrls: string[] = [];
 
       for (const file of toUpload) {
         try {
-          const result = await uploadMutation.mutateAsync(file)
-          newUrls.push(result.url)
+          const result = await uploadMutation.mutateAsync(file);
+          newUrls.push(result.url);
         } catch {
           // error toast handled by mutation
         }
       }
 
       if (newUrls.length) {
-        onChange([...value, ...newUrls])
-        toast.success(`${newUrls.length} image(s) uploaded`)
+        onChange([...value, ...newUrls]);
+        toast.success(`${newUrls.length} image(s) uploaded`);
       }
-      setUploading(false)
-      if (fileRef.current) fileRef.current.value = ""
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
     },
-    [value, onChange, maxImages, uploadMutation]
-  )
+    [value, onChange, maxImages, uploadMutation],
+  );
 
   const removeImage = (index: number) => {
-    onChange(value.filter((_, i) => i !== index))
-  }
+    onChange(value.filter((_, i) => i !== index));
+  };
 
   return (
     <div className={cn("space-y-2", className)}>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
         <SortableContext items={value} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-4 gap-2">
             {value.map((url, i) => (
@@ -322,5 +340,5 @@ export function MultiImageUpload({
         </div>
       )}
     </div>
-  )
+  );
 }

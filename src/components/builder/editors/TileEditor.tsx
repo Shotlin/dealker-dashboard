@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ChevronDown } from "lucide-react"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
-import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
-import { ThemeGradientPicker } from "@/components/themes/ThemeGradientPicker"
-import TileActionEditor from "./TileActionEditor"
-import type { MosaicTile, TileSizeHint } from "./mosaic-model"
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader";
+import { ThemeGradientPicker } from "@/components/themes/ThemeGradientPicker";
+import TileActionEditor from "./TileActionEditor";
+import type { MosaicTile, TileSizeHint } from "./mosaic-model";
 
 interface TileEditorProps {
-  label: string
-  tile: MosaicTile
-  isHero?: boolean
-  defaultOpen?: boolean
-  sizeHint?: TileSizeHint
-  onChange: (tile: MosaicTile) => void
+  label: string;
+  tile: MosaicTile;
+  isHero?: boolean;
+  defaultOpen?: boolean;
+  sizeHint?: TileSizeHint;
+  onChange: (tile: MosaicTile) => void;
 }
 
 export default function TileEditor({
@@ -27,9 +27,9 @@ export default function TileEditor({
   sizeHint,
   onChange,
 }: TileEditorProps) {
-  const [open, setOpen] = useState(defaultOpen)
+  const [open, setOpen] = useState(defaultOpen);
 
-  const patch = (next: Partial<MosaicTile>) => onChange({ ...tile, ...next })
+  const patch = (next: Partial<MosaicTile>) => onChange({ ...tile, ...next });
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -57,7 +57,9 @@ export default function TileEditor({
           )}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-slate-900">{label}</span>
+          <span className="block text-sm font-medium text-slate-900">
+            {label}
+          </span>
           <span className="block truncate text-xs text-slate-500">
             {tile.title || "Untitled tile"}
           </span>
@@ -65,7 +67,7 @@ export default function TileEditor({
         <ChevronDown
           className={cn(
             "h-4 w-4 shrink-0 text-slate-400 transition-transform",
-            open && "rotate-180"
+            open && "rotate-180",
           )}
         />
       </button>
@@ -83,6 +85,7 @@ export default function TileEditor({
 
           <ThemeImageUploader
             label="Tile image"
+            kind="icon"
             value={tile.imageUrl}
             onChange={(url) => patch({ imageUrl: url })}
           />
@@ -99,7 +102,8 @@ export default function TileEditor({
                 Aspect ratio: {sizeHint.ratio}
               </p>
               <p className="mt-1 text-[10px] leading-tight text-blue-500">
-                Upload at this size for a pixel-perfect fit. The image fills the tile using <strong>cover</strong> mode — centre your subject.
+                Upload at this size for a pixel-perfect fit. The image fills the
+                tile using <strong>cover</strong> mode — centre your subject.
               </p>
             </div>
           )}
@@ -130,5 +134,5 @@ export default function TileEditor({
         </div>
       )}
     </div>
-  )
+  );
 }

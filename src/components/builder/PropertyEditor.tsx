@@ -1,51 +1,51 @@
-"use client"
+"use client";
 
-import DealerBlockEditor from "./editors/DealerBlockEditor"
-import { useEffect, useMemo, useRef, useState } from "react"
-import Image from "next/image"
-import { ImagePlus, Loader2, Plus, Star, Trash2, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
-import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
-import { useCategories } from "@/hooks/useCategories"
-import { useBanners } from "@/hooks/useBanners"
-import { useUploadImage } from "@/hooks/useUploads"
+import DealerBlockEditor from "./editors/DealerBlockEditor";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { ImagePlus, Loader2, Plus, Star, Trash2, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker";
+import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader";
+import { useCategories } from "@/hooks/useCategories";
+import { useBanners } from "@/hooks/useBanners";
+import { useUploadImage } from "@/hooks/useUploads";
 import type {
   SectionManifest,
   UpdateSectionMerchPayload,
-} from "@/types/theme.types"
+} from "@/types/theme.types";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import CategoryBinder from "./CategoryBinder"
-import { LinkPicker } from "./LinkPicker"
-import { getSectionTypeMeta } from "./sectionTypesMeta"
-import StylePresetPicker from "./StylePresetPicker"
-import BannerEditor from "./editors/BannerEditor"
-import MosaicEditor from "./editors/MosaicEditor"
-import ProductConfigEditor from "./editors/ProductConfigEditor"
-import AnimationPicker from "./editors/AnimationPicker"
-import ArchedShowcaseEditor from "./editors/ArchedShowcaseEditor"
-import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/select";
+import CategoryBinder from "./CategoryBinder";
+import { LinkPicker } from "./LinkPicker";
+import { getSectionTypeMeta } from "./sectionTypesMeta";
+import StylePresetPicker from "./StylePresetPicker";
+import BannerEditor from "./editors/BannerEditor";
+import MosaicEditor from "./editors/MosaicEditor";
+import ProductConfigEditor from "./editors/ProductConfigEditor";
+import AnimationPicker from "./editors/AnimationPicker";
+import ArchedShowcaseEditor from "./editors/ArchedShowcaseEditor";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface PropertyEditorProps {
-  section: SectionManifest
-  onConfigChange: (config: Record<string, unknown>) => void
-  onMerchBindingChange?: (binding: UpdateSectionMerchPayload) => void
+  section: SectionManifest;
+  onConfigChange: (config: Record<string, unknown>) => void;
+  onMerchBindingChange?: (binding: UpdateSectionMerchPayload) => void;
 }
 
 function normalizeConfig(config: Record<string, unknown> | null | undefined) {
-  return { ...(config ?? {}) }
+  return { ...(config ?? {}) };
 }
 
 const MERCH_BINDING_SECTION_TYPES = new Set([
@@ -57,7 +57,7 @@ const MERCH_BINDING_SECTION_TYPES = new Set([
   "arched_product_showcase",
   "deal_of_day",
   "recent_recommended",
-])
+]);
 
 export default function PropertyEditor({
   section,
@@ -65,24 +65,24 @@ export default function PropertyEditor({
   onMerchBindingChange,
 }: PropertyEditorProps) {
   const [localConfig, setLocalConfig] = useState<Record<string, unknown>>(
-    normalizeConfig(section.config)
-  )
+    normalizeConfig(section.config),
+  );
   const meta = useMemo(
     () => getSectionTypeMeta(section.section_type),
-    [section.section_type]
-  )
+    [section.section_type],
+  );
   const supportsMerchBinding = MERCH_BINDING_SECTION_TYPES.has(
-    section.section_type
-  )
+    section.section_type,
+  );
 
   useEffect(() => {
-    setLocalConfig(normalizeConfig(section.config))
-  }, [section.id, section.updated_at, section.config])
+    setLocalConfig(normalizeConfig(section.config));
+  }, [section.id, section.updated_at, section.config]);
 
   const handleConfigChange = (nextConfig: Record<string, unknown>) => {
-    setLocalConfig(nextConfig)
-    onConfigChange(nextConfig)
-  }
+    setLocalConfig(nextConfig);
+    onConfigChange(nextConfig);
+  };
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
@@ -101,11 +101,17 @@ export default function PropertyEditor({
             supportsMerchBinding ? "grid-cols-2" : "grid-cols-1"
           }`}
         >
-          <TabsTrigger value="style" className="min-h-[40px] rounded-xl px-3 text-sm">
+          <TabsTrigger
+            value="style"
+            className="min-h-[40px] rounded-xl px-3 text-sm"
+          >
             🎨 Style
           </TabsTrigger>
           {supportsMerchBinding ? (
-            <TabsTrigger value="data" className="min-h-[40px] rounded-xl px-3 text-sm">
+            <TabsTrigger
+              value="data"
+              className="min-h-[40px] rounded-xl px-3 text-sm"
+            >
               📁 Data
             </TabsTrigger>
           ) : null}
@@ -135,7 +141,7 @@ export default function PropertyEditor({
         ) : null}
       </Tabs>
     </div>
-  )
+  );
 }
 
 function StyleEditorRouter({
@@ -143,15 +149,15 @@ function StyleEditorRouter({
   config,
   onChange,
 }: {
-  section: SectionManifest
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
+  section: SectionManifest;
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
 }) {
   switch (section.section_type) {
     case "animated_banner":
-      return <BannerEditor config={config} onChange={onChange} />
+      return <BannerEditor config={config} onChange={onChange} />;
     case "seasonal_mosaic":
-      return <MosaicEditor config={config} onChange={onChange} />
+      return <MosaicEditor config={config} onChange={onChange} />;
     case "category_product_grid":
     case "product_carousel":
     case "trending_products":
@@ -161,29 +167,25 @@ function StyleEditorRouter({
           onChange={onChange}
           sectionType={section.section_type}
         />
-      )
+      );
     case "round_category_icons":
-      return <CategoryIconsEditor config={config} onChange={onChange} />
+      return <CategoryIconsEditor config={config} onChange={onChange} />;
     case "fee_strip":
       return (
-        <StripEditor
-          config={config}
-          onChange={onChange}
-          title="Fee Strip"
-        />
-      )
+        <StripEditor config={config} onChange={onChange} title="Fee Strip" />
+      );
     case "bank_offers":
-      return <BankOffersEditor config={config} onChange={onChange} />
+      return <BankOffersEditor config={config} onChange={onChange} />;
     case "promo_carousel":
-      return <PromoCarouselEditor config={config} onChange={onChange} />
+      return <PromoCarouselEditor config={config} onChange={onChange} />;
     case "arched_product_showcase":
-      return <ArchedShowcaseEditor config={config} onChange={onChange} />
+      return <ArchedShowcaseEditor config={config} onChange={onChange} />;
     case "custom_banner":
-      return <CustomBannerEditor config={config} onChange={onChange} />
+      return <CustomBannerEditor config={config} onChange={onChange} />;
     case "text_header":
-      return <TextHeaderEditor config={config} onChange={onChange} />
+      return <TextHeaderEditor config={config} onChange={onChange} />;
     case "spacer":
-      return <SpacerEditor config={config} onChange={onChange} />
+      return <SpacerEditor config={config} onChange={onChange} />;
     case "live_auction":
     case "deal_of_day":
     case "exchange_sell":
@@ -194,83 +196,90 @@ function StyleEditorRouter({
           config={config}
           onChange={onChange}
         />
-      )
+      );
     case "mega_sale":
       return (
         <div className="space-y-6">
-          <DealerBlockEditor type="mega_sale" config={config} onChange={onChange} />
+          <DealerBlockEditor
+            type="mega_sale"
+            config={config}
+            onChange={onChange}
+          />
           <CategoryIconsEditor config={config} onChange={onChange} />
         </div>
-      )
+      );
     default:
-      return null
+      return null;
   }
 }
 
 interface CategoryIconConfigItem {
-  category_id?: string
-  label?: string
-  image_url?: string
+  category_id?: string;
+  label?: string;
+  image_url?: string;
 }
 
 function normalizeCategoryIconItems(value: unknown): CategoryIconConfigItem[] {
   if (!Array.isArray(value)) {
-    return []
+    return [];
   }
 
   return value
-    .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+    .filter(
+      (item): item is Record<string, unknown> =>
+        !!item && typeof item === "object",
+    )
     .map((item) => ({
       category_id:
         typeof item.category_id === "string" ? item.category_id : undefined,
       label: typeof item.label === "string" ? item.label : undefined,
       image_url:
         typeof item.image_url === "string" ? item.image_url : undefined,
-    }))
+    }));
 }
 
 function CategoryIconsEditor({
   config,
   onChange,
 }: {
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
 }) {
-  const { data: categories } = useCategories()
-  const iconSize = typeof config.icon_size === "number" ? config.icon_size : 64
-  const gap = typeof config.gap === "number" ? config.gap : 12
+  const { data: categories } = useCategories();
+  const iconSize = typeof config.icon_size === "number" ? config.icon_size : 64;
+  const gap = typeof config.gap === "number" ? config.gap : 12;
   const showLabels =
-    typeof config.show_labels === "boolean" ? config.show_labels : true
-  const items = normalizeCategoryIconItems(config.items)
+    typeof config.show_labels === "boolean" ? config.show_labels : true;
+  const items = normalizeCategoryIconItems(config.items);
   const availableCategories = (categories ?? [])
     .filter((category) => category.is_active)
-    .sort((left, right) => left.sort_order - right.sort_order)
+    .sort((left, right) => left.sort_order - right.sort_order);
 
   const categoryMap = new Map(
-    availableCategories.map((category) => [category.id, category])
-  )
+    availableCategories.map((category) => [category.id, category]),
+  );
 
   const patch = (patchConfig: Partial<Record<string, unknown>>) => {
-    onChange({ ...config, ...patchConfig })
-  }
+    onChange({ ...config, ...patchConfig });
+  };
 
   const patchItems = (nextItems: CategoryIconConfigItem[]) => {
-    patch({ items: nextItems })
-  }
+    patch({ items: nextItems });
+  };
 
   const updateItem = (
     index: number,
-    patchItem: Partial<CategoryIconConfigItem>
+    patchItem: Partial<CategoryIconConfigItem>,
   ) => {
     const nextItems = items.map((item, itemIndex) =>
-      itemIndex === index ? { ...item, ...patchItem } : item
-    )
-    patchItems(nextItems)
-  }
+      itemIndex === index ? { ...item, ...patchItem } : item,
+    );
+    patchItems(nextItems);
+  };
 
   const addItem = () => {
-    patchItems([...items, {}])
-  }
+    patchItems([...items, {}]);
+  };
 
   return (
     <div className="space-y-6">
@@ -303,7 +312,10 @@ function CategoryIconsEditor({
             Display category names under the icon rail.
           </div>
         </div>
-        <Switch checked={showLabels} onCheckedChange={(checked) => patch({ show_labels: checked })} />
+        <Switch
+          checked={showLabels}
+          onCheckedChange={(checked) => patch({ show_labels: checked })}
+        />
       </div>
 
       <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
@@ -329,7 +341,7 @@ function CategoryIconsEditor({
               const linkedCategory =
                 item.category_id != null
                   ? categoryMap.get(item.category_id)
-                  : undefined
+                  : undefined;
 
               return (
                 <div
@@ -345,7 +357,9 @@ function CategoryIconsEditor({
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        patchItems(items.filter((_, itemIndex) => itemIndex !== index))
+                        patchItems(
+                          items.filter((_, itemIndex) => itemIndex !== index),
+                        )
                       }
                     >
                       <Trash2 className="h-4 w-4 text-slate-500" />
@@ -355,9 +369,11 @@ function CategoryIconsEditor({
                   <div className="space-y-2">
                     <Label>Linked Category</Label>
                     <Select
-                      value={item.category_id && item.category_id.length > 0
-                        ? item.category_id
-                        : "__none__"}
+                      value={
+                        item.category_id && item.category_id.length > 0
+                          ? item.category_id
+                          : "__none__"
+                      }
                       onValueChange={(value) =>
                         updateItem(index, {
                           category_id: value === "__none__" ? "" : value,
@@ -368,7 +384,9 @@ function CategoryIconsEditor({
                         <SelectValue placeholder="Choose a category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="__none__">No linked category</SelectItem>
+                        <SelectItem value="__none__">
+                          No linked category
+                        </SelectItem>
                         {availableCategories.map((category) => (
                           <SelectItem key={category.id} value={category.id}>
                             {category.name}
@@ -400,7 +418,7 @@ function CategoryIconsEditor({
                     }
                   />
                 </div>
-              )
+              );
             })}
           </div>
         ) : (
@@ -415,7 +433,7 @@ function CategoryIconsEditor({
         onChange={(value) => patch({ animation: value })}
       />
     </div>
-  )
+  );
 }
 
 function StripEditor({
@@ -423,34 +441,39 @@ function StripEditor({
   onChange,
   title,
 }: {
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
-  title: string
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
+  title: string;
 }) {
-  const visible = typeof config.visible === "boolean" ? config.visible : true
+  const visible = typeof config.visible === "boolean" ? config.visible : true;
   const containerColor =
     typeof config.container_color === "string"
       ? config.container_color
-      : "#BFEFFF"
+      : "#BFEFFF";
   const patch = (patchConfig: Partial<Record<string, unknown>>) => {
-    onChange({ ...config, ...patchConfig })
-  }
+    onChange({ ...config, ...patchConfig });
+  };
 
   const [linesText, setLinesText] = useState(() =>
     Array.isArray(config.lines)
-      ? (config.lines as unknown[]).filter((v): v is string => typeof v === "string").join("\n")
-      : ""
-  )
+      ? (config.lines as unknown[])
+          .filter((v): v is string => typeof v === "string")
+          .join("\n")
+      : "",
+  );
   return (
     <div className="space-y-6">
       <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
         <div className="text-sm font-medium text-slate-900">Card content</div>
         <p className="text-xs text-slate-500">
-          Shown as the white fee card when at least one line is set (otherwise the image / fallback strip below is used).
-          Keep the wording true to your fee settings — it is a promise to customers.
+          Shown as the white fee card when at least one line is set (otherwise
+          the image / fallback strip below is used). Keep the wording true to
+          your fee settings — it is a promise to customers.
         </p>
         <div className="space-y-1">
-          <Label className="text-xs text-slate-500">Big title (e.g. ₹0 FEES)</Label>
+          <Label className="text-xs text-slate-500">
+            Big title (e.g. ₹0 FEES)
+          </Label>
           <Input
             value={typeof config.title === "string" ? config.title : ""}
             onChange={(e) => patch({ title: e.target.value })}
@@ -458,13 +481,21 @@ function StripEditor({
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs text-slate-500">Lines (one per row, up to 4)</Label>
+          <Label className="text-xs text-slate-500">
+            Lines (one per row, up to 4)
+          </Label>
           <Textarea
             rows={4}
             value={linesText}
             onChange={(e) => {
-              setLinesText(e.target.value)
-              patch({ lines: e.target.value.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) })
+              setLinesText(e.target.value);
+              patch({
+                lines: e.target.value
+                  .split("\n")
+                  .map((l) => l.trim())
+                  .filter(Boolean)
+                  .slice(0, 4),
+              });
             }}
           />
         </div>
@@ -497,7 +528,10 @@ function StripEditor({
             Toggle fallback strip content when no image is present.
           </div>
         </div>
-        <Switch checked={visible} onCheckedChange={(checked) => patch({ visible: checked })} />
+        <Switch
+          checked={visible}
+          onCheckedChange={(checked) => patch({ visible: checked })}
+        />
       </div>
 
       <AnimationPicker
@@ -505,41 +539,43 @@ function StripEditor({
         onChange={(value) => patch({ animation: value })}
       />
     </div>
-  )
+  );
 }
 
 function BankOffersEditor({
   config,
   onChange,
 }: {
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
 }) {
-  const visible = typeof config.visible === "boolean" ? config.visible : true
+  const visible = typeof config.visible === "boolean" ? config.visible : true;
   const imageUrls = Array.isArray(config.image_urls)
     ? (config.image_urls as string[]).filter(
-        (value): value is string => typeof value === "string"
+        (value): value is string => typeof value === "string",
       )
     : typeof config.image_url === "string" && config.image_url.trim()
       ? [config.image_url]
-      : []
+      : [];
 
   const patch = (patchConfig: Partial<Record<string, unknown>>) => {
-    onChange({ ...config, ...patchConfig })
-  }
+    onChange({ ...config, ...patchConfig });
+  };
 
   const patchImageUrls = (nextUrls: string[]) => {
     patch({
       image_urls: nextUrls,
       image_url: nextUrls[0] ?? null,
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
         <div>
-          <div className="text-sm font-medium text-slate-900">Offer Banners</div>
+          <div className="text-sm font-medium text-slate-900">
+            Offer Banners
+          </div>
           <div className="text-xs text-slate-500">
             Add up to 10 bank offer images. The app shows them side by side.
           </div>
@@ -570,7 +606,7 @@ function BankOffersEditor({
                 size="sm"
                 onClick={() =>
                   patchImageUrls(
-                    imageUrls.filter((_, imageIndex) => imageIndex !== index)
+                    imageUrls.filter((_, imageIndex) => imageIndex !== index),
                   )
                 }
               >
@@ -585,8 +621,8 @@ function BankOffersEditor({
               onChange={(value) =>
                 patchImageUrls(
                   imageUrls.map((item, imageIndex) =>
-                    imageIndex === index ? value ?? "" : item
-                  )
+                    imageIndex === index ? (value ?? "") : item,
+                  ),
                 )
               }
             />
@@ -612,7 +648,10 @@ function BankOffersEditor({
             Show this bank-offer row in the phone feed.
           </div>
         </div>
-        <Switch checked={visible} onCheckedChange={(checked) => patch({ visible: checked })} />
+        <Switch
+          checked={visible}
+          onCheckedChange={(checked) => patch({ visible: checked })}
+        />
       </div>
 
       <AnimationPicker
@@ -620,22 +659,24 @@ function BankOffersEditor({
         onChange={(value) => patch({ animation: value })}
       />
     </div>
-  )
+  );
 }
 
 function PromoCarouselEditor({
   config,
   onChange,
 }: {
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
 }) {
   const aspectRatio =
-    typeof config.aspect_ratio === "string" ? config.aspect_ratio : "16:9"
+    typeof config.aspect_ratio === "string" ? config.aspect_ratio : "16:9";
   const borderRadius =
-    typeof config.border_radius === "number" ? config.border_radius : 12
+    typeof config.border_radius === "number" ? config.border_radius : 12;
   const autoScrollSpeed =
-    typeof config.auto_scroll_speed === "number" ? config.auto_scroll_speed : 3000
+    typeof config.auto_scroll_speed === "number"
+      ? config.auto_scroll_speed
+      : 3000;
 
   // ── Banner source ─────────────────────────────────────────────────────────
   // "system"  → pull from /banners (the /banners admin page)
@@ -643,27 +684,29 @@ function PromoCarouselEditor({
   // If there are already custom images in config and banner_source is unset,
   // treat it as "custom" (backward compat for sections saved before banner_source existed).
   const rawCustomImages = Array.isArray(config.images)
-    ? (config.images as string[]).filter((u) => typeof u === "string" && u.trim())
-    : []
+    ? (config.images as string[]).filter(
+        (u) => typeof u === "string" && u.trim(),
+      )
+    : [];
 
   const bannerSource: "system" | "custom" =
     typeof config.banner_source === "string"
       ? (config.banner_source as "system" | "custom")
       : rawCustomImages.length > 0
         ? "custom"
-        : "system"
+        : "system";
 
   // System banners preview
-  const { data: systemBanners = [] } = useBanners()
-  const activeBanners = systemBanners.filter((b) => b.is_active)
+  const { data: systemBanners = [] } = useBanners();
+  const activeBanners = systemBanners.filter((b) => b.is_active);
 
   const patch = (patchConfig: Partial<Record<string, unknown>>) => {
-    onChange({ ...config, ...patchConfig })
-  }
+    onChange({ ...config, ...patchConfig });
+  };
 
   const switchMode = (mode: "system" | "custom") => {
-    patch({ banner_source: mode })
-  }
+    patch({ banner_source: mode });
+  };
 
   return (
     <div className="space-y-6">
@@ -672,7 +715,7 @@ function PromoCarouselEditor({
         <Label>Banner Source</Label>
         <div className="grid grid-cols-2 gap-2">
           {(["system", "custom"] as const).map((mode) => {
-            const isActive = bannerSource === mode
+            const isActive = bannerSource === mode;
             return (
               <button
                 key={mode}
@@ -682,7 +725,7 @@ function PromoCarouselEditor({
                   "flex flex-col items-start gap-1 rounded-xl border-2 px-4 py-3 text-left transition-colors",
                   isActive
                     ? "border-brand-500 bg-brand-50"
-                    : "border-border bg-muted/30 hover:bg-muted"
+                    : "border-border bg-muted/30 hover:bg-muted",
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -691,14 +734,16 @@ function PromoCarouselEditor({
                       "flex h-3.5 w-3.5 items-center justify-center rounded-full border-2",
                       isActive
                         ? "border-brand-600 bg-brand-600"
-                        : "border-muted-foreground/40"
+                        : "border-muted-foreground/40",
                     )}
                   >
                     {isActive && (
                       <div className="h-1.5 w-1.5 rounded-full bg-white" />
                     )}
                   </div>
-                  <span className="text-sm font-semibold capitalize">{mode === "system" ? "System" : "Custom"}</span>
+                  <span className="text-sm font-semibold capitalize">
+                    {mode === "system" ? "System" : "Custom"}
+                  </span>
                 </div>
                 <span className="text-[11px] text-muted-foreground leading-tight">
                   {mode === "system"
@@ -706,7 +751,7 @@ function PromoCarouselEditor({
                     : "Upload your own banner images here"}
                 </span>
               </button>
-            )
+            );
           })}
         </div>
       </div>
@@ -751,7 +796,8 @@ function PromoCarouselEditor({
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium">{b.title}</p>
                       <p className="text-[10px] text-muted-foreground">
-                        #{i + 1} · {b.link_type !== "none" ? b.link_type : "No link"}
+                        #{i + 1} ·{" "}
+                        {b.link_type !== "none" ? b.link_type : "No link"}
                       </p>
                     </div>
                   </div>
@@ -766,7 +812,11 @@ function PromoCarouselEditor({
           </div>
           <p className="text-[11px] text-muted-foreground">
             Banners are sorted by the order set on the{" "}
-            <a href="/banners" target="_blank" className="underline text-brand-600">
+            <a
+              href="/banners"
+              target="_blank"
+              className="underline text-brand-600"
+            >
               Banners page
             </a>
             . Only active banners within their date window are shown.
@@ -779,7 +829,9 @@ function PromoCarouselEditor({
             onChange={(images) => patch({ images, banner_source: "custom" })}
           />
           <div className="space-y-2">
-            <Label>On tap (applies to every custom image in this carousel)</Label>
+            <Label>
+              On tap (applies to every custom image in this carousel)
+            </Label>
             <LinkPicker
               value={typeof config.link_url === "string" ? config.link_url : ""}
               onChange={(value) => patch({ link_url: value || null })}
@@ -798,7 +850,8 @@ function PromoCarouselEditor({
           placeholder="16:9"
         />
         <p className="text-[10px] text-muted-foreground">
-          Use W:H format, e.g. 16:9 · 2:1 · 3:1. Match your uploaded image ratio for best results.
+          Use W:H format, e.g. 16:9 · 2:1 · 3:1. Match your uploaded image ratio
+          for best results.
         </p>
       </div>
 
@@ -829,7 +882,7 @@ function PromoCarouselEditor({
         onChange={(value) => patch({ animation: value })}
       />
     </div>
-  )
+  );
 }
 
 /** Inner component: 1–5 custom promo images with upload + URL paste + primary-badge */
@@ -837,71 +890,84 @@ function PromoCustomImagesEditor({
   images,
   onChange,
 }: {
-  images: string[]
-  onChange: (images: string[]) => void
+  images: string[];
+  onChange: (images: string[]) => void;
 }) {
-  const MIN = 1
-  const MAX = 5
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [urlInput, setUrlInput] = useState("")
-  const [uploading, setUploading] = useState(false)
-  const uploadMutation = useUploadImage()
+  const MIN = 1;
+  const MAX = 5;
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [urlInput, setUrlInput] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const uploadMutation = useUploadImage("banner");
 
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
-    if (!files.length) return
-    const remaining = MAX - images.length
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const remaining = MAX - images.length;
     if (remaining <= 0) {
-      toast.error(`Maximum ${MAX} banners allowed`)
-      if (fileRef.current) fileRef.current.value = ""
-      return
+      toast.error(`Maximum ${MAX} banners allowed`);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
     }
-    const toUpload = files.slice(0, remaining)
+    const toUpload = files.slice(0, remaining);
     if (toUpload.length < files.length)
-      toast.warning(`Only uploading ${toUpload.length} of ${files.length} (max ${MAX})`)
-    const large = toUpload.filter((f) => f.size > 5 * 1024 * 1024)
+      toast.warning(
+        `Only uploading ${toUpload.length} of ${files.length} (max ${MAX})`,
+      );
+    const large = toUpload.filter((f) => f.size > 5 * 1024 * 1024);
     if (large.length) {
-      toast.error(`${large.map((f) => f.name).join(", ")} exceed 5MB — skipped`)
+      toast.error(
+        `${large.map((f) => f.name).join(", ")} exceed 5MB — skipped`,
+      );
     }
-    const valid = toUpload.filter((f) => f.size <= 5 * 1024 * 1024)
-    setUploading(true)
-    const newUrls: string[] = []
+    const valid = toUpload.filter((f) => f.size <= 5 * 1024 * 1024);
+    setUploading(true);
+    const newUrls: string[] = [];
     for (const file of valid) {
       try {
-        const result = await uploadMutation.mutateAsync(file)
-        if (result?.url && !images.includes(result.url)) newUrls.push(result.url)
-      } catch { /* toast handled by mutation */ }
+        const result = await uploadMutation.mutateAsync(file);
+        if (result?.url && !images.includes(result.url))
+          newUrls.push(result.url);
+      } catch {
+        /* toast handled by mutation */
+      }
     }
     if (newUrls.length) {
-      onChange([...images, ...newUrls])
-      toast.success(`${newUrls.length} banner(s) uploaded`)
+      onChange([...images, ...newUrls]);
+      toast.success(`${newUrls.length} banner(s) uploaded`);
     }
-    setUploading(false)
-    if (fileRef.current) fileRef.current.value = ""
-  }
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
+  };
 
   const addUrl = () => {
-    const url = urlInput.trim()
-    if (!url) return
-    if (images.length >= MAX) { toast.error(`Maximum ${MAX} banners`); return }
-    if (images.includes(url)) { toast.warning("Already in the list"); return }
-    onChange([...images, url])
-    setUrlInput("")
-  }
+    const url = urlInput.trim();
+    if (!url) return;
+    if (images.length >= MAX) {
+      toast.error(`Maximum ${MAX} banners`);
+      return;
+    }
+    if (images.includes(url)) {
+      toast.warning("Already in the list");
+      return;
+    }
+    onChange([...images, url]);
+    setUrlInput("");
+  };
 
   const moveUp = (i: number) => {
-    if (i === 0) return
-    const next = [...images]
-    ;[next[i - 1], next[i]] = [next[i], next[i - 1]]
-    onChange(next)
-  }
+    if (i === 0) return;
+    const next = [...images];
+    [next[i - 1], next[i]] = [next[i], next[i - 1]];
+    onChange(next);
+  };
 
   const moveDown = (i: number) => {
-    if (i === images.length - 1) return
-    const next = [...images]
-    ;[next[i], next[i + 1]] = [next[i + 1], next[i]]
-    onChange(next)
-  }
+    if (i === images.length - 1) return;
+    const next = [...images];
+    [next[i], next[i + 1]] = [next[i + 1], next[i]];
+    onChange(next);
+  };
 
   return (
     <div className="space-y-3">
@@ -925,7 +991,8 @@ function PromoCustomImagesEditor({
           </p>
         </div>
         <p className="text-[10px] text-amber-600 mt-1">
-          Format: JPG, PNG, or WEBP. Use the same ratio as the Aspect Ratio setting above.
+          Format: JPG, PNG, or WEBP. Use the same ratio as the Aspect Ratio
+          setting above.
         </p>
       </div>
 
@@ -943,10 +1010,17 @@ function PromoCustomImagesEditor({
       {/* Image list */}
       <div className="space-y-2">
         {images.map((url, i) => (
-          <div key={`${url}-${i}`} className="flex items-center gap-3 rounded-xl border bg-muted/20 p-2">
+          <div
+            key={`${url}-${i}`}
+            className="flex items-center gap-3 rounded-xl border bg-muted/20 p-2"
+          >
             <div className="relative h-14 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`Banner ${i + 1}`} className="h-full w-full object-cover" />
+              <img
+                src={url}
+                alt={`Banner ${i + 1}`}
+                className="h-full w-full object-cover"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
@@ -955,7 +1029,9 @@ function PromoCustomImagesEditor({
                     <Star className="h-2.5 w-2.5 fill-current" /> Primary
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground truncate">Banner {i + 1}</span>
+                <span className="text-xs text-muted-foreground truncate">
+                  Banner {i + 1}
+                </span>
               </div>
               <p className="text-[10px] text-muted-foreground truncate mt-0.5">
                 {url.slice(url.lastIndexOf("/") + 1).split("?")[0]}
@@ -972,7 +1048,11 @@ function PromoCustomImagesEditor({
                 onClick={() => moveUp(i)}
                 title="Move up"
               >
-                <svg className="h-3 w-3" viewBox="0 0 12 12" fill="currentColor">
+                <svg
+                  className="h-3 w-3"
+                  viewBox="0 0 12 12"
+                  fill="currentColor"
+                >
                   <path d="M6 2L10 8H2L6 2Z" />
                 </svg>
               </Button>
@@ -985,7 +1065,11 @@ function PromoCustomImagesEditor({
                 onClick={() => moveDown(i)}
                 title="Move down"
               >
-                <svg className="h-3 w-3" viewBox="0 0 12 12" fill="currentColor">
+                <svg
+                  className="h-3 w-3"
+                  viewBox="0 0 12 12"
+                  fill="currentColor"
+                >
                   <path d="M6 10L2 4H10L6 10Z" />
                 </svg>
               </Button>
@@ -1012,16 +1096,21 @@ function PromoCustomImagesEditor({
             {uploading ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
-                <span className="text-xs font-medium text-brand-600">Uploading…</span>
+                <span className="text-xs font-medium text-brand-600">
+                  Uploading…
+                </span>
               </>
             ) : (
               <>
                 <ImagePlus className="h-5 w-5" />
                 <span className="text-xs font-medium">
-                  {images.length === 0 ? "Upload first banner image" : "Add another banner image"}
+                  {images.length === 0
+                    ? "Upload first banner image"
+                    : "Add another banner image"}
                 </span>
                 <span className="text-[10px] text-muted-foreground/70">
-                  {MAX - images.length} slot{MAX - images.length !== 1 ? "s" : ""} remaining
+                  {MAX - images.length} slot
+                  {MAX - images.length !== 1 ? "s" : ""} remaining
                 </span>
               </>
             )}
@@ -1033,7 +1122,12 @@ function PromoCustomImagesEditor({
         <Input
           value={urlInput}
           onChange={(e) => setUrlInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addUrl() } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addUrl();
+            }
+          }}
           placeholder="Or paste a banner image URL…"
           className="text-xs"
           disabled={images.length >= MAX}
@@ -1050,23 +1144,30 @@ function PromoCustomImagesEditor({
         </Button>
       </div>
 
-      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFiles} className="hidden" />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        onChange={handleFiles}
+        className="hidden"
+      />
     </div>
-  )
+  );
 }
 
 function CustomBannerEditor({
   config,
   onChange,
 }: {
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
 }) {
   const borderRadius =
-    typeof config.border_radius === "number" ? config.border_radius : 12
+    typeof config.border_radius === "number" ? config.border_radius : 12;
   const patch = (patchConfig: Partial<Record<string, unknown>>) => {
-    onChange({ ...config, ...patchConfig })
-  }
+    onChange({ ...config, ...patchConfig });
+  };
 
   return (
     <div className="space-y-6">
@@ -1100,25 +1201,25 @@ function CustomBannerEditor({
         />
       </div>
     </div>
-  )
+  );
 }
 
 function TextHeaderEditor({
   config,
   onChange,
 }: {
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
 }) {
-  const text = typeof config.text === "string" ? config.text : "Section Title"
-  const fontSize = typeof config.font_size === "number" ? config.font_size : 18
-  const color = typeof config.color === "string" ? config.color : "#000000"
+  const text = typeof config.text === "string" ? config.text : "Section Title";
+  const fontSize = typeof config.font_size === "number" ? config.font_size : 18;
+  const color = typeof config.color === "string" ? config.color : "#000000";
   const alignment =
-    typeof config.alignment === "string" ? config.alignment : "left"
+    typeof config.alignment === "string" ? config.alignment : "left";
 
   const patch = (patchConfig: Partial<Record<string, unknown>>) => {
-    onChange({ ...config, ...patchConfig })
-  }
+    onChange({ ...config, ...patchConfig });
+  };
 
   return (
     <div className="space-y-6">
@@ -1153,7 +1254,7 @@ function TextHeaderEditor({
         <div className="text-sm font-medium text-slate-900">Alignment</div>
         <div className="grid grid-cols-3 gap-3">
           {["left", "center", "right"].map((option) => {
-            const isActive = alignment === option
+            const isActive = alignment === option;
             return (
               <button
                 key={option}
@@ -1168,7 +1269,7 @@ function TextHeaderEditor({
               >
                 {option}
               </button>
-            )
+            );
           })}
         </div>
       </div>
@@ -1178,17 +1279,17 @@ function TextHeaderEditor({
         onChange={(value) => patch({ animation: value })}
       />
     </div>
-  )
+  );
 }
 
 function SpacerEditor({
   config,
   onChange,
 }: {
-  config: Record<string, unknown>
-  onChange: (config: Record<string, unknown>) => void
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
 }) {
-  const height = typeof config.height === "number" ? config.height : 16
+  const height = typeof config.height === "number" ? config.height : 16;
 
   return (
     <RangeControl
@@ -1201,7 +1302,7 @@ function SpacerEditor({
       unit="px"
       onChange={(value) => onChange({ ...config, height: value })}
     />
-  )
+  );
 }
 
 function RangeControl({
@@ -1214,14 +1315,14 @@ function RangeControl({
   unit,
   onChange,
 }: {
-  id: string
-  label: string
-  value: number
-  min: number
-  max: number
-  step: number
-  unit: string
-  onChange: (value: number) => void
+  id: string;
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  onChange: (value: number) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -1243,5 +1344,5 @@ function RangeControl({
         className="h-3 cursor-pointer rounded-full border-0 bg-transparent px-0 shadow-none"
       />
     </div>
-  )
+  );
 }

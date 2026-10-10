@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { ImageUpload } from "@/components/products/ImageUpload"
-import { useCreateBanner, useUpdateBanner } from "@/hooks/useBanners"
-import { useCategories, useBundles } from "@/hooks/useCategories"
-import { useCustomerSegments } from "@/hooks/useCustomerSegments"
-import type { Banner, CreateBannerPayload } from "@/types/banner.types"
+} from "@/components/ui/select";
+import { ImageUpload } from "@/components/products/ImageUpload";
+import { useCreateBanner, useUpdateBanner } from "@/hooks/useBanners";
+import { useCategories, useBundles } from "@/hooks/useCategories";
+import { useCustomerSegments } from "@/hooks/useCustomerSegments";
+import type { Banner, CreateBannerPayload } from "@/types/banner.types";
 
 /**
  * Dedicated create/edit form for PROFILE-placement banners only — a
@@ -35,9 +35,9 @@ import type { Banner, CreateBannerPayload } from "@/types/banner.types"
  */
 
 interface ProfileBannerDialogProps {
-  open: boolean
-  onClose: () => void
-  banner?: Banner | null
+  open: boolean;
+  onClose: () => void;
+  banner?: Banner | null;
 }
 
 // This is the Profile screen HEADER's own background image — behind the
@@ -50,7 +50,8 @@ interface ProfileBannerDialogProps {
 // that shows the whole image with the least cropping. Widens/narrows
 // slightly by device (status bar height, font scaling), so keep any logo
 // or text inside the middle ~85% of the image — edges may get trimmed.
-const SUGGESTED_SIZE = "1080 × 980 (~1.1:1, fills the header behind name/avatar)"
+const SUGGESTED_SIZE =
+  "1080 × 980 (~1.1:1, fills the header behind name/avatar)";
 
 const INITIAL: CreateBannerPayload & { isActive: boolean } = {
   title: "",
@@ -67,17 +68,17 @@ const INITIAL: CreateBannerPayload & { isActive: boolean } = {
   targetSegmentId: undefined,
   imageWidth: undefined,
   imageHeight: undefined,
-}
+};
 
 function sanitizeBannerImageUrl(value: string | null | undefined) {
-  if (!value) return ""
-  const trimmed = value.trim()
-  if (!trimmed) return ""
-  const httpsIndex = trimmed.lastIndexOf("https://res.cloudinary.com/")
-  const httpIndex = trimmed.lastIndexOf("http://res.cloudinary.com/")
-  const startIndex = Math.max(httpsIndex, httpIndex)
-  if (startIndex >= 0) return trimmed.slice(startIndex)
-  return trimmed
+  if (!value) return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const httpsIndex = trimmed.lastIndexOf("https://res.cloudinary.com/");
+  const httpIndex = trimmed.lastIndexOf("http://res.cloudinary.com/");
+  const startIndex = Math.max(httpsIndex, httpIndex);
+  if (startIndex >= 0) return trimmed.slice(startIndex);
+  return trimmed;
 }
 
 /** Same size-check as the Home banner dialog — loads the uploaded image and
@@ -87,36 +88,47 @@ function BannerSizeCheck({
   declaredWidth,
   declaredHeight,
 }: {
-  imageUrl: string
-  declaredWidth?: number
-  declaredHeight?: number
+  imageUrl: string;
+  declaredWidth?: number;
+  declaredHeight?: number;
 }) {
-  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null)
-  const [failed, setFailed] = useState(false)
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setNatural(null)
-    setFailed(false)
-    if (!imageUrl) return
-    const img = new window.Image()
-    img.onload = () => setNatural({ w: img.naturalWidth, h: img.naturalHeight })
-    img.onerror = () => setFailed(true)
-    img.src = imageUrl
-  }, [imageUrl])
+    setNatural(null);
+    setFailed(false);
+    if (!imageUrl) return;
+    const img = new window.Image();
+    img.onload = () =>
+      setNatural({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => setFailed(true);
+    img.src = imageUrl;
+  }, [imageUrl]);
 
-  if (!imageUrl) return null
+  if (!imageUrl) return null;
   if (failed) {
-    return <p className="text-xs text-destructive">Couldn&apos;t load this image URL to check its size.</p>
+    return (
+      <p className="text-xs text-destructive">
+        Couldn&apos;t load this image URL to check its size.
+      </p>
+    );
   }
   if (!natural) {
-    return <p className="text-xs text-muted-foreground">Checking image size…</p>
+    return (
+      <p className="text-xs text-muted-foreground">Checking image size…</p>
+    );
   }
 
-  const declared = declaredWidth && declaredHeight ? { w: declaredWidth, h: declaredHeight } : null
-  const naturalRatio = natural.w / natural.h
-  const declaredRatio = declared ? declared.w / declared.h : null
+  const declared =
+    declaredWidth && declaredHeight
+      ? { w: declaredWidth, h: declaredHeight }
+      : null;
+  const naturalRatio = natural.w / natural.h;
+  const declaredRatio = declared ? declared.w / declared.h : null;
   const ratioMismatch =
-    declaredRatio !== null && Math.abs(naturalRatio - declaredRatio) / declaredRatio > 0.08
+    declaredRatio !== null &&
+    Math.abs(naturalRatio - declaredRatio) / declaredRatio > 0.08;
 
   return (
     <div className="rounded-md border bg-muted/30 p-2.5 space-y-2">
@@ -125,37 +137,49 @@ function BannerSizeCheck({
         style={{ aspectRatio: `${natural.w} / ${natural.h}`, maxHeight: 140 }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="Banner preview" className="w-full h-full object-cover" />
+        <img
+          src={imageUrl}
+          alt="Banner preview"
+          className="w-full h-full object-cover"
+        />
       </div>
       <p className="text-xs text-muted-foreground">
         Uploaded image is {natural.w} × {natural.h}px.
       </p>
       {declared && ratioMismatch && (
         <p className="text-xs text-amber-600">
-          This doesn&apos;t match the declared {declared.w} × {declared.h}px — the app will crop or
-          letterbox it to fit. Re-export at that size, or update the width/height above.
+          This doesn&apos;t match the declared {declared.w} × {declared.h}px —
+          the app will crop or letterbox it to fit. Re-export at that size, or
+          update the width/height above.
         </p>
       )}
       {declared && !ratioMismatch && (
-        <p className="text-xs text-emerald-600">Matches the declared size — safe to publish.</p>
+        <p className="text-xs text-emerald-600">
+          Matches the declared size — safe to publish.
+        </p>
       )}
       {!declared && (
         <p className="text-xs text-muted-foreground">
-          Set width/height below to check this image against the profile slot before publishing.
+          Set width/height below to check this image against the profile slot
+          before publishing.
         </p>
       )}
     </div>
-  )
+  );
 }
 
-export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDialogProps) {
-  const [form, setForm] = useState(INITIAL)
-  const createMutation = useCreateBanner()
-  const updateMutation = useUpdateBanner()
-  const isEdit = !!banner
-  const { data: categories } = useCategories()
-  const { data: bundles } = useBundles()
-  const { data: segments } = useCustomerSegments()
+export function ProfileBannerDialog({
+  open,
+  onClose,
+  banner,
+}: ProfileBannerDialogProps) {
+  const [form, setForm] = useState(INITIAL);
+  const createMutation = useCreateBanner();
+  const updateMutation = useUpdateBanner();
+  const isEdit = !!banner;
+  const { data: categories } = useCategories();
+  const { data: bundles } = useBundles();
+  const { data: segments } = useCustomerSegments();
 
   useEffect(() => {
     if (banner) {
@@ -174,14 +198,14 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
         targetSegmentId: banner.target_segment_id ?? undefined,
         imageWidth: banner.image_width ?? undefined,
         imageHeight: banner.image_height ?? undefined,
-      })
+      });
     } else {
-      setForm(INITIAL)
+      setForm(INITIAL);
     }
-  }, [banner, open])
+  }, [banner, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     const payload: CreateBannerPayload = {
       title: form.title.trim(),
       imageUrl: sanitizeBannerImageUrl(form.imageUrl),
@@ -189,7 +213,9 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
       linkType: form.linkType,
       linkValue: form.linkType !== "none" ? form.linkValue?.trim() : undefined,
       isActive: form.isActive,
-      startDate: form.startDate ? new Date(form.startDate).toISOString() : undefined,
+      startDate: form.startDate
+        ? new Date(form.startDate).toISOString()
+        : undefined,
       endDate: form.endDate ? new Date(form.endDate).toISOString() : undefined,
       triggerType: form.triggerType,
       audience: form.audience,
@@ -197,22 +223,24 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
       targetSegmentId: form.targetSegmentId || undefined,
       imageWidth: form.imageWidth || undefined,
       imageHeight: form.imageHeight || undefined,
-    }
+    };
 
     if (isEdit && banner) {
-      updateMutation.mutate({ id: banner.id, payload }, { onSuccess: onClose })
+      updateMutation.mutate({ id: banner.id, payload }, { onSuccess: onClose });
     } else {
-      createMutation.mutate(payload, { onSuccess: onClose })
+      createMutation.mutate(payload, { onSuccess: onClose });
     }
-  }
+  };
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Profile Banner" : "Add Profile Banner"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? "Edit Profile Banner" : "Add Profile Banner"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -235,7 +263,10 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
               <Select
                 value={form.audience ?? "B2C"}
                 onValueChange={(v) =>
-                  setForm({ ...form, audience: v as CreateBannerPayload["audience"] })
+                  setForm({
+                    ...form,
+                    audience: v as CreateBannerPayload["audience"],
+                  })
                 }
               >
                 <SelectTrigger>
@@ -254,7 +285,10 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
               <Select
                 value={form.targetSegmentId ?? "__all__"}
                 onValueChange={(v) =>
-                  setForm({ ...form, targetSegmentId: v === "__all__" ? undefined : v })
+                  setForm({
+                    ...form,
+                    targetSegmentId: v === "__all__" ? undefined : v,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -273,7 +307,8 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
           </div>
           {form.targetSegmentId && (
             <p className="text-xs text-muted-foreground -mt-2">
-              Only signed-in members of this segment see this banner — combined with Audience above.
+              Only signed-in members of this segment see this banner — combined
+              with Audience above.
             </p>
           )}
 
@@ -290,7 +325,9 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    imageWidth: e.target.value ? Number(e.target.value) : undefined,
+                    imageWidth: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
                   })
                 }
               />
@@ -306,13 +343,17 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    imageHeight: e.target.value ? Number(e.target.value) : undefined,
+                    imageHeight: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
                   })
                 }
               />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground -mt-2">Suggested size: {SUGGESTED_SIZE}</p>
+          <p className="text-xs text-muted-foreground -mt-2">
+            Suggested size: {SUGGESTED_SIZE}
+          </p>
 
           {/* Banner Image */}
           <div className="space-y-2">
@@ -321,11 +362,18 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
               value={form.imageUrl || null}
               onChange={(url) => setForm({ ...form, imageUrl: url ?? "" })}
               label="Upload Banner Image"
+              kind="banner"
               helperText={
                 <div className="flex flex-col gap-0.5">
-                  <span>• <strong>Size:</strong> Max 5MB</span>
-                  <span>• <strong>Format:</strong> JPG, PNG, WEBP</span>
-                  <span>• <strong>Recommended:</strong> {SUGGESTED_SIZE}</span>
+                  <span>
+                    • <strong>Size:</strong> Max 5MB
+                  </span>
+                  <span>
+                    • <strong>Format:</strong> JPG, PNG, WEBP
+                  </span>
+                  <span>
+                    • <strong>Recommended:</strong> {SUGGESTED_SIZE}
+                  </span>
                 </div>
               }
             />
@@ -406,9 +454,13 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
                 </Label>
                 <Input
                   id="linkValue"
-                  placeholder={form.linkType === "url" ? "https://..." : "Enter product ID"}
+                  placeholder={
+                    form.linkType === "url" ? "https://..." : "Enter product ID"
+                  }
                   value={form.linkValue ?? ""}
-                  onChange={(e) => setForm({ ...form, linkValue: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, linkValue: e.target.value })
+                  }
                 />
               </div>
             )}
@@ -422,7 +474,9 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
                 id="startDate"
                 type="datetime-local"
                 value={form.startDate ?? ""}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, startDate: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5">
@@ -456,5 +510,5 @@ export function ProfileBannerDialog({ open, onClose, banner }: ProfileBannerDial
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

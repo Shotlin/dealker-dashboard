@@ -1,45 +1,48 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { LinkValuePicker } from "@/components/builder/LinkPicker"
-import { ImageUpload } from "@/components/products/ImageUpload"
-import { IconPicker, NavButtonIconPreview } from "@/components/nav-buttons/IconPicker"
-import { useCreateNavButton, useUpdateNavButton } from "@/hooks/useNavButtons"
-import { useCustomerSegments } from "@/hooks/useCustomerSegments"
+} from "@/components/ui/select";
+import { LinkValuePicker } from "@/components/builder/LinkPicker";
+import { ImageUpload } from "@/components/products/ImageUpload";
+import {
+  IconPicker,
+  NavButtonIconPreview,
+} from "@/components/nav-buttons/IconPicker";
+import { useCreateNavButton, useUpdateNavButton } from "@/hooks/useNavButtons";
+import { useCustomerSegments } from "@/hooks/useCustomerSegments";
 import type {
   NavButton,
   CreateNavButtonPayload,
   NavButtonDestinationType,
   NavButtonIconKey,
   NavButtonIconType,
-} from "@/types/nav-button.types"
+} from "@/types/nav-button.types";
 
 interface NavButtonDialogProps {
-  open: boolean
-  onClose: () => void
-  navButton?: NavButton | null
+  open: boolean;
+  onClose: () => void;
+  navButton?: NavButton | null;
   /** Pre-selects Placement for a new button (e.g. opening "Add" from the
    * Profile Menu tab shouldn't default to Bottom Nav Slot). Ignored when
    * editing an existing button — its own placement always wins. */
-  defaultPlacement?: NavButton["placement"]
+  defaultPlacement?: NavButton["placement"];
 }
 
 /** Curated internal screens — deliberately a fixed list, not a free path
@@ -63,14 +66,14 @@ const APP_ROUTE_OPTIONS = [
   { value: "/deals", label: "Mega Deals" },
   { value: "/brand_store", label: "Brand Store" },
   { value: "/new_arrivals", label: "New Arrivals" },
-] as const
+] as const;
 
 const DESTINATION_TYPE_LABELS: Record<NavButtonDestinationType, string> = {
   APP_ROUTE: "An existing app screen",
   CATEGORY: "A category or bundle",
   PRODUCT: "A product",
   WEBVIEW: "A website or game (opens full-screen)",
-}
+};
 
 const INITIAL: CreateNavButtonPayload & { isActive: boolean } = {
   label: "",
@@ -88,14 +91,19 @@ const INITIAL: CreateNavButtonPayload & { isActive: boolean } = {
   startDate: undefined,
   endDate: undefined,
   placement: "BOTTOM_NAV" as NavButton["placement"],
-}
+};
 
-export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: NavButtonDialogProps) {
-  const [form, setForm] = useState(INITIAL)
-  const createMutation = useCreateNavButton()
-  const updateMutation = useUpdateNavButton()
-  const isEdit = !!navButton
-  const { data: segments } = useCustomerSegments()
+export function NavButtonDialog({
+  open,
+  onClose,
+  navButton,
+  defaultPlacement,
+}: NavButtonDialogProps) {
+  const [form, setForm] = useState(INITIAL);
+  const createMutation = useCreateNavButton();
+  const updateMutation = useUpdateNavButton();
+  const isEdit = !!navButton;
+  const { data: segments } = useCustomerSegments();
 
   useEffect(() => {
     if (navButton) {
@@ -112,62 +120,83 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
         audience: navButton.audience,
         targetSegmentId: navButton.target_segment_id ?? undefined,
         isActive: navButton.is_active,
-        startDate: navButton.start_date ? navButton.start_date.slice(0, 16) : undefined,
-        endDate: navButton.end_date ? navButton.end_date.slice(0, 16) : undefined,
+        startDate: navButton.start_date
+          ? navButton.start_date.slice(0, 16)
+          : undefined,
+        endDate: navButton.end_date
+          ? navButton.end_date.slice(0, 16)
+          : undefined,
         placement: navButton.placement,
-      })
+      });
     } else {
-      setForm({ ...INITIAL, placement: defaultPlacement ?? "BOTTOM_NAV" })
+      setForm({ ...INITIAL, placement: defaultPlacement ?? "BOTTOM_NAV" });
     }
-  }, [navButton, open, defaultPlacement])
+  }, [navButton, open, defaultPlacement]);
 
   const setDestinationType = (type: NavButtonDestinationType) => {
     // Each type's destinationValue means something different (a route
     // path vs. a raw category/product id vs. a URL) — switching type
     // without clearing would otherwise let a stale category id get saved
     // as if it were a URL, or vice versa.
-    const defaultValue = type === "APP_ROUTE" ? APP_ROUTE_OPTIONS[0].value : ""
-    setForm({ ...form, destinationType: type, destinationValue: defaultValue })
-  }
+    const defaultValue = type === "APP_ROUTE" ? APP_ROUTE_OPTIONS[0].value : "";
+    setForm({ ...form, destinationType: type, destinationValue: defaultValue });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     const payload: CreateNavButtonPayload = {
       label: form.label.trim(),
       iconType: form.iconType,
       iconKey: form.iconType === "PRESET" ? form.iconKey : undefined,
-      accentColor: form.iconType === "PRESET" ? form.accentColor || undefined : undefined,
-      customIconActiveUrl: form.iconType === "CUSTOM" ? form.customIconActiveUrl || undefined : undefined,
-      customIconInactiveUrl: form.iconType === "CUSTOM" ? form.customIconInactiveUrl || undefined : undefined,
+      accentColor:
+        form.iconType === "PRESET" ? form.accentColor || undefined : undefined,
+      customIconActiveUrl:
+        form.iconType === "CUSTOM"
+          ? form.customIconActiveUrl || undefined
+          : undefined,
+      customIconInactiveUrl:
+        form.iconType === "CUSTOM"
+          ? form.customIconInactiveUrl || undefined
+          : undefined,
       destinationType: form.destinationType,
       destinationValue: form.destinationValue.trim(),
-      passIdentity: form.destinationType === "WEBVIEW" ? !!form.passIdentity : false,
+      passIdentity:
+        form.destinationType === "WEBVIEW" ? !!form.passIdentity : false,
       audience: form.audience,
       targetSegmentId: form.targetSegmentId || undefined,
       isActive: form.isActive,
-      startDate: form.startDate ? new Date(form.startDate).toISOString() : undefined,
+      startDate: form.startDate
+        ? new Date(form.startDate).toISOString()
+        : undefined,
       endDate: form.endDate ? new Date(form.endDate).toISOString() : undefined,
       placement: form.placement,
-    }
+    };
 
     if (isEdit && navButton) {
-      updateMutation.mutate({ id: navButton.id, payload }, { onSuccess: onClose })
+      updateMutation.mutate(
+        { id: navButton.id, payload },
+        { onSuccess: onClose },
+      );
     } else {
-      createMutation.mutate(payload, { onSuccess: onClose })
+      createMutation.mutate(payload, { onSuccess: onClose });
     }
-  }
+  };
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createMutation.isPending || updateMutation.isPending;
   const iconReady =
-    form.iconType === "CUSTOM" ? !!form.customIconActiveUrl : !!form.iconKey
+    form.iconType === "CUSTOM" ? !!form.customIconActiveUrl : !!form.iconKey;
   const canSubmit =
-    form.label.trim().length > 0 && form.destinationValue.trim().length > 0 && iconReady
+    form.label.trim().length > 0 &&
+    form.destinationValue.trim().length > 0 &&
+    iconReady;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Nav Button" : "Add Nav Button"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? "Edit Nav Button" : "Add Nav Button"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -180,7 +209,9 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
               size={22}
             />
             <div className="min-w-0">
-              <p className="text-sm font-medium truncate">{form.label || "Button label"}</p>
+              <p className="text-sm font-medium truncate">
+                {form.label || "Button label"}
+              </p>
               <p className="text-xs text-muted-foreground">
                 {form.iconType === "CUSTOM"
                   ? "Rendered as-is, no colored badge — same as the app's own 4 tab icons"
@@ -207,14 +238,20 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
             <Label>Where does this show?</Label>
             <Select
               value={form.placement}
-              onValueChange={(v) => setForm({ ...form, placement: v as NavButton["placement"] })}
+              onValueChange={(v) =>
+                setForm({ ...form, placement: v as NavButton["placement"] })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="BOTTOM_NAV">5th bottom-nav slot (only one shows at a time)</SelectItem>
-                <SelectItem value="PROFILE_MENU">Profile screen menu list (any number can show)</SelectItem>
+                <SelectItem value="BOTTOM_NAV">
+                  5th bottom-nav slot (only one shows at a time)
+                </SelectItem>
+                <SelectItem value="PROFILE_MENU">
+                  Profile screen menu list (any number can show)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -224,13 +261,17 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
             <Label>Icon</Label>
             <Select
               value={form.iconType ?? "PRESET"}
-              onValueChange={(v) => setForm({ ...form, iconType: v as NavButtonIconType })}
+              onValueChange={(v) =>
+                setForm({ ...form, iconType: v as NavButtonIconType })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="PRESET">Choose from built-in icons</SelectItem>
+                <SelectItem value="PRESET">
+                  Choose from built-in icons
+                </SelectItem>
                 <SelectItem value="CUSTOM">Upload my own icon</SelectItem>
               </SelectContent>
             </Select>
@@ -242,12 +283,21 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
                 <Label>Icon image *</Label>
                 <ImageUpload
                   value={form.customIconActiveUrl || null}
-                  onChange={(url) => setForm({ ...form, customIconActiveUrl: url ?? undefined })}
+                  onChange={(url) =>
+                    setForm({ ...form, customIconActiveUrl: url ?? undefined })
+                  }
                   label="Upload icon"
+                  kind="icon"
                   helperText={
                     <div className="flex flex-col gap-0.5">
-                      <span>• <strong>Recommended:</strong> square, transparent PNG, ~192×192px</span>
-                      <span>• Rendered exactly as uploaded — no colored circle behind it</span>
+                      <span>
+                        • <strong>Recommended:</strong> square, transparent PNG,
+                        ~192×192px
+                      </span>
+                      <span>
+                        • Rendered exactly as uploaded — no colored circle
+                        behind it
+                      </span>
                     </div>
                   }
                 />
@@ -256,8 +306,14 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
                 <Label>Outline variant (optional)</Label>
                 <ImageUpload
                   value={form.customIconInactiveUrl || null}
-                  onChange={(url) => setForm({ ...form, customIconInactiveUrl: url ?? undefined })}
+                  onChange={(url) =>
+                    setForm({
+                      ...form,
+                      customIconInactiveUrl: url ?? undefined,
+                    })
+                  }
                   label="Upload outline icon"
+                  kind="icon"
                   helperText="Falls back to the icon image above if not set."
                 />
               </div>
@@ -269,7 +325,9 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
                 <IconPicker
                   value={form.iconKey ?? "gift"}
                   accentColor={form.accentColor}
-                  onChange={(iconKey) => setForm({ ...form, iconKey: iconKey as NavButtonIconKey })}
+                  onChange={(iconKey) =>
+                    setForm({ ...form, iconKey: iconKey as NavButtonIconKey })
+                  }
                 />
               </div>
               <div className="space-y-1.5">
@@ -279,12 +337,16 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
                     id="accentColor"
                     type="color"
                     value={form.accentColor || "#7C3AED"}
-                    onChange={(e) => setForm({ ...form, accentColor: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, accentColor: e.target.value })
+                    }
                     className="h-9 w-11 rounded border cursor-pointer shrink-0"
                   />
                   <Input
                     value={form.accentColor || ""}
-                    onChange={(e) => setForm({ ...form, accentColor: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, accentColor: e.target.value })
+                    }
                     placeholder="#7C3AED"
                     maxLength={9}
                   />
@@ -298,13 +360,19 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
             <Label>Opens</Label>
             <Select
               value={form.destinationType}
-              onValueChange={(v) => setDestinationType(v as NavButtonDestinationType)}
+              onValueChange={(v) =>
+                setDestinationType(v as NavButtonDestinationType)
+              }
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(DESTINATION_TYPE_LABELS) as NavButtonDestinationType[]).map((t) => (
+                {(
+                  Object.keys(
+                    DESTINATION_TYPE_LABELS,
+                  ) as NavButtonDestinationType[]
+                ).map((t) => (
                   <SelectItem key={t} value={t}>
                     {DESTINATION_TYPE_LABELS[t]}
                   </SelectItem>
@@ -334,13 +402,22 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
             </div>
           )}
 
-          {(form.destinationType === "CATEGORY" || form.destinationType === "PRODUCT") && (
+          {(form.destinationType === "CATEGORY" ||
+            form.destinationType === "PRODUCT") && (
             <div className="space-y-1.5">
-              <Label>{form.destinationType === "CATEGORY" ? "Category / Bundle" : "Product"}</Label>
+              <Label>
+                {form.destinationType === "CATEGORY"
+                  ? "Category / Bundle"
+                  : "Product"}
+              </Label>
               <LinkValuePicker
-                type={form.destinationType === "CATEGORY" ? "category" : "product"}
+                type={
+                  form.destinationType === "CATEGORY" ? "category" : "product"
+                }
                 value={form.destinationValue || null}
-                onChange={(v) => setForm({ ...form, destinationValue: v ?? "" })}
+                onChange={(v) =>
+                  setForm({ ...form, destinationValue: v ?? "" })
+                }
               />
             </div>
           )}
@@ -354,12 +431,14 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
                   type="url"
                   placeholder="https://example.com/event"
                   value={form.destinationValue}
-                  onChange={(e) => setForm({ ...form, destinationValue: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, destinationValue: e.target.value })
+                  }
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Opens full-screen inside the app, like an in-app browser — the customer never
-                  leaves Dealker.
+                  Opens full-screen inside the app, like an in-app browser — the
+                  customer never leaves Dealker.
                 </p>
               </div>
               <div className="flex items-center gap-3 rounded-md border p-3">
@@ -368,12 +447,17 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
                   onCheckedChange={(v) => setForm({ ...form, passIdentity: v })}
                 />
                 <div>
-                  <Label className="cursor-pointer">Pass customer identity</Label>
+                  <Label className="cursor-pointer">
+                    Pass customer identity
+                  </Label>
                   <p className="text-xs text-muted-foreground">
-                    The app appends a short-lived (10-minute) token identifying the customer —
-                    this page (or a game/event server behind it) can resolve it via{" "}
-                    <code className="text-[11px]">GET /webview/session?token=...</code> without
-                    ever seeing their real login credentials.
+                    The app appends a short-lived (10-minute) token identifying
+                    the customer — this page (or a game/event server behind it)
+                    can resolve it via{" "}
+                    <code className="text-[11px]">
+                      GET /webview/session?token=...
+                    </code>{" "}
+                    without ever seeing their real login credentials.
                   </p>
                 </div>
               </div>
@@ -386,7 +470,12 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
               <Label>Audience</Label>
               <Select
                 value={form.audience ?? "ALL"}
-                onValueChange={(v) => setForm({ ...form, audience: v as CreateNavButtonPayload["audience"] })}
+                onValueChange={(v) =>
+                  setForm({
+                    ...form,
+                    audience: v as CreateNavButtonPayload["audience"],
+                  })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -403,7 +492,10 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
               <Select
                 value={form.targetSegmentId ?? "__all__"}
                 onValueChange={(v) =>
-                  setForm({ ...form, targetSegmentId: v === "__all__" ? undefined : v })
+                  setForm({
+                    ...form,
+                    targetSegmentId: v === "__all__" ? undefined : v,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -422,8 +514,9 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
           </div>
           {form.targetSegmentId && (
             <p className="text-xs text-muted-foreground -mt-2">
-              Only signed-in members of this segment see this button — combined with Audience
-              above. Other customers keep their normal 4-button nav.
+              Only signed-in members of this segment see this button — combined
+              with Audience above. Other customers keep their normal 4-button
+              nav.
             </p>
           )}
 
@@ -435,7 +528,9 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
                 id="startDate"
                 type="datetime-local"
                 value={form.startDate ?? ""}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, startDate: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5">
@@ -468,5 +563,5 @@ export function NavButtonDialog({ open, onClose, navButton, defaultPlacement }: 
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
