@@ -108,7 +108,7 @@ export const PAGE_THEME_PRESETS: PageThemePreset[] = [
     recommendedSections: [
       { section_type: "animated_banner", config: { gradient: ["#FFFFFF", "#F4F6FA"], height: 200 } },
       { section_type: "round_category_icons" },
-      { section_type: "category_product_grid", config: { columns: 3, card_shape: "rounded" } },
+      { section_type: "category_product_grid", config: { columns: 2, card_shape: "rounded" } },
       { section_type: "spacer", config: { height: 8 } },
     ],
   },

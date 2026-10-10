@@ -220,54 +220,21 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     useCase: "A cleaner, icon-only category rail.",
   },
 
-  // ── Product Grid — same widget, `columns` (2 or 3) and
-  // `product_card_style` (QUICK_COMMERCE_COMPACT / BAKALOO_LEGACY_CLEAN)
-  // are both already read by the Flutter renderer.
+  // ── Product Grid — always two columns (the Dealker card is a tall card), with an optional
+  // "View All" button under the grid.
   {
     id: "category_product_grid",
     type: "category_product_grid",
-    label: "Product Grid — 3 Column",
+    label: "Product Grid",
     icon: Grid3x3,
-    description: "Multi-column product block for category-led merchandising.",
+    description: "Two-column product grid with a View All button — category-led or hand-picked products.",
     maxPerTab: 20,
-    defaultConfig: { columns: 3, card_shape: "rounded" },
+    defaultConfig: { columns: 2, card_shape: "rounded", show_view_all_button: true, view_all_label: "View All" },
     accentClassName: "bg-sky-100 text-sky-700 border-sky-200",
     group: "products",
     tags: ["Bestseller", "New"],
     dataSources: ["category", "manual_products", "tags"],
     useCase: "Browse products by category or chosen list.",
-  },
-  {
-    id: "category_product_grid__2col",
-    type: "category_product_grid",
-    label: "Product Grid — 2 Column",
-    icon: Grid3x3,
-    description: "Wider two-column cards — more product detail per row.",
-    maxPerTab: 20,
-    defaultConfig: { columns: 2, card_shape: "rounded" },
-    accentClassName: "bg-sky-100 text-sky-700 border-sky-200",
-    group: "products",
-    tags: ["Bestseller", "New"],
-    dataSources: ["category", "manual_products", "tags"],
-    useCase: "Fewer, larger product cards per row.",
-  },
-  {
-    id: "category_product_grid__classic",
-    type: "category_product_grid",
-    label: "Product Grid — Classic Cards",
-    icon: Grid3x3,
-    description: "3-column grid using the classic (pre-quick-commerce) card style.",
-    maxPerTab: 20,
-    defaultConfig: {
-      columns: 3,
-      card_shape: "rounded",
-      product_card_style: "BAKALOO_LEGACY_CLEAN",
-    },
-    accentClassName: "bg-sky-100 text-sky-700 border-sky-200",
-    group: "products",
-    tags: ["Bestseller", "New"],
-    dataSources: ["category", "manual_products", "tags"],
-    useCase: "Same grid, classic card artwork/typography.",
   },
 
   {
@@ -310,7 +277,7 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     icon: TrendingUp,
     description: "Single trending shelf for nearby bestsellers and demand spikes.",
     maxPerTab: 1,
-    defaultConfig: { limit: 6 },
+    defaultConfig: { limit: 6, show_view_all_button: true, view_all_label: "View All" },
     accentClassName: "bg-rose-100 text-rose-700 border-rose-200",
     group: "products",
     tags: ["Bestseller"],

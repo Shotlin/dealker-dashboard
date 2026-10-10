@@ -13,8 +13,13 @@ function ProductGridPreview({
   products,
 }: PreviewProps) {
   const config = section.config as Record<string, unknown>
-  const columns =
-    typeof config.columns === "number" ? Math.min(Math.max(config.columns, 2), 4) : 3
+  // Always two columns (the Dealker card is a tall card), like the app.
+  const columns = 2
+  const showViewAll = config.show_view_all_button !== false
+  const viewAllLabel =
+    typeof config.view_all_label === "string" && config.view_all_label.trim()
+      ? config.view_all_label.trim()
+      : "View All"
   const title =
     typeof config.title === "string" && config.title.trim()
       ? config.title.trim()
@@ -64,6 +69,29 @@ function ProductGridPreview({
             <PlaceholderCard key={`ph-${i}`} index={i} />
           ))}
       </div>
+
+      {/* "View All" button under the grid */}
+      {showViewAll ? (
+        <div style={{ padding: "2px 14px 12px" }}>
+          <div
+            style={{
+              height: 40,
+              borderRadius: 12,
+              background: "#ffffff",
+              border: "1px solid #e5e7eb",
+              color: "#131313",
+              fontSize: 14,
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+            }}
+          >
+            {viewAllLabel} <span aria-hidden>→</span>
+          </div>
+        </div>
+      ) : null}
     </button>
   )
 }

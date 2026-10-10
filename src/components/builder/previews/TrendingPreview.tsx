@@ -38,9 +38,16 @@ function TrendingPreview({
   const bottomSpace = num(config.bottom_space) ?? (hasBg ? 14 : 0)
   const radius = Math.min(Math.max(num(config.border_radius) ?? 16, 0), 32)
   const titleColor = typeof config.title_color === "string" && config.title_color ? config.title_color : bgUrl ? "#FFFFFF" : "#131313"
-  const showViewAll =
-    isCarousel && (typeof config.show_view_all_button === "boolean" ? config.show_view_all_button : hasBg)
-  const viewAllLabel = typeof config.view_all_label === "string" && config.view_all_label.trim() ? config.view_all_label : "View all"
+  const isTrending = section.section_type === "trending_products"
+  const showViewAll = isTrending
+    ? config.show_view_all_button !== false
+    : isCarousel && (typeof config.show_view_all_button === "boolean" ? config.show_view_all_button : hasBg)
+  const viewAllLabel =
+    typeof config.view_all_label === "string" && config.view_all_label.trim()
+      ? config.view_all_label
+      : isTrending
+        ? "View All"
+        : "View all"
 
   // Flutter: last word of title is green accent
   const words = title.split(" ")

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
 import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
-import { cn } from "@/lib/utils"
 import type { SectionType } from "@/types/theme.types"
 import AnimationPicker from "./AnimationPicker"
 
@@ -19,7 +18,6 @@ interface ProductConfigEditorProps {
 
 // 4-up grids are not supported on mobile — keep this in lock-step with the
 // columns.clamp(2, 3) in the Flutter app's _buildCategoryProductGrid.
-const COLUMN_OPTIONS = [2, 3] as const
 
 // Reference phone: 390 pt wide, 3× pixel density. The section sits between 12 pt side
 // margins (366 pt wide) and the card row is a fixed height per card style — keep these
@@ -68,22 +66,24 @@ export default function ProductConfigEditor({
   sectionType,
 }: ProductConfigEditorProps) {
   const title = typeof config.title === "string" ? config.title : "Products"
-  const columns = typeof config.columns === "number" ? config.columns : 3
   const autoScroll = Boolean(config.auto_scroll)
   const isCarousel = sectionType === "product_carousel"
+  const isGrid = sectionType === "category_product_grid"
+  const isTrending = sectionType === "trending_products"
   const backgroundUrl =
     typeof config.background_image_url === "string" ? config.background_image_url : ""
   const hasBackground = backgroundUrl.trim().length > 0
   const showTitle = config.show_title !== false
   const showViewAllButton =
-    typeof config.show_view_all_button === "boolean" ? config.show_view_all_button : hasBackground
+    typeof config.show_view_all_button === "boolean"
+      ? config.show_view_all_button
+      : isGrid || isTrending || hasBackground
   const topSpace =
     typeof config.top_space === "number" ? config.top_space : hasBackground ? DEFAULT_TOP_SPACE : 0
   const bottomSpace =
     typeof config.bottom_space === "number" ? config.bottom_space : hasBackground ? DEFAULT_BOTTOM_SPACE : 0
   const backgroundRadius = typeof config.border_radius === "number" ? config.border_radius : 16
   const guide = backgroundGuide(topSpace, bottomSpace)
-  const showColumns = sectionType === "category_product_grid"
   const showAutoScroll = sectionType === "product_carousel"
 
   const patchConfig = (patch: Partial<Record<string, unknown>>) => {
@@ -131,33 +131,6 @@ export default function ProductConfigEditor({
         ) : null}
       </div>
 
-      {showColumns ? (
-        <div className="space-y-3">
-          <div className="text-sm font-medium text-slate-900">Columns</div>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {COLUMN_OPTIONS.map((option) => {
-              const isActive = option === columns
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => patchConfig({ columns: option })}
-                  className={cn(
-                    "rounded-2xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200 sm:py-3",
-                    isActive
-                      ? "border-blue-500 bg-blue-50 text-blue-700 shadow-[0_0_0_3px_rgba(59,130,246,0.12)]"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                  )}
-                  aria-pressed={isActive}
-                >
-                  {option}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      ) : null}
-
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
         <div className="text-sm font-medium text-slate-900">Product card</div>
         <p className="mt-0.5 text-xs text-slate-500">
@@ -182,13 +155,13 @@ export default function ProductConfigEditor({
         </div>
       ) : null}
 
-      {isCarousel ? (
+      {isCarousel || isGrid || isTrending ? (
         <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-medium text-slate-900">"View all" button</div>
               <div className="text-xs text-slate-500">
-                A white full-width button under the cards. Opens this section's category.
+                A white full-width button under the cards. Opens this section's category (or all categories).
               </div>
             </div>
             <Switch
@@ -203,7 +176,7 @@ export default function ProductConfigEditor({
               </Label>
               <Input
                 id="carousel-view-all-label"
-                value={typeof config.view_all_label === "string" ? config.view_all_label : "View all"}
+                value={typeof config.view_all_label === "string" ? config.view_all_label : isGrid || isTrending ? "View All" : "View all"}
                 onChange={(event) => patchConfig({ view_all_label: event.target.value })}
                 maxLength={24}
               />
