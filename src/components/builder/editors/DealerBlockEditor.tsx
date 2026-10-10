@@ -34,6 +34,24 @@ export default function DealerBlockEditor({ type, config, onChange }: DealerBloc
             />
           )
         }
+        if (field.kind === "number") {
+          return (
+            <div key={field.key} className="space-y-2">
+              <Label className="text-xs font-medium text-slate-600">{field.label}</Label>
+              <Input
+                type="number"
+                min={1}
+                max={12}
+                value={value}
+                onChange={(e) => {
+                  const n = Math.round(Number(e.target.value))
+                  onChange({ ...config, [field.key]: Number.isFinite(n) && n > 0 ? Math.min(12, n) : 1 })
+                }}
+              />
+              {field.hint && <p className="text-xs text-slate-500">{field.hint}</p>}
+            </div>
+          )
+        }
         if (field.kind === "image") {
           return (
             <ThemeImageUploader
@@ -67,7 +85,7 @@ export default function DealerBlockEditor({ type, config, onChange }: DealerBloc
       })}
       {type === "live_auction" && (
         <p className="text-xs text-slate-500">
-          Shows the live auction with the nearest end time, from Auctions. Visible to signed-in customers only.
+          Shows the live auctions that end soonest, from Auctions. Visible to everyone, including guests; bidding needs a login.
         </p>
       )}
       {type === "deal_of_day" && (

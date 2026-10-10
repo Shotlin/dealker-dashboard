@@ -427,6 +427,12 @@ function DealerBlocksPreview({
       aria-pressed={isSelected}
     >
       <div style={{ padding: "6px 10px" }}>{body}</div>
+      {type === "live_auction" && (
+        <div style={{ padding: "0 12px 8px", fontSize: 10, color: "#64748b", textAlign: "left" }}>
+          Home shows up to {Math.max(1, Math.min(12, Number(v("max_auctions")) || 4))} live auctions (swipe
+          sideways) + a “View all” tile that opens the Auctions screen.
+        </div>
+      )}
     </button>
   );
 }

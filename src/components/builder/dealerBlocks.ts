@@ -25,7 +25,7 @@ export function isDealerBlock(
 export interface BlockField {
   key: string;
   label: string;
-  kind: "text" | "color" | "datetime" | "image";
+  kind: "text" | "color" | "datetime" | "image" | "number";
   hint?: string;
   placeholder?: string;
 }
@@ -41,6 +41,7 @@ export const DEALER_BLOCK_DEFAULTS: Record<
     button_label: "Bid Now →",
     bg_color: "#FFFFFF",
     header_bg_color: "#EEE9FB",
+    max_auctions: 4,
     text_color: "#1B1B4B",
     live_color: "#E0262F",
     button_color: "#4F3FE0",
@@ -87,6 +88,12 @@ const txt = (key: string, label: string, placeholder?: string): BlockField => ({
 
 export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
   live_auction: [
+    {
+      key: "max_auctions",
+      label: "Auctions shown on Home (1–12)",
+      kind: "number",
+      hint: "The nearest-ending live auctions up to this number, swiped sideways, then a “View all” tile that opens the full Auctions screen.",
+    },
     txt("title", "Title"),
     txt("subtitle", "Subtitle"),
     txt("view_all_label", "“View all” label"),
@@ -141,6 +148,8 @@ export function blockValue(
 ): string {
   const v = config[key];
   if (typeof v === "string") return v;
+  if (typeof v === "number") return String(v);
   const d = DEALER_BLOCK_DEFAULTS[type][key];
+  if (typeof d === "number") return String(d);
   return typeof d === "string" ? d : "";
 }
