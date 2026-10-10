@@ -12,6 +12,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { useOrderReturnActions } from "@/hooks/useOrderReturns"
+import { useReturnJourney } from "@/hooks/useReturnJourney"
+import { ReturnJourneyPanel } from "./ReturnJourneyPanel"
 import type { OrderOverview } from "@/types/order-overview.types"
 import { day, dayTime, money } from "./helpers"
 
@@ -46,6 +48,10 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
   const approved = r.status === "APPROVED"
   const closed = ["REJECTED", "CANCELLED"].includes(r.status)
   void orderId
+  const journeyQ = useReturnJourney(r.id)
+  const qc = journeyQ.data?.qc ?? null
+  const refundNow = qc?.price_status === "ACCEPTED" && qc.revised_price != null ? qc.revised_price : r.computed_amount
+  const priceBlocked = qc != null && (qc.price_status === "PROPOSED" || qc.price_status === "CLARIFICATION")
 
   return (
     <div className="space-y-4 rounded-xl border p-4">
@@ -82,7 +88,7 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Amount to refund</p>
-          <p className="text-xl font-semibold tabular-nums">{money(r.resolved_amount ?? r.computed_amount)}</p>
+          <p className="text-xl font-semibold tabular-nums">{money(r.resolved_amount ?? refundNow)}</p>
           <p className="text-xs text-muted-foreground">{approved ? `Sent to ${r.refund_destination === "WALLET" ? "the customer’s Dealker wallet (instantly)" : "the original payment method (5–7 working days)"}` : "Goes back to the customer once you approve."}</p>
         </div>
         <div className="rounded-lg border p-3">
@@ -91,6 +97,8 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
           <p className="text-xs text-muted-foreground">{approved ? "Taken back from the seller’s balance (their sale minus Dealker’s commission)." : "When approved, the seller’s earnings for these items are reversed."}</p>
         </div>
       </div>
+
+      <ReturnJourneyPanel refundId={r.id} journey={journeyQ.data} open={open} originalPrice={r.computed_amount} />
 
       <ol className="space-y-3 border-l-2 border-dashed pl-4 [&>li]:relative">
         <Step done label="Return requested" sub={dayTime(r.created_at)} />
@@ -102,15 +110,16 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
 
       {open && (
         <div className="space-y-3 border-t pt-4">
+          {priceBlocked && <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">The refund can be approved once the customer accepts the revised price of {money(qc!.revised_price ?? 0)}.</p>}
           {mode === null && (
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => setMode("approve")}><Check className="mr-1.5 h-4 w-4" />Approve & refund {money(r.computed_amount)}</Button>
+              <Button disabled={priceBlocked} onClick={() => setMode("approve")}><Check className="mr-1.5 h-4 w-4" />Approve & refund {money(refundNow)}</Button>
               <Button variant="outline" className="text-red-600" onClick={() => setMode("reject")}><X className="mr-1.5 h-4 w-4" />Decline</Button>
             </div>
           )}
           {mode === "approve" && (
             <div className="space-y-3 rounded-lg bg-muted/40 p-4">
-              <p className="text-sm font-medium">Where should the {money(r.computed_amount)} go?</p>
+              <p className="text-sm font-medium">Where should the {money(refundNow)} go?</p>
               <RadioGroup value={dest} onValueChange={(v) => setDest(v as typeof dest)} className="space-y-2">
                 {([["wallet", "Dealker wallet", "Instant. The customer can use it on their next order."], ["original", "Original payment method", "Back to the card / UPI they paid with. Takes 5–7 working days."]] as const).map(([v, t, d]) => (
                   <Label key={v} htmlFor={`${r.id}-${v}`} className="flex cursor-pointer items-start gap-3 rounded-lg border bg-white p-3 font-normal has-[:checked]:border-primary">

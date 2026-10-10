@@ -202,6 +202,7 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "Fees & Commission", href: "/settings/fees", icon: FileText },
           { label: "Payments", href: "/settings/payments", icon: CreditCard },
           { label: "Wallet", href: "/settings/wallet", icon: Wallet },
+          { label: "Returns Policy", href: "/settings/returns", icon: Undo2 },
           { label: "Ola Maps", href: "/settings/ola-maps", icon: MapPinned },
           { label: "Order Alerts", href: "/settings/order-notifications", icon: BellRing },
           { label: "Branding", href: "/settings/app-branding", icon: Image },
