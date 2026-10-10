@@ -57,28 +57,6 @@ function renderLayout(
   mini: MosaicTile[]
 ) {
   switch (layout) {
-    case "two_by_three":
-      return (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: 6,
-          }}
-        >
-          {mini.map((tile, i) =>
-            renderTile(tile, i, "mini", { aspectRatio: "0.78" })
-          )}
-        </div>
-      )
-
-    case "single_hero":
-      return (
-        <div style={{ aspectRatio: "1.95" }}>
-          {hero && renderTile(hero, 0, "hero", { height: "100%" })}
-        </div>
-      )
-
     case "two_by_two":
       return (
         <div
@@ -90,15 +68,6 @@ function renderLayout(
         >
           {mini.map((tile, i) =>
             renderTile(tile, i, "mini", { aspectRatio: "1.05" })
-          )}
-        </div>
-      )
-
-    case "stacked_banners":
-      return (
-        <div style={{ display: "grid", gap: 6 }}>
-          {mini.map((tile, i) =>
-            renderTile(tile, i, "full", { aspectRatio: "2.35" })
           )}
         </div>
       )
@@ -161,52 +130,12 @@ function renderTile(
             inset: 0,
             width: "100%",
             height: "100%",
-            objectFit: tile.imageFit,
-            objectPosition: "bottom center",
+            objectFit: "cover",
+            objectPosition: "center",
           }}
         />
       )}
 
-      <div
-        style={{
-          position: "absolute",
-          top: tone === "hero" ? 12 : 8,
-          left: tone === "hero" ? 14 : 10,
-          right: 18,
-          fontSize: tone === "hero" ? 16 : 12,
-          fontWeight: 700,
-          color: "#ffffff",
-          lineHeight: 0.95,
-          letterSpacing: "-0.02em",
-          textShadow: "0 2px 4px rgba(0,0,0,0.22)",
-          whiteSpace: "pre-line",
-        }}
-      >
-        {tile.title}
-      </div>
-
-      {tone === "hero" && tile.badgeText && (
-        <div
-          style={{
-            position: "absolute",
-            right: 8,
-            bottom: 8,
-            padding: "3px 7px",
-            borderRadius: 999,
-            fontSize: 9,
-            fontWeight: 800,
-            color: "#ffffff",
-            background: `linear-gradient(180deg, ${
-              tile.badgeGradient?.[0] ?? "#FF4CB7"
-            }, ${tile.badgeGradient?.[1] ?? "#D91B83"})`,
-            whiteSpace: "pre-line",
-            textAlign: "center",
-            lineHeight: 1,
-          }}
-        >
-          {tile.badgeText}
-        </div>
-      )}
     </div>
   )
 }

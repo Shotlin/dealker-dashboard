@@ -22,32 +22,6 @@ const VARIANTS = [
     ),
   },
   {
-    value: "two_by_three",
-    label: "2 × 3",
-    render: () => (
-      <div className="grid h-[60px] w-[60px] grid-cols-3 grid-rows-2 gap-1">
-        {Array.from({ length: 6 }, (_, index) => (
-          <div
-            key={index}
-            className={cn(
-              "rounded-md",
-              index % 2 === 0 ? "bg-slate-800/80" : "bg-slate-300"
-            )}
-          />
-        ))}
-      </div>
-    ),
-  },
-  {
-    value: "single_hero",
-    label: "Single Hero",
-    render: () => (
-      <div className="flex h-[60px] w-[60px] items-stretch">
-        <div className="w-full rounded-xl bg-slate-900/85" />
-      </div>
-    ),
-  },
-  {
     value: "two_by_two",
     label: "2 × 2",
     render: () => (
@@ -58,23 +32,6 @@ const VARIANTS = [
             className={cn(
               "rounded-md",
               index < 2 ? "bg-slate-800/80" : "bg-slate-300"
-            )}
-          />
-        ))}
-      </div>
-    ),
-  },
-  {
-    value: "stacked_banners",
-    label: "Stacked",
-    render: () => (
-      <div className="grid h-[60px] w-[60px] grid-rows-3 gap-1">
-        {Array.from({ length: 3 }, (_, index) => (
-          <div
-            key={index}
-            className={cn(
-              "rounded-md",
-              index === 0 ? "bg-slate-800/80" : "bg-slate-300"
             )}
           />
         ))}

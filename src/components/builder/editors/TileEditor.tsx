@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader";
 import { ThemeGradientPicker } from "@/components/themes/ThemeGradientPicker";
@@ -61,7 +59,7 @@ export default function TileEditor({
             {label}
           </span>
           <span className="block truncate text-xs text-slate-500">
-            {tile.title || "Untitled tile"}
+            {tile.imageUrl ? "Image uploaded" : "No image yet"}
           </span>
         </span>
         <ChevronDown
@@ -74,15 +72,6 @@ export default function TileEditor({
 
       {open && (
         <div className="space-y-4 border-t border-slate-100 p-3">
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-slate-600">Title</Label>
-            <Input
-              value={tile.title}
-              onChange={(e) => patch({ title: e.target.value })}
-              placeholder="Tile title"
-            />
-          </div>
-
           <ThemeImageUploader
             label="Tile image"
             kind="icon"
@@ -109,23 +98,10 @@ export default function TileEditor({
           )}
 
           <ThemeGradientPicker
-            label="Background gradient (fallback / overlay)"
+            label="Background color (shown only until the image loads)"
             value={tile.gradient}
             onChange={(gradient) => patch({ gradient })}
           />
-
-          {isHero && (
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-slate-600">
-                Badge text
-              </Label>
-              <Input
-                value={tile.badgeText ?? ""}
-                onChange={(e) => patch({ badgeText: e.target.value })}
-                placeholder="BUY 2 GET 1"
-              />
-            </div>
-          )}
 
           <TileActionEditor
             value={tile.action}

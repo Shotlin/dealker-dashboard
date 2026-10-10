@@ -78,15 +78,6 @@ export interface BankOffersTheme {
  *  these defaults (the design's colours) for anything not set. */
 export interface HomeLookTheme {
   canvasColor?: string
-  /** Shiny header gradient. Unset = derived from the top-bar colour. */
-  headerStartColor?: string
-  headerEndColor?: string
-  /** Unselected store tabs. Unset = tint between header and panel. */
-  storeTabColor?: string
-  /** 0..1 strength of the diagonal sheen + corner glow. */
-  headerShine?: number
-  /** Bottom corner radius (px) of the search/category panel. */
-  panelRadius?: number
   avatarColor?: string
   storeTileColor?: string
   storeTileActiveColor?: string
@@ -116,11 +107,7 @@ export interface HomeLookTheme {
   productStockColor?: string
 }
 
-export const DEFAULT_HOME_LOOK: Required<
-  Omit<HomeLookTheme, "canvasColor" | "headerStartColor" | "headerEndColor" | "storeTabColor">
-> = {
-  headerShine: 0.3,
-  panelRadius: 30,
+export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
   avatarColor: "#111111",
   storeTileColor: "#FFFFFF",
   storeTileActiveColor: "#FCE8B0",

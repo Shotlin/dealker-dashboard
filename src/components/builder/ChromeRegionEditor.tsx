@@ -221,58 +221,18 @@ function LookColor({
   patchLook,
 }: {
   label: string
-  field: Exclude<keyof HomeLookTheme, "headerShine" | "panelRadius" | "repairLabel">
+  field: keyof HomeLookTheme
   fallback?: string
   look: HomeLookTheme
   patchLook: (patch: Partial<HomeLookTheme>) => void
 }) {
-  const defaults = DEFAULT_HOME_LOOK as unknown as Record<string, string | number>
-  const fromDefaults = typeof defaults[field] === "string" ? (defaults[field] as string) : undefined
+  const defaults = DEFAULT_HOME_LOOK as Record<string, string>
   return (
     <ThemeColorPicker
       label={label}
-      value={look[field] ?? fromDefaults ?? fallback ?? "#FFFFFF"}
+      value={look[field] ?? defaults[field] ?? fallback ?? "#FFFFFF"}
       onChange={(hex) => patchLook({ [field]: hex })}
     />
-  )
-}
-
-function LookNumber({
-  label,
-  field,
-  scale,
-  min,
-  max,
-  fallback,
-  look,
-  patchLook,
-}: {
-  label: string
-  field: "headerShine" | "panelRadius"
-  /** Display value = stored value × scale (e.g. 0.3 shown as 30). */
-  scale: number
-  min: number
-  max: number
-  fallback: number
-  look: HomeLookTheme
-  patchLook: (patch: Partial<HomeLookTheme>) => void
-}) {
-  const stored = look[field]
-  const shown = Math.round((typeof stored === "number" ? stored : fallback) * scale)
-  return (
-    <div className="space-y-2">
-      <Label className="text-xs font-medium text-slate-600">
-        {label}: <span className="font-semibold text-slate-900">{shown}</span>
-      </Label>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={shown}
-        onChange={(e) => patchLook({ [field]: Number(e.target.value) / scale })}
-        className="w-full"
-      />
-    </div>
   )
 }
 
@@ -310,9 +270,6 @@ function RegionFields({
               })
             }
           />
-          <LookColor label="Header gradient — top" field="headerStartColor" fallback={sections.topBar.backgroundColor} look={look} patchLook={patchLook} />
-          <LookColor label="Header gradient — bottom" field="headerEndColor" fallback={sections.topBar.backgroundColor} look={look} patchLook={patchLook} />
-          <LookNumber label="Shine strength (0–100)" field="headerShine" scale={100} min={0} max={100} fallback={DEFAULT_HOME_LOOK.headerShine} look={look} patchLook={patchLook} />
           <LookColor label="Page background (below the header)" field="canvasColor" fallback={sections.topBar.backgroundColor} look={look} patchLook={patchLook} />
           <LookColor label="Profile button color" field="avatarColor" look={look} patchLook={patchLook} />
         </div>
@@ -341,7 +298,6 @@ function RegionFields({
               })
             }
           />
-          <LookNumber label="Panel bottom corner radius (px)" field="panelRadius" scale={1} min={0} max={60} fallback={DEFAULT_HOME_LOOK.panelRadius} look={look} patchLook={patchLook} />
           <LookColor label="Search pill background" field="searchPillColor" look={look} patchLook={patchLook} />
           <LookColor label="Search pill text / icon" field="searchPillTextColor" look={look} patchLook={patchLook} />
           <LookColor label="Search bar border" field="searchPillBorderColor" fallback="#222222" look={look} patchLook={patchLook} />
@@ -458,11 +414,9 @@ function RegionFields({
     case "store_chips":
       return (
         <div className="space-y-4">
-          <LookColor label="Unselected tab color" field="storeTabColor" fallback={sections.topBar.backgroundColor} look={look} patchLook={patchLook} />
-          <LookColor label="Tab label color" field="storeTileLabelColor" look={look} patchLook={patchLook} />
-          <p className="text-xs text-slate-500">
-            The selected tab always takes the Search Bar panel colour, so it looks carved into the panel.
-          </p>
+          <LookColor label="Tile background" field="storeTileColor" look={look} patchLook={patchLook} />
+          <LookColor label="Selected tile background" field="storeTileActiveColor" look={look} patchLook={patchLook} />
+          <LookColor label="Tile label color" field="storeTileLabelColor" look={look} patchLook={patchLook} />
           <p className="text-xs text-slate-500">
             Store names and icons are edited under Storefront → Stores.
           </p>

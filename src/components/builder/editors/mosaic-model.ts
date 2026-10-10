@@ -13,12 +13,7 @@
  *    keep rendering.
  */
 
-export type MosaicLayout =
-  | "hero_plus_four"
-  | "two_by_three"
-  | "single_hero"
-  | "two_by_two"
-  | "stacked_banners"
+export type MosaicLayout = "hero_plus_four" | "two_by_two"
 
 export type TileActionType =
   | "none"
@@ -52,10 +47,7 @@ export interface MosaicSlots {
 
 export const MOSAIC_SLOTS: Record<MosaicLayout, MosaicSlots> = {
   hero_plus_four: { hero: 1, mini: 4 },
-  single_hero: { hero: 1, mini: 0 },
   two_by_two: { hero: 0, mini: 4 },
-  two_by_three: { hero: 0, mini: 6 },
-  stacked_banners: { hero: 0, mini: 3 },
 }
 
 /**
@@ -89,20 +81,11 @@ export interface TileSizeHint {
 
 export const MOSAIC_SIZE_HINTS: Record<MosaicLayout, { hero?: TileSizeHint; mini?: TileSizeHint }> = {
   hero_plus_four: {
-    hero: { size: "280 × 520 px", ratio: "0.54 : 1  (tall portrait)" },
-    mini: { size: "230 × 250 px", ratio: "0.92 : 1  (near square)" },
-  },
-  single_hero: {
-    hero: { size: "760 × 390 px", ratio: "1.95 : 1  (wide landscape)" },
+    hero: { size: "414 × 774 px (or larger, same ratio)", ratio: "0.534 : 1  (tall portrait)" },
+    mini: { size: "342 × 375 px (or larger, same ratio)", ratio: "0.91 : 1  (near square)" },
   },
   two_by_two: {
-    mini: { size: "370 × 355 px", ratio: "1.04 : 1  (near square)" },
-  },
-  two_by_three: {
-    mini: { size: "242 × 312 px", ratio: "0.78 : 1  (portrait)" },
-  },
-  stacked_banners: {
-    mini: { size: "760 × 324 px", ratio: "2.35 : 1  (wide banner)" },
+    mini: { size: "561 × 534 px (or larger, same ratio)", ratio: "1.05 : 1  (near square)" },
   },
 }
 
@@ -126,21 +109,12 @@ const DEFAULT_HERO_GRADIENT: [string, string] = ["#3F99FE", "#55C5FD"]
 const DEFAULT_MINI_GRADIENT: [string, string] = ["#4F97FF", "#397BF1"]
 const DEFAULT_BADGE_GRADIENT: [string, string] = ["#FF4CB7", "#D91B83"]
 
-const DEFAULT_MINI_TITLES = ["Frozen Fizz", "Scoop Magic", "Crunch Break", "Dairy Daily"]
+const DEFAULT_MINI_TITLES = ["", "", "", ""]
 
 export const DEFAULT_CONTAINER_COLOR = "#D8F4FF"
 
 export function normalizeLayout(value: unknown): MosaicLayout {
-  if (
-    value === "hero_plus_four" ||
-    value === "two_by_three" ||
-    value === "single_hero" ||
-    value === "two_by_two" ||
-    value === "stacked_banners"
-  ) {
-    return value
-  }
-  return "hero_plus_four"
+  return value === "two_by_two" ? "two_by_two" : "hero_plus_four"
 }
 
 function asString(value: unknown): string | undefined {
@@ -193,11 +167,11 @@ function readTile(value: unknown, fallback: MosaicTile): MosaicTile {
 
 export function defaultHeroTile(config: Record<string, unknown>): MosaicTile {
   return {
-    title: asString(config.hero_title) ?? "Summer Cool Deals",
+    title: asString(config.hero_title) ?? "",
     gradient: asGradient(config.hero_gradient, DEFAULT_HERO_GRADIENT),
     imageUrl: null,
     imageFit: "cover",
-    badgeText: asString(config.hero_badge_text) ?? "BUY 2 GET 1",
+    badgeText: asString(config.hero_badge_text) ?? "",
     badgeGradient: DEFAULT_BADGE_GRADIENT,
     action: { type: "none", value: null },
   }
