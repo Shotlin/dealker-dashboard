@@ -13,6 +13,9 @@ const api = axios.create({
   timeout: 15000,
 })
 
+/** API paths that must never carry X-Shop-Id (see the request interceptor). */
+export const SHOP_AGNOSTIC_PREFIXES = ["/manage/auctions", "/manage/repairs"]
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Request interceptor — JWT injection, RBAC viewer guard, X-Shop-Id header
 // ─────────────────────────────────────────────────────────────────────────────
@@ -69,8 +72,13 @@ api.interceptors.request.use((config) => {
     //   - mode=HQ_MODE AND activeShopId is set (Super_Admin viewing specific shop)
     // Omit when mode=HQ_MODE AND activeShopId=null (cross-shop aggregate view)
     // or mode=UNSELECTED (Req 3.5, 3.6, 10.1, 16.1).
+    // Auctions and repairs are not shop-scoped (platform-wide for admins, vendor-scoped for vendors). The
+    // backend reads X-Shop-Id on /manage/* as a vendor id and answers 404 "vendor not found" for a shop id,
+    // which broke those pages whenever a shop was selected in the switcher — so never send it there.
+    const requestPath = (config.url ?? "").split("?")[0]
+    const shopAgnostic = SHOP_AGNOSTIC_PREFIXES.some((p) => requestPath.startsWith(p))
     const { activeShopId: shopId, mode: shopMode } = useShopContextStore.getState()
-    if (shopId && (shopMode === "STORE_MODE" || shopMode === "HQ_MODE")) {
+    if (!shopAgnostic && shopId && (shopMode === "STORE_MODE" || shopMode === "HQ_MODE")) {
       config.headers["X-Shop-Id"] = shopId
     }
   }

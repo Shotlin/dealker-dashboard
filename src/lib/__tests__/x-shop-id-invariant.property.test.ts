@@ -196,4 +196,24 @@ describe("Property 4: X-Shop-Id header invariant", () => {
       { numRuns: 100 },
     )
   })
+
+  it("never sends X-Shop-Id to the shop-agnostic auction and repair endpoints", () => {
+    const shopId = "11111111-1111-4111-8111-111111111111"
+    useShopContextStore.setState({
+      activeShopId: shopId,
+      mode: "STORE_MODE",
+      shopRole: "SHOP_ADMIN",
+      permissions: [],
+      shopMeta: null,
+      assignedShopIds: [],
+      isHydrated: true,
+    })
+    for (const url of ["/manage/auctions/stats", "/manage/repairs", "/manage/repairs/config/settings?x=1"]) {
+      const result = onFulfilled({ url, method: "get", headers: {} }) as SyntheticConfig
+      expect(result.headers["X-Shop-Id"]).toBeUndefined()
+    }
+    // Everything else still carries it.
+    const other = onFulfilled({ url: "/manage/orders", method: "get", headers: {} }) as SyntheticConfig
+    expect(other.headers["X-Shop-Id"]).toBe(shopId)
+  })
 })
