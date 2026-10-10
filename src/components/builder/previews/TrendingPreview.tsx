@@ -27,6 +27,17 @@ function TrendingPreview({
 
   const items = (products ?? []).slice(0, 8)
 
+  // Optional carousel background (mirrors the Flutter `_ManifestHorizontalProductSection`).
+  const isCarousel = section.section_type === "product_carousel"
+  const bgUrl = isCarousel && typeof config.background_image_url === "string" ? config.background_image_url.trim() : ""
+  const bgColor = isCarousel && typeof config.background_color === "string" ? config.background_color : ""
+  const hasBg = Boolean(bgUrl || bgColor)
+  const showTitle = config.show_title !== false
+  const num = (v: unknown) => (typeof v === "number" ? v : undefined)
+  const topSpace = num(config.top_space) ?? (hasBg ? 96 : 0)
+  const bottomSpace = num(config.bottom_space) ?? (hasBg ? 14 : 0)
+  const radius = Math.min(Math.max(num(config.border_radius) ?? 16, 0), 32)
+
   // Flutter: last word of title is green accent
   const words = title.split(" ")
   const hasAccent = words.length >= 2
@@ -42,8 +53,23 @@ function TrendingPreview({
       onClick={onClick}
       aria-pressed={isSelected}
     >
+      <div
+        style={
+          hasBg
+            ? { margin: "6px 12px", borderRadius: radius, overflow: "hidden", position: "relative", background: bgColor || undefined }
+            : undefined
+        }
+      >
+        {bgUrl ? (
+          <img
+            src={bgUrl}
+            alt=""
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : null}
       {/* Section header — Flutter style with colored last word */}
-      <div style={{ padding: "12px 18px 0", position: "relative" }}>
+      {showTitle ? (
+      <div style={hasBg ? { padding: "12px 18px 0", position: "absolute", top: 0, left: 0, right: 0, zIndex: 1 } : { padding: "12px 18px 0", position: "relative" }}>
         {isBox ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 14, fontWeight: 900, color: "#131313", textTransform: "uppercase" }}>{title}</span>
@@ -71,6 +97,7 @@ function TrendingPreview({
           </div>
         )}
       </div>
+      ) : null}
 
       {/* Horizontal product scroll */}
       <div
@@ -80,6 +107,9 @@ function TrendingPreview({
           overflowX: "auto",
           scrollbarWidth: "none",
           padding: "10px 14px 8px",
+          position: "relative",
+          marginTop: hasBg ? topSpace - 10 : topSpace,
+          marginBottom: bottomSpace,
         }}
       >
         {isBox && items.length > 0
@@ -93,6 +123,7 @@ function TrendingPreview({
           : Array.from({ length: 4 }, (_, i) => (
             <TrendingPlaceholder key={`ph-${i}`} index={i} />
           ))}
+      </div>
       </div>
       {isBox && onChromeRegionClick && (
         <span
