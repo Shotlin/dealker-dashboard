@@ -1,5 +1,6 @@
 "use client"
 
+import { BUILDER_STORE_KEYS } from "@/types/theme.types"
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Building2, Layers3, Loader2, Sparkles } from "lucide-react"
@@ -50,7 +51,7 @@ export default function NewThemePage() {
   const createThemeMutation = useCreateTheme()
 
   const [name, setName] = useState("")
-  const [storeKey, setStoreKey] = useState<ThemeStoreKey>("marketplace")
+  const [storeKey, setStoreKey] = useState<ThemeStoreKey>("mobile")
   const [tabId, setTabId] = useState<string | null>(null)
   const [abVariant, setAbVariant] = useState<ABVariant>("A")
   const [abSplitPercent, setAbSplitPercent] = useState(100)
@@ -173,7 +174,7 @@ export default function NewThemePage() {
                   <SelectValue placeholder="Select store" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(STORE_LABELS).map(([value, label]) => (
+                  {Object.entries(STORE_LABELS).filter(([value]) => BUILDER_STORE_KEYS.includes(value as ThemeStoreKey)).map(([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}
                     </SelectItem>

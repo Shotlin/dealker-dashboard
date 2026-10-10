@@ -1,5 +1,6 @@
 "use client"
 
+import { BUILDER_STORE_KEYS } from "@/types/theme.types"
 import Link from "next/link"
 import { Clock, XCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -104,7 +105,7 @@ export function TabSettingsCard({
               <SelectValue placeholder="Select store" />
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(STORE_LABELS).map(([value, label]) => (
+              {Object.entries(STORE_LABELS).filter(([value]) => BUILDER_STORE_KEYS.includes(value as ThemeStoreKey)).map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}
                 </SelectItem>

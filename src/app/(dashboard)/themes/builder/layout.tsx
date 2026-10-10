@@ -7,7 +7,7 @@ export default function BuilderLayout({
   children: ReactNode
 }) {
   return (
-    <StoreProvider defaultStoreKey="marketplace">
+    <StoreProvider defaultStoreKey="mobile">
       <div className="flex h-screen flex-col overflow-hidden">{children}</div>
     </StoreProvider>
   )

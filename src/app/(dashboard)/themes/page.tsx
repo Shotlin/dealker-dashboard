@@ -100,11 +100,6 @@ const storeOptions: Array<{ value: "all" | ThemeStoreKey; label: string }> = [
   { value: "mobile_part", label: "Mobile Part" },
   { value: "accessories", label: "Accessories" },
   { value: "electronics", label: "Electronics" },
-  { value: "repellents", label: "Repellents & Fresheners" },
-  { value: "marketplace", label: "Marketplace" },
-  { value: "deals", label: "Mega Deals" },
-  { value: "brand_store", label: "Brand Store" },
-  { value: "new_arrivals", label: "New Arrivals" },
 ]
 
 const storeOrder: Array<ThemeStoreKey> = [
@@ -112,11 +107,6 @@ const storeOrder: Array<ThemeStoreKey> = [
   "mobile_part",
   "accessories",
   "electronics",
-  "repellents",
-  "marketplace",
-  "deals",
-  "brand_store",
-  "new_arrivals",
 ]
 
 const storeLabelMap: Record<ThemeStoreKey, string> = {

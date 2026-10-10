@@ -1,5 +1,6 @@
 "use client"
 
+import { BUILDER_STORE_KEYS } from "@/types/theme.types"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
@@ -117,7 +118,7 @@ function EditThemePageContent() {
 
   // Local form state
   const [name, setName] = useState("")
-  const [storeKey, setStoreKey] = useState<ThemeStoreKey>("marketplace")
+  const [storeKey, setStoreKey] = useState<ThemeStoreKey>("mobile")
   const [tabId, setTabId] = useState<string | null>(null)
   const [status, setStatus] = useState<ThemeStatus>("draft")
   const [abVariant, setAbVariant] = useState<ABVariant>("A")
@@ -137,7 +138,7 @@ function EditThemePageContent() {
   useEffect(() => {
     if (!theme) return
     setName(theme.name)
-    setStoreKey(theme.store_key ?? "marketplace")
+    setStoreKey(theme.store_key ?? "mobile")
     setTabId(theme.tab_id)
     setStatus(theme.status)
     setAbVariant(theme.ab_variant)
@@ -316,7 +317,7 @@ function EditThemePageContent() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(STORE_LABELS).map(([value, label]) => (
+                  {Object.entries(STORE_LABELS).filter(([value]) => BUILDER_STORE_KEYS.includes(value as ThemeStoreKey)).map(([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}
                     </SelectItem>

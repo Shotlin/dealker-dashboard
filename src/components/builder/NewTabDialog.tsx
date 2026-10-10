@@ -1,5 +1,6 @@
 "use client"
 
+import { BUILDER_STORE_KEYS } from "@/types/theme.types"
 import { useEffect, useState } from "react"
 import { Layers3, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -155,7 +156,7 @@ export default function NewTabDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(STORE_LABELS) as ThemeStoreKey[]).map((k) => (
+                {BUILDER_STORE_KEYS.map((k) => (
                   <SelectItem key={k} value={k}>
                     {STORE_LABELS[k]}
                   </SelectItem>

@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { getThemeTabs } from "@/services/theme-tabs.service"
-import type { ThemeStoreKey } from "@/types/theme.types"
+import { BUILDER_STORE_KEYS, type ThemeStoreKey } from "@/types/theme.types"
 
 export interface StoreConfig {
   /** Display label for the store (shown in tooltips, toolbar) */
@@ -42,7 +42,7 @@ export interface StoreContextValue {
   isSwitching: boolean
 }
 
-export const ALL_STORE_KEYS: ThemeStoreKey[] = ["mobile", "mobile_part", "accessories", "electronics", "repellents", "marketplace", "deals", "brand_store", "new_arrivals"]
+export const ALL_STORE_KEYS: ThemeStoreKey[] = BUILDER_STORE_KEYS
 
 export const STORE_CONFIGS: Record<ThemeStoreKey, StoreConfig> = {
   mobile: {
@@ -150,7 +150,7 @@ const StoreContext = createContext<StoreContextValue | null>(null)
 
 export function StoreProvider({
   children,
-  defaultStoreKey = "marketplace",
+  defaultStoreKey = "mobile",
 }: {
   children: ReactNode
   defaultStoreKey?: ThemeStoreKey

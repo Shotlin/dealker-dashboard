@@ -135,7 +135,7 @@ export interface ThemeEditorRenderProps {
 
 const DEFAULT_META_FIELDS: ThemeEditorMetaFields = {
   tab_id: null,
-  store_key: "marketplace",
+  store_key: "mobile",
   status: "draft",
   scheduled_at: null,
   expires_at: null,

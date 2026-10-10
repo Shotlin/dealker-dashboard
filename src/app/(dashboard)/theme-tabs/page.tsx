@@ -93,11 +93,6 @@ const STORE_OPTIONS: Array<{ value: ThemeStoreKey; label: string }> = [
   { value: "mobile_part", label: "Mobile Part" },
   { value: "accessories", label: "Accessories" },
   { value: "electronics", label: "Electronics" },
-  { value: "repellents", label: "Repellents & Fresheners" },
-  { value: "marketplace", label: "Marketplace" },
-  { value: "deals", label: "Mega Deals" },
-  { value: "brand_store", label: "Brand Store" },
-  { value: "new_arrivals", label: "New Arrivals" },
 ];
 
 const STATUS_OPTIONS = [
@@ -133,7 +128,7 @@ interface ThemeTabFormData {
 }
 
 function createEmptyForm(
-  storeKey: ThemeStoreKey = "marketplace",
+  storeKey: ThemeStoreKey = "mobile",
   audience: ThemeAudience = "B2C",
 ): ThemeTabFormData {
   return {
@@ -327,7 +322,7 @@ export default function ThemeTabsPage() {
     setEditingTab(null);
     setForm(
       createEmptyForm(
-        storeFilter === "all" ? "marketplace" : storeFilter,
+        storeFilter === "all" ? "mobile" : storeFilter,
         audienceFilter,
       ),
     );

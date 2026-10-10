@@ -147,6 +147,9 @@ export interface ThemeData {
 export type ThemeStatus = "draft" | "active" | "scheduled" | "archived"
 export type ABVariant = "A" | "B"
 export type ThemeStoreKey = "mobile" | "mobile_part" | "accessories" | "electronics" | "repellents" | "marketplace" | "deals" | "brand_store" | "new_arrivals"
+
+/** The four storefronts the theme builder manages (Marketplace was merged into Mobile). */
+export const BUILDER_STORE_KEYS: ThemeStoreKey[] = ["mobile", "mobile_part", "accessories", "electronics"]
 export type ThemeTabStatus = "active" | "archived"
 /** B2C/B2B storefront split — one active theme per audience, per (tab, variant). */
 export type ThemeAudience = "B2C" | "B2B"
