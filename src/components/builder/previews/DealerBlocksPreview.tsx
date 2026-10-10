@@ -373,6 +373,7 @@ function DealerBlocksPreview({
             {v("button_label")}
           </span>
         </div>
+        {[1, 2, 3, 4].some((i) => v(`trust_${i}_title`)) && (
         <div
           style={{
             marginTop: 5,
@@ -392,6 +393,7 @@ function DealerBlocksPreview({
             </div>
           ))}
         </div>
+        )}
       </div>
     );
   } else {

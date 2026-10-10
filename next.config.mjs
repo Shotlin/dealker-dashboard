@@ -22,6 +22,11 @@ const nextConfig = {
         hostname: "picsum.photos",
       },
       {
+        protocol: "https",
+        hostname: "api.dealker.agnixstudio.in",
+        pathname: "/uploads/**",
+      },
+      {
         protocol: "http",
         hostname: "localhost",
         port: "4500",
