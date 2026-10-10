@@ -62,6 +62,17 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
         <p className="mt-0.5">“{r.reason}”</p>
       </div>
 
+      {r.evidence && r.evidence.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">Photos and video the customer sent</p>
+          <div className="flex flex-wrap gap-2">
+            {r.evidence.map((e, k) => e.kind === "VIDEO"
+              ? <video key={k} src={e.url} controls preload="metadata" className="h-32 rounded-lg border bg-black" />
+              : <a key={k} href={e.url} target="_blank" rel="noreferrer"><img src={e.url} alt={`Customer photo ${k + 1}`} className="h-32 rounded-lg border bg-white object-contain" /></a>)}
+          </div>
+        </div>
+      )}
+
       {r.items && r.items.length > 0 && (
         <ul className="divide-y rounded-lg border text-sm">
           {r.items.map((i, k) => <li key={k} className="flex justify-between gap-3 p-2.5"><span><PackageX className="mr-1.5 inline h-3.5 w-3.5 text-muted-foreground" />{i.quantity} × {i.name}</span><span className="tabular-nums">{money(i.total)}</span></li>)}
