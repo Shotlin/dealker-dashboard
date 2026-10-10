@@ -179,109 +179,173 @@ function DealerBlocksPreview({
       </div>
     );
   } else if (type === "deal_of_day") {
-    const p = items[0];
-    const price = p ? (p.sale_price ?? p.price) : 45999;
-    const mrp = p ? p.price : 69999;
-    const off = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+    // Every size is a share of the section width (1448 px reference), like the app.
+    const u = (px: number) => `${(px / 1448) * 100}cqw`;
+    const bgImage = v("bg_image_url");
+    const cards = items.length
+      ? items
+      : [null, null, null];
     body = (
       <div
         style={{
-          background: v("bg_color"),
-          color: v("text_color"),
-          borderRadius: 14,
-          padding: 8,
+          containerType: "inline-size",
+          position: "relative",
+          width: "100%",
+          aspectRatio: "1448 / 925",
+          background: bgImage
+            ? `url(${bgImage}) top center / cover no-repeat ${v("header_bg_color")}`
+            : `linear-gradient(135deg, ${v("header_bg_color")}, #0d0d4a)`,
+          overflow: "hidden",
         }}
       >
+        {!bgImage && (
+          <div
+            style={{
+              position: "absolute",
+              left: u(60),
+              top: u(70),
+              color: v("header_text_color"),
+              fontSize: u(88),
+              fontWeight: 900,
+              lineHeight: 1,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {v("title")}
+          </div>
+        )}
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: 12,
-            fontWeight: 900,
-          }}
-        >
-          <span>⚡ {v("title")}</span>
-          <span style={{ fontSize: 10 }}>
-            ⏱ 10:29:45{" "}
-            <span style={{ opacity: 0.6, fontWeight: 600 }}>Left Today</span>
-          </span>
-        </div>
-        <div
-          style={{
-            marginTop: 6,
-            background: v("card_color"),
-            borderRadius: 12,
-            padding: 8,
+            position: "absolute",
+            right: u(28),
+            top: u(128),
+            height: u(112),
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            padding: `0 ${u(10)}`,
+            borderRadius: 999,
+            background: `${v("timer_bg_color")}8c`,
+            border: `${u(1.5)} solid ${v("timer_border_color")}40`,
           }}
         >
           <div
             style={{
-              width: 50,
-              height: 50,
-              display: "grid",
-              placeItems: "center",
+              height: u(98),
+              display: "flex",
+              alignItems: "center",
+              gap: u(22),
+              padding: `0 ${u(30)}`,
+              borderRadius: 999,
+              background: v("timer_bg_color"),
+              border: `${u(3)} solid ${v("timer_border_color")}`,
+              color: v("timer_text_color"),
             }}
           >
-            {p?.thumbnail_url ? (
-              <img
-                src={p.thumbnail_url}
-                alt=""
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            ) : (
-              <span style={{ fontSize: 26 }}>📱</span>
-            )}
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 10, fontWeight: 800 }}>
-              {p?.name ?? "Deal product"}
+            <span style={{ fontSize: u(54), lineHeight: 1 }}>⏱</span>
+            <div style={{ lineHeight: 1.05 }}>
+              <div style={{ fontSize: u(25), opacity: 0.85 }}>
+                {v("ends_label")}
+              </div>
+              <div style={{ fontSize: u(40), fontWeight: 900 }}>06:31:56</div>
             </div>
-            <div style={{ fontSize: 12, fontWeight: 900 }}>
-              {inr(price)}{" "}
-              <span
+          </div>
+          <div
+            style={{
+              width: u(2),
+              height: u(62),
+              margin: `0 ${u(18)}`,
+              background: `${v("timer_border_color")}4d`,
+            }}
+          />
+          <div
+            style={{
+              height: u(82),
+              display: "flex",
+              alignItems: "center",
+              padding: `0 ${u(26)}`,
+              borderRadius: 999,
+              background: v("view_all_bg_color"),
+              color: v("view_all_text_color"),
+              fontSize: u(36),
+              fontWeight: 800,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {v("view_all_label")}
+          </div>
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            left: u(45),
+            right: u(45),
+            top: u(285),
+            height: u(614),
+            borderRadius: u(46),
+            background: v("panel_color"),
+            boxShadow: "0 10px 30px rgba(0,0,0,.12)",
+            display: "flex",
+            gap: u(18),
+            padding: u(20),
+            overflow: "hidden",
+          }}
+        >
+          {cards.map((p, i) => {
+            const price = p ? (p.sale_price ?? p.price) : 0;
+            const mrp = p ? p.price : 0;
+            const off = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+            return (
+              <div
+                key={i}
                 style={{
-                  fontSize: 9,
-                  opacity: 0.4,
-                  textDecoration: "line-through",
+                  flex: "0 0 auto",
+                  width: u(427),
+                  height: u(574),
+                  borderRadius: u(40),
+                  background: "#fff",
+                  boxShadow: "0 4px 14px rgba(0,0,0,.08)",
+                  padding: u(33),
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                {inr(mrp)}
-              </span>
-            </div>
-          </div>
-          {off > 0 && (
-            <span
-              style={{
-                background: v("off_color"),
-                color: "#fff",
-                borderRadius: 99,
-                fontSize: 9,
-                fontWeight: 800,
-                padding: "3px 7px",
-              }}
-            >
-              {off}% OFF
-            </span>
-          )}
-          <span
-            style={{
-              background: v("button_color"),
-              color: "#fff",
-              borderRadius: 8,
-              fontSize: 9,
-              fontWeight: 800,
-              padding: "6px 9px",
-            }}
-          >
-            {v("button_label")}
-          </span>
+                <div style={{ flex: 1, display: "grid", placeItems: "center" }}>
+                  {p?.thumbnail_url ? (
+                    <img
+                      src={p.thumbnail_url}
+                      alt=""
+                      style={{ maxWidth: "80%", maxHeight: "100%", objectFit: "contain" }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: u(150) }}>📱</span>
+                  )}
+                </div>
+                <div style={{ fontSize: u(36), fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {p?.name ?? "Deal product"}
+                </div>
+                <div style={{ fontSize: u(40), fontWeight: 900, margin: `${u(8)} 0 ${u(14)}` }}>
+                  {p ? inr(price) : "₹0"}{" "}
+                  {off > 0 && (
+                    <span style={{ fontSize: u(26), color: "#16a34a" }}>{off}% OFF</span>
+                  )}
+                </div>
+                <div
+                  style={{
+                    height: u(96),
+                    borderRadius: u(22),
+                    background: v("grab_button_color"),
+                    color: "#fff",
+                    display: "grid",
+                    placeItems: "center",
+                    fontSize: u(36),
+                    fontWeight: 700,
+                  }}
+                >
+                  🛒 {v("button_label")}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     );

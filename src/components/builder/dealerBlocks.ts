@@ -29,7 +29,8 @@ export function isDealerBlock(
 export interface BlockField {
   key: string;
   label: string;
-  kind: "text" | "color" | "datetime";
+  kind: "text" | "color" | "datetime" | "image";
+  hint?: string;
   placeholder?: string;
 }
 
@@ -51,13 +52,21 @@ export const DEALER_BLOCK_DEFAULTS: Record<
   },
   deal_of_day: {
     title: "DEAL OF THE DAY",
+    subtitle: "",
     ends_at: "",
+    ends_label: "Ends in",
+    view_all_label: "View All →",
     button_label: "Grab Deal →",
-    bg_color: "#FFF1B8",
-    card_color: "#FFFFFF",
-    text_color: "#111111",
-    off_color: "#E0262F",
-    button_color: "#111111",
+    bg_image_url: "",
+    header_bg_color: "#2B2FD6",
+    header_text_color: "#FFFFFF",
+    timer_bg_color: "#14146B",
+    timer_border_color: "#FFFFFF",
+    timer_text_color: "#FFFFFF",
+    view_all_bg_color: "#FFFFFF",
+    view_all_text_color: "#1F4FE0",
+    panel_color: "#FFFFFF",
+    grab_button_color: "#1B5BF2",
   },
   mega_sale: {
     title: "MEGA SALE",
@@ -121,18 +130,31 @@ export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
     col("winning_color", "“You are winning” color"),
   ],
   deal_of_day: [
-    txt("title", "Title"),
+    {
+      key: "bg_image_url",
+      label: "Background image",
+      kind: "image",
+      hint: "Recommended: 1448 × 1086 px (4:3). The top 26% is the header (put the title / artwork there, keep the top-right free for the timer and View All); the cards sit on top of the rest. PNG, WebP or JPG, under 5 MB. Without an image the header uses the colour below and the title text.",
+    },
+    txt("title", "Title (only used when there is no background image)"),
+    txt("subtitle", "Subtitle (only used when there is no background image)"),
+    col("header_bg_color", "Header colour (no background image)"),
+    col("header_text_color", "Title colour (no background image)"),
     {
       key: "ends_at",
       label: "Deal ends at (countdown; empty = end of today)",
       kind: "datetime",
     },
-    txt("button_label", "Button label"),
-    col("bg_color", "Strip background"),
-    col("card_color", "Card background"),
-    col("text_color", "Text color"),
-    col("off_color", "% OFF pill color"),
-    col("button_color", "Button color"),
+    txt("ends_label", "Timer label"),
+    col("timer_bg_color", "Timer background"),
+    col("timer_border_color", "Timer border"),
+    col("timer_text_color", "Timer text / icon"),
+    txt("view_all_label", "“View all” label"),
+    col("view_all_bg_color", "View all button"),
+    col("view_all_text_color", "View all text"),
+    col("panel_color", "Card panel background"),
+    txt("button_label", "Card button label"),
+    col("grab_button_color", "Card button colour"),
   ],
   mega_sale: [
     txt("title", "Title"),

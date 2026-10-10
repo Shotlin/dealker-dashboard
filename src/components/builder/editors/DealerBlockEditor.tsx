@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ThemeColorPicker } from "@/components/themes/ThemeColorPicker"
+import { ThemeImageUploader } from "@/components/themes/ThemeImageUploader"
 import {
   DEALER_BLOCK_FIELDS,
   blockValue,
@@ -30,6 +31,18 @@ export default function DealerBlockEditor({ type, config, onChange }: DealerBloc
               label={field.label}
               value={value || "#FFFFFF"}
               onChange={(hex) => patch(field.key, hex)}
+            />
+          )
+        }
+        if (field.kind === "image") {
+          return (
+            <ThemeImageUploader
+              key={field.key}
+              label={field.label}
+              kind="banner"
+              hint={field.hint}
+              value={value || null}
+              onChange={(url) => patch(field.key, url ?? "")}
             />
           )
         }
