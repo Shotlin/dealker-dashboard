@@ -72,7 +72,7 @@ export default function DealerBlockEditor({ type, config, onChange }: DealerBloc
       )}
       {type === "deal_of_day" && (
         <p className="text-xs text-slate-500">
-          Pick the product under “Product source” (or leave empty to use the store&apos;s current deals).
+          Each Deal of the Day has its own background, end time and products. Pick the products under “Product source” (leave it empty to show the store&apos;s current deals — then two sections would show the same ones). You can add several of these to any store or tab.
         </p>
       )}
       {type === "recent_recommended" && (
