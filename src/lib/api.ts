@@ -14,7 +14,7 @@ const api = axios.create({
 })
 
 /** API paths that must never carry X-Shop-Id (see the request interceptor). */
-export const SHOP_AGNOSTIC_PREFIXES = ["/manage/auctions", "/manage/repairs"]
+export const SHOP_AGNOSTIC_PREFIXES = ["/manage/auctions", "/manage/repairs", "/manage/sell-requests", "/manage/exchange-requests"]
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Request interceptor — JWT injection, RBAC viewer guard, X-Shop-Id header

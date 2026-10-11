@@ -10,6 +10,7 @@ import { toast } from "sonner"
 import {
   apiMessage,
   evidenceApi,
+  journeyApi,
   requestsApi,
   sellSettingsApi,
   type CreateSellRequestInput,
@@ -167,6 +168,61 @@ export function useQcAction(kind: RequestKind) {
       }
     },
     onSuccess: () => { refresh(); toast.success("QC updated") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+// ── Sell-your-phone journey (buyer steps + finance) ─────────────────────
+
+export type JourneyCall =
+  | { type: "fundingConfirm"; id: string; method?: string; reference?: string }
+  | { type: "pickup"; id: string; provider: "SHIPROCKET" | "PORTER" | "BLUEDART" | "SELF"; awb?: string; courierName?: string; trackingUrl?: string; scheduledAt?: string }
+  | { type: "pickupStatus"; id: string; status: "PICKED_UP" | "IN_TRANSIT" | "RECEIVED" | "FAILED" | "CANCELLED" }
+  | { type: "pickupSync"; id: string }
+  | { type: "received"; id: string }
+  | { type: "returned"; id: string }
+  | { type: "payoutPaid"; id: string; reference: string }
+  | { type: "payoutFailed"; id: string; reason: string }
+  | { type: "refundPaid"; id: string; reference: string }
+
+export function useJourneyAction(success = "Updated") {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (c: JourneyCall) => {
+      switch (c.type) {
+        case "fundingConfirm": return journeyApi.fundingConfirm(c.id, { method: c.method, reference: c.reference, idempotencyKey: crypto.randomUUID() })
+        case "pickup": return journeyApi.saveMarketPickup(c.id, c)
+        case "pickupStatus": return journeyApi.pickupStatus(c.id, c.status)
+        case "pickupSync": return journeyApi.pickupSync(c.id)
+        case "received": return journeyApi.received(c.id)
+        case "returned": return journeyApi.returned(c.id)
+        case "payoutPaid": return journeyApi.payoutPaid(c.id, c.reference)
+        case "payoutFailed": return journeyApi.payoutFailed(c.id, c.reason)
+        case "refundPaid": return journeyApi.refundPaid(c.id, c.reference)
+      }
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["requests"] }); qc.invalidateQueries({ queryKey: ["sell-finance"] }); toast.success(success) },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export const useFinanceQueue = () => useQuery({ queryKey: ["sell-finance", "queue"], queryFn: journeyApi.financeQueue, refetchInterval: 60_000 })
+export const useBlocklist = (q: string) => useQuery({ queryKey: ["sell-finance", "blocklist", q], queryFn: () => journeyApi.blocklist(q), placeholderData: (p) => p })
+
+export function useBlockImei() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (b: { imei: string; reason: string; source: string }) => journeyApi.block(b),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["sell-finance", "blocklist"] }); toast.success("IMEI blocked") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export function useUnblockImei() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (imei: string) => journeyApi.unblock(imei),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["sell-finance", "blocklist"] }); toast.success("IMEI removed from the blocklist") },
     onError: (e) => toast.error(apiMessage(e)),
   })
 }

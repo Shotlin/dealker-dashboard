@@ -76,6 +76,16 @@ export interface SellSettings {
   maxVideoMb: number
   /** When on, a request needs a passed QC before approval and an accepted valuation before completion. */
   qcRequiredForApproval: boolean
+  /** Sell-your-phone journey. */
+  offerWindowMinutes?: number
+  maxOfferRefreshes?: number
+  estimateSpreadPct?: number
+  requireVendorFunding?: boolean
+  pickupEnabled?: boolean
+  dropoffEnabled?: boolean
+  payoutWalletEnabled?: boolean
+  payoutUpiEnabled?: boolean
+  payoutBankEnabled?: boolean
 }
 
 export type EvidenceStage = "CUSTOMER_SUBMISSION" | "PICKUP_INSPECTION" | "TECHNICIAN_QC" | "FINAL_QC" | "DISPUTE"
@@ -162,6 +172,42 @@ export interface ExchangeDetails {
   payable: number
 }
 
+export type JourneyStage =
+  | "LISTED" | "OFFER_ACCEPTED" | "PICKUP_REQUESTED" | "PICKUP_SCHEDULED" | "PICKED_UP" | "IN_TRANSIT" | "RECEIVED"
+  | "INSPECTING" | "FINAL_PRICE" | "PAYOUT_PENDING" | "PAID" | "RETURNING" | "CLOSED"
+export type VendorPaymentStatus = "NONE" | "PENDING" | "SUBMITTED" | "HELD" | "REFUNDING" | "REFUNDED"
+export type PickupProvider = "SHIPROCKET" | "PORTER" | "BLUEDART" | "SELF"
+export type PickupStatus = "PICKUP_SCHEDULED" | "PICKED_UP" | "IN_TRANSIT" | "RECEIVED" | "FAILED" | "CANCELLED"
+
+/** Customer-facing journey of a SELL request (buyer payment, pickup, inspection price, payout). */
+export interface SellJourney {
+  stage: JourneyStage
+  status: SellRequestStatus
+  nextAction: string
+  steps: Array<{ key: string; label: string; done: boolean; current: boolean; at: string | null }>
+  ended: boolean
+  estimate: { min: number | null; max: number | null; quote: number | null }
+  offersCloseAt: string | null
+  imeiVerifiedAt: string | null
+  acceptedAt: string | null
+  agreedPrice: number | null
+  buyer: { name: string; phone?: string; address?: string } | null
+  fulfilment: { mode: "PICKUP" | "DROP_OFF"; address: string | null; pincode: string | null; date: string | null; window: string | null; note: string | null } | null
+  pickup: { provider: PickupProvider; awb: string | null; courier: string | null; trackingUrl: string | null; status: PickupStatus; providerStatus: string | null; scheduledAt: string | null; pickedUpAt: string | null; receivedAt: string | null } | null
+  pickupEvents?: Array<{ status: string; providerStatus: string | null; note: string | null; at: string }>
+  inspection: { status: string; finalValuation: number | null; customerDecision: string; originalPrice: number | null } | null
+  payout: { method: "WALLET" | "UPI" | "BANK" | null; display: string | null; status: "NONE" | "PENDING" | "PROCESSING" | "PAID" | "FAILED"; amount: number | null; reference?: string; paidAt: string | null } | null
+  vendorPayment?: { status: VendorPaymentStatus; heldAmount: number | null; amountDue: number | null }
+  payments?: Array<{ id: string; kind: "VENDOR_FUNDING" | "CUSTOMER_PAYOUT" | "VENDOR_REFUND"; method: string; amount: number; status: string; reference: string | null; note: string | null; at: string }>
+}
+
+export interface FinanceRow {
+  id: string; code: string; device: string; customer: string; vendor: string | null; amount: number | null; payoutAmount: number | null
+  payoutMethod: string | null; payoutDisplay: string | null; vendorPaymentStatus: VendorPaymentStatus; heldAmount: number | null; updatedAt: string
+}
+export interface FinanceQueue { fundingToConfirm: FinanceRow[]; payoutsToSend: FinanceRow[]; refundsToSend: FinanceRow[] }
+export interface BlockedImei { imei: string; reason: string; source: string; createdBy: string | null; createdAt: string }
+
 export interface SellRequest {
   id: string
   code: string
@@ -192,6 +238,7 @@ export interface SellRequest {
   exchangeOrder?: ExchangeOrder | null
   timeline: TimelineEvent[]
   adminNote?: string
+  journey?: SellJourney
 }
 
 export interface SellRequestStats {
@@ -320,6 +367,26 @@ export function requestsApi(kind: RequestKind) {
     models: () => api.get<ApiResponse<CatalogModel[]>>(`${BASE}/models`).then((r) => r.data.data),
     quote: (body: QuoteInput) => api.post<ApiResponse<QuoteResult>>(`${BASE}/quote`, body).then((r) => r.data.data),
   }
+}
+
+/** Sell-your-phone steps run by the buyer (vendor) or finance. */
+const J = BASES.SELL
+const jpost = (id: string, path: string, body: Record<string, unknown> = {}) => api.post<ApiResponse<SellJourney>>(`${J}/${id}/${path}`, body).then((r) => r.data.data)
+export const journeyApi = {
+  fundingConfirm: (id: string, b: { method?: string; reference?: string; idempotencyKey?: string }) => jpost(id, "vendor-payment/confirm", b),
+  saveMarketPickup: (id: string, b: { provider: PickupProvider; awb?: string; courierName?: string; trackingUrl?: string; scheduledAt?: string; note?: string }) => jpost(id, "pickup", b),
+  pickupStatus: (id: string, status: PickupStatus, note?: string) => jpost(id, "pickup/status", { status, note }),
+  pickupSync: (id: string) => jpost(id, "pickup/sync"),
+  received: (id: string) => jpost(id, "received"),
+  returned: (id: string) => jpost(id, "returned"),
+  payoutPaid: (id: string, reference: string) => jpost(id, "payout/paid", { reference }),
+  payoutFailed: (id: string, reason: string) => jpost(id, "payout/failed", { reason }),
+  refundPaid: (id: string, reference: string) => jpost(id, "refund/paid", { reference }),
+  payoutDetails: (id: string) => api.get<ApiResponse<{ method: string; upiId?: string; holderName?: string; accountNumber?: string; ifsc?: string }>>(`${J}/${id}/payout/details`).then((r) => r.data.data),
+  financeQueue: () => api.get<ApiResponse<FinanceQueue>>(`${J}/finance/queue`).then((r) => r.data.data),
+  blocklist: (q = "") => api.get<ApiResponse<{ items: BlockedImei[]; total: number }>>(`${J}/imei-blocklist`, { params: q ? { q } : {} }).then((r) => r.data.data),
+  block: (b: { imei: string; reason: string; source: string }) => api.post<ApiResponse<BlockedImei>>(`${J}/imei-blocklist`, b).then((r) => r.data.data),
+  unblock: (imei: string) => api.delete(`${J}/imei-blocklist/${imei}`).then(() => undefined),
 }
 
 export const sellRequestsApi = requestsApi("SELL")

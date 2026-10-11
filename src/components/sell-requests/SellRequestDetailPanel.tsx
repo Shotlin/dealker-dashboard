@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ConditionPill, DeviceThumb, PersonAvatar, StatusBadge, TYPE_META, fmtDateTime } from "./sell-request-ui"
 import { EvidenceSection } from "./EvidenceSection"
 import { QcPanel } from "./QcPanel"
+import { JourneyPanel } from "./JourneyPanel"
 import { usePermissions } from "@/hooks/usePermissions"
 import { useLinkOrder, useRequest, useRequestAction } from "@/hooks/useSellRequests"
 import type { RequestKind, SellRequest, SellRequestAction } from "@/services/sell-requests.service"
@@ -196,6 +197,8 @@ export function SellRequestDetailPanel({ id, kind }: { id: string | null; kind: 
                 )}
               </div>
             )}
+
+            {!isExchange && <JourneyPanel r={r} />}
 
             <QaList r={r} />
 

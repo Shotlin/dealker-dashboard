@@ -36,6 +36,7 @@ import {
   Boxes,
   Headset,
   Landmark,
+  ShieldBan,
   Percent,
   Crown,
   LayoutGrid,
@@ -103,6 +104,8 @@ export const NAV_SECTIONS: NavSection[] = [
     section: "Sell on Phone",
     items: [
       { label: "Sell Requests", href: "/sell-requests", icon: Smartphone },
+      { label: "Sell Payouts", href: "/sell-requests/finance", icon: Wallet },
+      { label: "Blocked IMEIs", href: "/sell-requests/blocklist", icon: ShieldBan },
     ],
   },
   {

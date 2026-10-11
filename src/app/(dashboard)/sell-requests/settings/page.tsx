@@ -168,6 +168,54 @@ function RulesPanel() {
 
 const list = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean)
 
+function JourneyPanelSettings() {
+  const q = useSellSettings()
+  const save = useUpdateSellSettings()
+  const [f, setF] = useState<Record<string, number | boolean>>({})
+  useEffect(() => {
+    if (q.data) setF({
+      offerWindowMinutes: q.data.offerWindowMinutes ?? 60, maxOfferRefreshes: q.data.maxOfferRefreshes ?? 3, estimateSpreadPct: q.data.estimateSpreadPct ?? 8,
+      requireVendorFunding: q.data.requireVendorFunding ?? true, pickupEnabled: q.data.pickupEnabled ?? true, dropoffEnabled: q.data.dropoffEnabled ?? true,
+      payoutWalletEnabled: q.data.payoutWalletEnabled ?? true, payoutUpiEnabled: q.data.payoutUpiEnabled ?? true, payoutBankEnabled: q.data.payoutBankEnabled ?? true,
+    })
+  }, [q.data])
+  if (q.isLoading) return <LoadingSkeleton />
+  if (q.isError || !q.data) return <QueryErrorBlock error={q.error} onRetry={() => q.refetch()} />
+  const toggles: Array<[string, string, string]> = [
+    ["requireVendorFunding", "Buyer pays before pickup", "The buyer's payment is held by Dealker before the courier is booked, so the customer is always paid."],
+    ["pickupEnabled", "Offer home pickup", "Customers can ask for pickup from their address."],
+    ["dropoffEnabled", "Offer drop-off at the store", "Customers can bring the phone to the buyer's shop."],
+    ["payoutUpiEnabled", "Pay out by UPI", "Finance sends it and marks it paid with the bank reference."],
+    ["payoutBankEnabled", "Pay out by bank transfer", "Finance sends it and marks it paid with the bank reference."],
+    ["payoutWalletEnabled", "Pay out to the Dealker wallet", "Instant, but only when the amount fits the wallet balance limit (Settings → Wallet)."],
+  ]
+  return (
+    <div className="space-y-4">
+      <section className="rounded-xl border bg-card p-4">
+        <h2 className="mb-3 text-sm font-semibold">Offers</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <NumField id="jw" label="Offers stay open for" unit="minutes" value={Number(f.offerWindowMinutes)} onChange={(n) => setF({ ...f, offerWindowMinutes: n })} hint="After this the customer can refresh to get new offers." />
+          <NumField id="jr" label="Offer refreshes per request" value={Number(f.maxOfferRefreshes)} onChange={(n) => setF({ ...f, maxOfferRefreshes: n })} />
+          <NumField id="js" label="Estimate range width" unit="%" value={Number(f.estimateSpreadPct)} onChange={(n) => setF({ ...f, estimateSpreadPct: n })} hint="The ₹ range shown before offers arrive, centred on the system value." />
+        </div>
+      </section>
+      <section className="rounded-xl border bg-card p-4">
+        <h2 className="mb-3 text-sm font-semibold">Pickup, payment and payout</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {toggles.map(([k, l, h]) => (
+            <div key={k} className="flex items-start justify-between gap-3 rounded-lg border px-3 py-2">
+              <div><Label htmlFor={k} className="cursor-pointer text-sm font-medium">{l}</Label><p className="text-xs text-muted-foreground">{h}</p></div>
+              <Switch id={k} checked={Boolean(f[k])} onCheckedChange={(v) => setF({ ...f, [k]: v })} />
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">UPI and bank payouts are sent by your finance team from <b>Sell Payouts</b> and marked paid with the bank reference. Instant automatic payouts need RazorpayX to be enabled on your Razorpay account.</p>
+      </section>
+      <div className="flex justify-end"><Button disabled={save.isPending} onClick={() => save.mutate(f as never)}>{save.isPending ? "Saving…" : "Save journey settings"}</Button></div>
+    </div>
+  )
+}
+
 function ModelDialog({ model, open, onClose }: { model: CatalogModel | null; open: boolean; onClose: () => void }) {
   const save = useSaveSellModel()
   const [name, setName] = useState("")
@@ -268,9 +316,10 @@ export default function SellSettingsPage() {
         <p role="alert" className="rounded-lg border p-6 text-center text-sm text-muted-foreground">You need the “sell_requests.settings” permission to change these.</p>
       ) : (
         <Tabs defaultValue="rules">
-          <TabsList><TabsTrigger value="rules">Valuation rules</TabsTrigger><TabsTrigger value="catalogue">Device catalogue</TabsTrigger></TabsList>
+          <TabsList><TabsTrigger value="rules">Valuation rules</TabsTrigger><TabsTrigger value="catalogue">Device catalogue</TabsTrigger><TabsTrigger value="journey">Selling journey</TabsTrigger></TabsList>
           <TabsContent value="rules"><RulesPanel /></TabsContent>
           <TabsContent value="catalogue"><CataloguePanel /></TabsContent>
+          <TabsContent value="journey"><JourneyPanelSettings /></TabsContent>
         </Tabs>
       )}
     </div>
