@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { AlertTriangle, ChevronLeft, ChevronRight, Plus, Search, Settings2 } from "lucide-react"
+import { AlertTriangle, ChevronLeft, ChevronRight, Plus, Search, Settings2, Wrench } from "lucide-react"
 import { cn, formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Button } from "@/components/ui/button"
@@ -51,6 +51,7 @@ export default function RepairsPage() {
   return (
     <div className="space-y-5">
       <PageHeader title="Repairs" subtitle="Mobile and device repairs for individual customers and businesses — one queue, two channels.">
+        {can("repairs.view") && <Button asChild variant="outline"><Link href="/repairs/services"><Wrench /> Vendor price lists</Link></Button>}
         {can("repairs.settings") && <Button asChild variant="outline"><Link href="/repairs/settings"><Settings2 /> Settings &amp; pricing</Link></Button>}
         {can("repairs.manage") && <Button onClick={() => setCreating(true)}><Plus /> New repair</Button>}
       </PageHeader>
@@ -107,7 +108,7 @@ export default function RepairsPage() {
                   <td className="px-3 py-2.5"><p className="font-medium">{r.business?.name ?? r.customer.name}</p><p className="text-xs text-muted-foreground">{r.business ? `PO ${r.business.poReference || "—"}` : r.customer.phone}</p></td>
                   <td className="px-3 py-2.5"><p>{r.firstDevice}</p><p className="text-xs text-muted-foreground">{r.deviceCount > 1 ? `+${r.deviceCount - 1} more` : "1 device"}</p></td>
                   <td className="px-3 py-2.5"><RepairStatusBadge status={r.status} /></td>
-                  <td className="px-3 py-2.5 text-muted-foreground">{r.serviceCenter ?? <span className="text-amber-700">Unassigned</span>}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{r.serviceCenter ?? (r.flow === "MARKETPLACE" ? <span className="text-amber-700">{r.offerCount ? `${r.offerCount} quote${r.offerCount === 1 ? "" : "s"} received` : "Awaiting quotes"}</span> : <span className="text-amber-700">Unassigned</span>)}</td>
                   <td className="px-3 py-2.5 tabular-nums">{r.money.approvedTotal > 0 ? <><p>{formatMoney(r.money.approvedTotal)}</p>
                     {r.money.amountDue > 0 && <p className={cn("text-xs", r.money.overdue ? "font-medium text-red-700" : "text-amber-700")}>{formatMoney(r.money.amountDue)} due{r.money.overdue && " · overdue"}</p>}</> : <span className="text-muted-foreground">—</span>}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{fmtDay(r.createdAt)}</td>

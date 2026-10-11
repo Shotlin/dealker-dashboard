@@ -11,7 +11,7 @@ export type RepairStatus =
   | "REQUESTED" | "ACCEPTED" | "INSPECTION" | "ESTIMATE_SENT" | "ESTIMATE_APPROVED" | "IN_REPAIR" | "QC_PENDING"
   | "REPAIRED" | "READY_FOR_DELIVERY" | "COMPLETED" | "REJECTED" | "CANCELLED" | "ESTIMATE_REJECTED" | "FAILED"
 export type RepairTab = "all" | "new" | "intake" | "approval" | "progress" | "qc" | "ready" | "problem" | "completed" | "closed"
-export type ProblemCategory = "SCREEN" | "BATTERY" | "CHARGING" | "WATER_DAMAGE" | "SOFTWARE" | "CAMERA" | "AUDIO" | "BODY" | "BOARD" | "BIOMETRIC" | "DATA" | "OTHER"
+export type ProblemCategory = "SCREEN" | "BATTERY" | "CHARGING" | "WATER_DAMAGE" | "SOFTWARE" | "CAMERA" | "AUDIO" | "BODY" | "BOARD" | "BIOMETRIC" | "DATA" | "TOUCH" | "NETWORK" | "OTHER"
 export type WarrantyStatus = "IN_WARRANTY" | "OUT_OF_WARRANTY" | "UNKNOWN"
 export type PaymentKind = "ADVANCE" | "BALANCE" | "DIAGNOSTIC" | "REFUND"
 export type PaymentMethod = "CASH" | "UPI" | "CARD" | "BANK" | "COD" | "WALLET"
@@ -24,6 +24,7 @@ export interface RepairItem {
   model: string
   imeiSerial: string | null
   problemCategory: ProblemCategory
+  problemCategories?: ProblemCategory[]
   problemDescription: string
   warrantyStatus: WarrantyStatus
   accessories: string | null
@@ -86,6 +87,15 @@ export interface Repair {
   serviceMode: "PICKUP" | "DROP_OFF"
   pickupAddress: string | null
   pickupSlot: string | null
+  /** MARKETPLACE = nearby shops quote and the customer picks; DIRECT = platform assigns a service centre. */
+  flow?: "DIRECT" | "MARKETPLACE"
+  fulfilment?: Fulfilment | null
+  appointmentAt?: string | null
+  offersCloseAt?: string | null
+  selectedOfferId?: string | null
+  offerCount?: number
+  location?: { lat: number | null; lng: number | null; pincode: string | null } | null
+  rating?: { stars: number; review: string | null; at: string | null } | null
   description: string
   serviceCenterId: string | null
   serviceCenter: string | null
@@ -110,6 +120,55 @@ export interface Repair {
   invoice?: { id: string; number: string; docType: string } | null
 }
 
+export type Fulfilment = "PICKUP_DELIVERY" | "SHOP_VISIT"
+
+export interface RepairOffer {
+  id: string
+  requestId: string
+  vendorId: string
+  source: "AUTO" | "MANUAL"
+  live: boolean
+  status: "OPEN" | "SELECTED" | "NOT_SELECTED" | "WITHDRAWN" | "EXPIRED"
+  lines: QuoteLine[]
+  subtotal: number
+  taxPct: number
+  taxAmount: number
+  total: number
+  mrpTotal: number | null
+  estDaysMin: number
+  estDaysMax: number
+  warrantyDays: number
+  pickupDelivery: boolean
+  shopVisit: boolean
+  distanceKm: number | null
+  note: string | null
+  validUntil: string
+  expired: boolean
+  badges?: Array<"BEST_DEAL" | "LOWEST_PRICE" | "LIVE_QUOTE">
+  vendor: { id: string; name: string; shopName: string; address: string | null; phone?: string; rating: number | null; ratingCount: number; completedRepairs: number }
+}
+
+export interface RepairOffers { requestId: string; status: RepairStatus; count: number; lowestTotal: number | null; offersCloseAt: string | null; offers: RepairOffer[] }
+
+export interface RepairTracking {
+  requestId: string; code: string; status: RepairStatus; fulfilment: Fulfilment | null; closed: boolean; note: string | null
+  pickupSlot: string | null; appointmentAt: string | null
+  serviceCenter: { id: string; name: string; phone: string; technician: string | null } | null
+  steps: Array<{ key: string; label: string; done: boolean; current: boolean; at: string | null; meta?: { courier?: string; trackingUrl?: string; note?: string } }>
+  amount: { approvedTotal: number; amountPaid: number; amountDue: number }
+  warrantyUntil: string | null
+  rating: Repair["rating"]
+}
+
+/** One row of a repair shop's price list. */
+export interface VendorService {
+  id: string; vendorId: string; vendor?: string; deviceCategory: "Smartphone" | "Tablet" | "Laptop" | "Other"; brand: string; model: string | null
+  problemCategory: ProblemCategory; title: string; partsPrice: number; labourPrice: number; total: number
+  estDaysMin: number; estDaysMax: number; warrantyDays: number; pickupDelivery: boolean; isActive: boolean
+}
+
+export type VendorServiceInput = Partial<Omit<VendorService, "id" | "vendor" | "total">>
+
 export interface RepairList { items: Repair[]; total: number; page: number; pages: number; counts: Record<string, number> }
 
 export interface RepairStats {
@@ -122,6 +181,7 @@ export interface RepairSettings {
   diagnosticFee: number; advancePct: number; taxPct: number; platformCommissionPct: number
   defaultWarrantyDays: number; estimateValidityDays: number; slaInspectionHours: number; slaRepairHours: number
   maxB2cDevices: number; maxB2bDevices: number; maxImages: number; maxVideos: number; maxImageMb: number; maxVideoMb: number
+  marketplaceEnabled: boolean; autoQuoteEnabled: boolean; searchRadiusKm: number; offerWindowHours: number; maxOffers: number
 }
 
 export interface RepairServiceItem {
@@ -149,7 +209,7 @@ export interface QcResult { itemId: string; passed: boolean; notes?: string }
 
 export const PROBLEM_LABEL: Record<ProblemCategory, string> = {
   SCREEN: "Screen / display", BATTERY: "Battery", CHARGING: "Charging port", WATER_DAMAGE: "Water damage", SOFTWARE: "Software / OS",
-  CAMERA: "Camera", AUDIO: "Speaker / mic", BODY: "Body / glass", BOARD: "Motherboard", BIOMETRIC: "Face ID / fingerprint", DATA: "Data recovery", OTHER: "Other",
+  CAMERA: "Camera", AUDIO: "Speaker / mic", BODY: "Body / glass", BOARD: "Motherboard", BIOMETRIC: "Face ID / fingerprint", DATA: "Data recovery", TOUCH: "Touch", NETWORK: "Network / SIM", OTHER: "Other",
 }
 
 const BASE = "/manage/repairs"
@@ -175,6 +235,13 @@ export const repairsApi = {
     (id ? api.put<ApiResponse<RepairServiceItem>>(`${BASE}/config/services/${id}`, b) : api.post<ApiResponse<RepairServiceItem>>(`${BASE}/config/services`, b)).then(unwrap),
   terms: () => api.get<ApiResponse<BusinessTerms[]>>(`${BASE}/config/terms`).then(unwrap),
   saveTerms: (b: Omit<BusinessTerms, "id">) => api.put<ApiResponse<BusinessTerms>>(`${BASE}/config/terms`, b).then(unwrap),
+  // marketplace: quotes from nearby shops, tracking, vendor price lists
+  offers: (id: string, sort = "best") => api.get<ApiResponse<RepairOffers>>(`${BASE}/${id}/offers`, { params: { sort } }).then(unwrap),
+  tracking: (id: string) => api.get<ApiResponse<RepairTracking>>(`${BASE}/${id}/tracking`).then(unwrap),
+  vendorServices: (f: Record<string, unknown> = {}) => api.get<ApiResponse<VendorService[]>>(`${BASE}/market/services`, { params: clean(f) }).then(unwrap),
+  saveVendorService: (id: string | null, b: VendorServiceInput) =>
+    (id ? api.put<ApiResponse<VendorService>>(`${BASE}/market/services/${id}`, b) : api.post<ApiResponse<VendorService>>(`${BASE}/market/services`, b)).then(unwrap),
+  deleteVendorService: (id: string) => api.delete(`${BASE}/market/services/${id}`).then(() => undefined),
   // evidence (same private storage + signed links as sell requests)
   upload: async (file: File, opts: { onProgress?: (pct: number) => void; signal?: AbortSignal } = {}) => {
     const fd = new FormData()

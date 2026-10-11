@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { apiMessage } from "@/services/sell-requests.service"
-import { repairsApi, type BusinessTerms, type CreateRepairInput, type PaymentKind, type PaymentMethod, type QcResult, type QuoteLine, type RepairServiceItem, type RepairSettings } from "@/services/repairs.service"
+import { repairsApi, type BusinessTerms, type CreateRepairInput, type PaymentKind, type PaymentMethod, type QcResult, type QuoteLine, type RepairServiceItem, type RepairSettings, type VendorServiceInput } from "@/services/repairs.service"
 
 export const repairKeys = {
   all: ["repairs"] as const,
@@ -13,6 +13,9 @@ export const repairKeys = {
   settings: ["repairs", "settings"] as const,
   services: ["repairs", "services"] as const,
   terms: ["repairs", "terms"] as const,
+  offers: (id: string, sort: string) => ["repairs", "offers", id, sort] as const,
+  tracking: (id: string) => ["repairs", "tracking", id] as const,
+  vendorServices: (f: Record<string, unknown>) => ["repairs", "vendor-services", f] as const,
 }
 
 export const useRepairStats = () => useQuery({ queryKey: repairKeys.stats, queryFn: repairsApi.stats, refetchInterval: 60_000 })
@@ -20,6 +23,11 @@ export const useRepairList = (f: Record<string, unknown>) => useQuery({ queryKey
 export const useRepair = (id: string | null) => useQuery({ queryKey: repairKeys.detail(id ?? ""), queryFn: () => repairsApi.get(id as string), enabled: !!id })
 export const useRepairSettings = (enabled = true) => useQuery({ queryKey: repairKeys.settings, queryFn: repairsApi.settings, enabled })
 export const useRepairServices = () => useQuery({ queryKey: repairKeys.services, queryFn: repairsApi.services, staleTime: 60_000 })
+export const useRepairOffers = (id: string | null, sort = "best", enabled = true) =>
+  useQuery({ queryKey: repairKeys.offers(id ?? "", sort), queryFn: () => repairsApi.offers(id as string, sort), enabled: !!id && enabled })
+export const useRepairTracking = (id: string | null, enabled = true) =>
+  useQuery({ queryKey: repairKeys.tracking(id ?? ""), queryFn: () => repairsApi.tracking(id as string), enabled: !!id && enabled })
+export const useVendorServices = (f: Record<string, unknown> = {}) => useQuery({ queryKey: repairKeys.vendorServices(f), queryFn: () => repairsApi.vendorServices(f), placeholderData: (p) => p })
 export const useBusinessTerms = () => useQuery({ queryKey: repairKeys.terms, queryFn: repairsApi.terms })
 
 /** One mutation hook for every lifecycle call; refreshes every repair list, stat and detail afterwards. */
@@ -81,6 +89,24 @@ export function useSaveBusinessTerms() {
   return useMutation({
     mutationFn: (b: Omit<BusinessTerms, "id">) => repairsApi.saveTerms(b),
     onSuccess: () => { qc.invalidateQueries({ queryKey: repairKeys.terms }); toast.success("Business terms saved") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export function useSaveVendorService() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (v: { id: string | null; body: VendorServiceInput }) => repairsApi.saveVendorService(v.id, v.body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["repairs", "vendor-services"] }); toast.success("Repair service saved") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export function useDeleteVendorService() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => repairsApi.deleteVendorService(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["repairs", "vendor-services"] }); toast.success("Repair service removed") },
     onError: (e) => toast.error(apiMessage(e)),
   })
 }

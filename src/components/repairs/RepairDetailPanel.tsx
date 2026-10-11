@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AlertTriangle, Banknote, Check, ClipboardCheck, PackageCheck, Play, Plus, Receipt, RotateCcw, Send, Stethoscope, Truck, UserCheck, Wrench, XCircle } from "lucide-react"
+import { AlertTriangle, Banknote, Check, ClipboardCheck, PackageCheck, Play, Plus, Receipt, RotateCcw, Send, Stethoscope, Truck, UserCheck, Wrench, XCircle, Zap } from "lucide-react"
 import { toast } from "sonner"
 import { cn, formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ import { downloadPdf, viewPdf } from "@/services/sales-invoices.service"
 import { PROBLEM_LABEL, repairsApi, type Repair, type RepairItem } from "@/services/repairs.service"
 import { AssignDialog, DiagnosisDialog, NoteDialog, PaymentDialog, QcDialog, QuoteDialog } from "./RepairDialogs"
 import { ChannelPill, RepairStatusBadge, fmtDate, fmtDay } from "./repair-ui"
+import { FulfilmentSection, OffersSection, OutForDeliveryDialog, PickupDialog, RatingSection, TrackingSection } from "./RepairMarketplace"
 
 const STAGES: Array<[string, string]> = [["INTAKE", "Intake"], ["DIAGNOSIS", "Diagnosis"], ["REPAIR_PROGRESS", "Repair progress"], ["FINAL_QC", "Final QC"], ["DELIVERY", "Delivery"], ["DISPUTE", "Dispute"]]
 const STAGE_LABEL: Record<string, string> = { CUSTOMER_SUBMISSION: "Customer photos", ...Object.fromEntries(STAGES) }
@@ -115,6 +116,8 @@ function RepairDetail({ id }: { id: string }) {
   const [pay, setPay] = useState(false)
   const [dx, setDx] = useState<RepairItem | null>(null)
   const [deliver, setDeliver] = useState(false)
+  const [pickup, setPickup] = useState(false)
+  const [ofd, setOfd] = useState(false)
   const [pick, setPick] = useState<string[]>([])
 
   if (isLoading) return <div className="space-y-3 p-2"><Skeleton className="h-8 w-1/2" /><Skeleton className="h-32 w-full" /><Skeleton className="h-64 w-full" /></div>
@@ -157,12 +160,15 @@ function RepairDetail({ id }: { id: string }) {
             <Row label="PO reference">{r.business.poReference || "—"}</Row>
             <Row label="Contract">{r.business.contractDiscountPct > 0 ? `${r.business.contractDiscountPct}% discount` : "No discount"} · {r.business.paymentTermsDays > 0 ? `${r.business.paymentTermsDays}-day credit` : "pay before delivery"}</Row>
           </>}
-          <Row label="Service">{r.serviceMode === "PICKUP" ? `Pickup — ${r.pickupAddress}` : "Customer drops off"}</Row>
-          <Row label="Service centre">{r.serviceCenter ? `${r.serviceCenter}${r.technician ? ` · ${r.technician}` : ""}` : <span className="text-amber-700">Not assigned</span>}</Row>
+          <Row label="Service">{r.fulfilment === "SHOP_VISIT" ? "Customer visits the shop" : r.serviceMode === "PICKUP" ? `Pickup — ${r.pickupAddress}` : "Customer drops off"}</Row>
+          <Row label="Service centre">{r.serviceCenter ? `${r.serviceCenter}${r.technician ? ` · ${r.technician}` : ""}` : r.flow === "MARKETPLACE" ? <span className="text-amber-700">Waiting for the customer to pick an offer</span> : <span className="text-amber-700">Not assigned</span>}</Row>
           {r.description && <Row label="Notes"><span className="font-normal">{r.description}</span></Row>}
           {r.note && <Row label="Decision note"><span className="font-normal">{r.note}</span></Row>}
         </dl>
       </Section>
+
+      {r.flow === "MARKETPLACE" && (r.status === "REQUESTED" || r.selectedOfferId || (r.offerCount ?? 0) > 0) && <OffersSection r={r} />}
+      <FulfilmentSection r={r} />
 
       <Section title={`Devices (${r.items.length})`}>
         <ul className="divide-y">
@@ -170,7 +176,7 @@ function RepairDetail({ id }: { id: string }) {
             <li key={i.id} className="flex items-start justify-between gap-3 py-2">
               <div className="min-w-0 text-sm">
                 <p className="font-medium">{i.lineNo}. {i.brand} {i.model} {i.imeiSerial && <span className="font-mono text-xs font-normal text-muted-foreground">{i.imeiSerial}</span>}</p>
-                <p className="text-xs text-muted-foreground">{PROBLEM_LABEL[i.problemCategory]}{i.problemDescription ? ` — ${i.problemDescription}` : ""} · {i.warrantyStatus === "IN_WARRANTY" ? "In warranty" : i.warrantyStatus === "OUT_OF_WARRANTY" ? "Out of warranty" : "Warranty unknown"}</p>
+                <p className="text-xs text-muted-foreground">{(i.problemCategories?.length ? i.problemCategories : [i.problemCategory]).map((c) => PROBLEM_LABEL[c]).join(", ")}{i.problemDescription ? ` — ${i.problemDescription}` : ""} · {i.warrantyStatus === "IN_WARRANTY" ? "In warranty" : i.warrantyStatus === "OUT_OF_WARRANTY" ? "Out of warranty" : "Warranty unknown"}</p>
                 {i.diagnosis && <p className="mt-1 rounded bg-muted px-2 py-1 text-xs"><Stethoscope className="mr-1 inline h-3 w-3" aria-hidden />{i.diagnosis}</p>}
                 {i.qcPassed === false && i.qcNotes && <p className="mt-1 text-xs text-red-700">QC: {i.qcNotes}</p>}
               </div>
@@ -243,13 +249,21 @@ function RepairDetail({ id }: { id: string }) {
 
       {r.warrantyUntil && <p className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm dark:bg-emerald-950/20">Warranty valid until <b>{fmtDay(r.warrantyUntil)}</b>{r.reopenedCount > 0 && ` · reopened ${r.reopenedCount}×`}{r.reworkCount > 0 && ` · ${r.reworkCount} rework`}</p>}
 
+      <RatingSection r={r} />
+      <TrackingSection r={r} />
+
       <Evidence r={r} canAdd={manage && !closed} />
 
       {manage && !closed && (
         <Section title="Actions">
           <div className="grid gap-2 sm:grid-cols-2">
-            {r.status === "REQUESTED" && <><Button disabled={act.isPending} onClick={() => setAssign("accept")}><Check /> Accept &amp; assign</Button><Button variant="outline" className="border-red-300 text-red-600" onClick={() => setNote("reject")}><XCircle /> Reject</Button></>}
-            {r.status === "ACCEPTED" && <Button disabled={act.isPending || !r.serviceCenterId} onClick={() => run("receive")}><PackageCheck /> {r.serviceMode === "PICKUP" ? "Device picked up" : "Device received"}</Button>}
+            {r.status === "REQUESTED" && r.flow === "MARKETPLACE" && <Button variant="outline" disabled={act.isPending} onClick={() => run("generate-offers")}><Zap /> Refresh live quotes</Button>}
+            {r.status === "REQUESTED" && <><Button variant={r.flow === "MARKETPLACE" ? "outline" : "default"} disabled={act.isPending} onClick={() => setAssign("accept")}><Check /> {r.flow === "MARKETPLACE" ? "Assign directly" : "Accept & assign"}</Button><Button variant="outline" className="border-red-300 text-red-600" onClick={() => setNote("reject")}><XCircle /> Reject</Button></>}
+            {r.status === "ACCEPTED" && r.fulfilment === "PICKUP_DELIVERY" && !r.timeline.some((e) => e.kind === "PICKED_UP") && <>
+              <Button variant="outline" disabled={act.isPending} onClick={() => setPickup(true)}><Truck /> {r.pickupSlot ? "Reschedule pickup" : "Schedule pickup"}</Button>
+              <Button disabled={act.isPending} onClick={() => run("picked-up")}><PackageCheck /> Picked up from customer</Button></>}
+            {r.status === "ACCEPTED" && (r.fulfilment !== "PICKUP_DELIVERY" || r.timeline.some((e) => e.kind === "PICKED_UP")) && <Button disabled={act.isPending || !r.serviceCenterId} onClick={() => run("receive")}><PackageCheck /> {r.fulfilment === "PICKUP_DELIVERY" ? "Arrived at repair shop" : r.serviceMode === "PICKUP" ? "Device picked up" : "Device received"}</Button>}
+            {r.status === "INSPECTION" && r.selectedOfferId && <Button disabled={act.isPending} onClick={() => run("confirm-price")}><Check /> Confirm agreed price</Button>}
             {["REQUESTED", "ACCEPTED"].includes(r.status) && <Button variant="outline" onClick={() => setNote("cancel")}>Cancel request</Button>}
             {["ACCEPTED", "INSPECTION", "ESTIMATE_APPROVED", "IN_REPAIR"].includes(r.status) && <Button variant="outline" onClick={() => setAssign("assign")}><UserCheck /> {r.serviceCenterId ? "Change service centre" : "Assign service centre"}</Button>}
             {["INSPECTION", "ESTIMATE_SENT"].includes(r.status) && <Button onClick={() => setQuote(true)}><Send /> {r.status === "ESTIMATE_SENT" ? "Revise estimate" : "Send estimate"}</Button>}
@@ -259,7 +273,8 @@ function RepairDetail({ id }: { id: string }) {
             {r.status === "QC_PENDING" && <Button onClick={() => setQc(true)}><ClipboardCheck /> Record final QC</Button>}
             {["INSPECTION", "IN_REPAIR"].includes(r.status) && <Button variant="outline" className="border-red-300 text-red-600" onClick={() => setNote("fail")}>Cannot repair</Button>}
             {["REPAIRED", "ESTIMATE_REJECTED", "FAILED"].includes(r.status) && <Button disabled={act.isPending} onClick={() => run("ready")}><Truck /> Ready for {r.serviceMode === "PICKUP" ? "delivery" : "pickup"}</Button>}
-            {r.status === "READY_FOR_DELIVERY" && <Button disabled={act.isPending} onClick={startDeliver}><PackageCheck /> Deliver{undelivered.length < r.items.length ? ` (${undelivered.length} left)` : ""}</Button>}
+            {r.status === "READY_FOR_DELIVERY" && r.fulfilment === "PICKUP_DELIVERY" && !r.timeline.some((e) => e.kind === "OUT_FOR_DELIVERY") && <Button variant="outline" disabled={act.isPending} onClick={() => setOfd(true)}><Truck /> Out for delivery</Button>}
+            {r.status === "READY_FOR_DELIVERY" && (r.fulfilment !== "PICKUP_DELIVERY" || r.timeline.some((e) => e.kind === "OUT_FOR_DELIVERY")) && <Button disabled={act.isPending} onClick={startDeliver}><PackageCheck /> Deliver{undelivered.length < r.items.length ? ` (${undelivered.length} left)` : ""}</Button>}
             {finance && r.money.refundable > 0 && <Button variant="outline" onClick={() => setPay(true)}><Receipt /> Refund excess</Button>}
           </div>
           {r.status === "ESTIMATE_APPROVED" && r.money.amountPaid < r.money.advanceRequired && <p className="text-xs text-amber-700">Advance of {formatMoney(r.money.advanceRequired)} is required before repair can start (paid {formatMoney(r.money.amountPaid)}).</p>}
@@ -283,6 +298,8 @@ function RepairDetail({ id }: { id: string }) {
       <QcDialog repair={r} open={qc} pending={act.isPending} onClose={() => setQc(false)} onSubmit={(results) => act.mutate({ type: "qc", id: r.id, results }, { onSuccess: () => setQc(false) })} />
       <PaymentDialog repair={r} open={pay} pending={act.isPending} onClose={() => setPay(false)} onSubmit={(p) => act.mutate({ type: "pay", id: r.id, ...p }, { onSuccess: () => setPay(false) })} />
       <DiagnosisDialog item={dx} pending={act.isPending} onClose={() => setDx(null)} onSubmit={(diagnosis, repairable) => act.mutate({ type: "diagnose", id: r.id, itemId: (dx as RepairItem).id, diagnosis, repairable }, { onSuccess: () => setDx(null) })} />
+      <PickupDialog open={pickup} current={r.pickupSlot} pending={act.isPending} onClose={() => setPickup(false)} onSubmit={(slot) => run("schedule-pickup", { slot }, () => setPickup(false))} />
+      <OutForDeliveryDialog open={ofd} pending={act.isPending} onClose={() => setOfd(false)} onSubmit={(b) => run("out-for-delivery", b, () => setOfd(false))} />
       <Dialog open={deliver} onOpenChange={setDeliver}>
         <DialogContent>
           <DialogHeader><DialogTitle>Deliver devices</DialogTitle><DialogDescription>Choose what is being handed over now. The repair completes when every device is delivered.</DialogDescription></DialogHeader>

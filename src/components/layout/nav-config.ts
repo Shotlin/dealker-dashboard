@@ -96,6 +96,7 @@ export const NAV_SECTIONS: NavSection[] = [
     section: "Repair Service",
     items: [
       { label: "Repair Requests", href: "/repairs", icon: Wrench },
+      { label: "Vendor Price Lists", href: "/repairs/services", icon: Tags },
     ],
   },
   {

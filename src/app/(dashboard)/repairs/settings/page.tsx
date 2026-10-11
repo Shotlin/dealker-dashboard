@@ -23,6 +23,8 @@ const FIELDS: Array<{ title: string; hint?: string; fields: Array<{ key: NumKey;
   { title: "Charges & tax", hint: "GST on repairs is a placeholder (18%). Confirm the rate for services and parts with your accountant before going live.", fields: [
     { key: "diagnosticFee", label: "Diagnostic fee per device", unit: "₹" }, { key: "taxPct", label: "GST on estimates", unit: "%", step: 0.5 },
     { key: "advancePct", label: "Advance before repair starts", unit: "%" }, { key: "platformCommissionPct", label: "Platform commission", unit: "%", step: 0.5 } ] },
+  { title: "Nearby shop quotes", hint: "Customers who share a location get quotes from repair shops within this range that price every issue. Shops can also quote by hand while the window is open.", fields: [
+    { key: "searchRadiusKm", label: "Search radius", unit: "km" }, { key: "offerWindowHours", label: "Shops can quote for", unit: "hours" }, { key: "maxOffers", label: "Most quotes per request" } ] },
   { title: "Warranty & estimates", fields: [
     { key: "defaultWarrantyDays", label: "Repair warranty", unit: "days" }, { key: "estimateValidityDays", label: "Estimate valid for", unit: "days" } ] },
   { title: "Service levels (SLA)", fields: [
@@ -39,7 +41,7 @@ function General() {
   useEffect(() => { if (q.data) setF(q.data) }, [q.data])
   if (q.isLoading || !f) return <Skeleton className="h-64 w-full" />
   const dirty = JSON.stringify(f) !== JSON.stringify(q.data)
-  const toggles: Array<[keyof RepairSettings, string]> = [["enabled", "Accept repair requests"], ["b2cEnabled", "Consumer (B2C) repairs"], ["b2bEnabled", "Business (B2B) repairs"], ["requireAdvance", "Require advance before work starts"]]
+  const toggles: Array<[keyof RepairSettings, string]> = [["enabled", "Accept repair requests"], ["b2cEnabled", "Consumer (B2C) repairs"], ["b2bEnabled", "Business (B2B) repairs"], ["requireAdvance", "Require advance before work starts"], ["marketplaceEnabled", "Quotes from nearby repair shops"], ["autoQuoteEnabled", "Live quotes from vendor price lists"]]
   return (
     <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); save.mutate(f) }}>
       <section className="rounded-xl border bg-card p-4">
