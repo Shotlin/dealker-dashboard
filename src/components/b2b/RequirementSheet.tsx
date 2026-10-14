@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Clock, MapPin, Package, Truck } from "lucide-react"
+import { Clock, Eye, MapPin, Package, Store, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { AddQuoteDialog, DispatchDialog, ReceiveDialog } from "./AdminActions"
+import { AddQuoteDialog, CancelOrderDialog, DispatchDialog, ReceiveDialog } from "./AdminActions"
 import type { B2bOrder } from "@/types/b2b.admin.types"
 import { useB2bMutations, useB2bRequirement } from "@/hooks/useB2bAdmin"
 import { formatINR } from "@/lib/utils"
@@ -30,6 +30,7 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
   const [addingQuote, setAddingQuote] = useState(false)
   const [dispatching, setDispatching] = useState<B2bOrder | null>(null)
   const [receiving, setReceiving] = useState<B2bOrder | null>(null)
+  const [refunding, setRefunding] = useState<B2bOrder | null>(null)
   const [cancelling, setCancelling] = useState(false)
   const [reason, setReason] = useState("")
   const r = data?.requirement
@@ -43,6 +44,8 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
             <div className="flex flex-wrap items-center gap-2 pt-1 text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{r.requirement_number}</span>
               <ReqStatusBadge status={r.status} />
+              {r.tags?.includes("URGENT") && <Badge className="bg-red-50 text-[11px] text-red-700 hover:bg-red-50">Urgent</Badge>}
+              {r.tags?.includes("BULK") && <Badge className="bg-amber-50 text-[11px] text-amber-700 hover:bg-amber-50">Bulk</Badge>}
               <span>Buyer: <span className="font-medium text-foreground">{r.buyer_name}</span></span>
             </div>
           )}
@@ -64,7 +67,14 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
                   <p className="flex items-center gap-2"><Package className="h-4 w-4 text-muted-foreground" />{r.brand ? `${r.brand} · ` : ""}{r.category_name ?? "—"} · {r.condition_pref === "ANY" ? "any condition" : r.condition_pref === "NEW" ? "new only" : "used / refurbished"}</p>
                   <p className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" />Quotes until {dateTime(r.response_deadline)}{r.required_by ? ` · needed by ${dateShort(r.required_by)}` : ""}</p>
                   <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" />Deliver to {r.delivery_city ?? "—"} {r.delivery_pincode ?? ""}</p>
-                  {r.target_price != null && <p>Target price <span className="font-semibold tabular-nums">{formatINR(r.target_price)}</span> / unit</p>}
+                  {(r.target_price != null || r.target_price_max != null) && (
+                    <p>Target price <span className="font-semibold tabular-nums">{r.target_price != null && r.target_price_max != null && r.target_price_max !== r.target_price ? `${formatINR(r.target_price)} – ${formatINR(r.target_price_max)}` : formatINR((r.target_price ?? r.target_price_max) as number)}</span> / unit</p>
+                  )}
+                  <p className="flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" />
+                    {[r.storage, r.min_battery_health ? `battery ${r.min_battery_health}%+` : null, r.display_pref === "ORIGINAL" ? "original display" : r.display_pref === "GRADE_AB" ? "grade A/B display" : null,
+                      r.fulfilment_pref === "PICKUP" ? "pickup" : r.fulfilment_pref === "DELIVERY" ? "delivery" : "pickup or delivery"].filter(Boolean).join(" · ")}
+                  </p>
+                  {r.views && <p className="flex items-center gap-2"><Eye className="h-4 w-4 text-muted-foreground" />Seen {r.views.v} time{r.views.v === 1 ? "" : "s"} by {r.views.vendors} vendor{r.views.vendors === 1 ? "" : "s"}</p>}
                   {r.description && <p className="pt-1 text-muted-foreground">{r.description}</p>}
                 </div>
               </section>
@@ -88,6 +98,7 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
                             <TableRow key={q.id}>
                               <TableCell>
                                 <p className="text-sm font-medium">{q.seller_name}{i === 0 && data.quotes.length > 1 && q.status !== "WITHDRAWN" && <Badge className="ml-2 bg-emerald-50 text-[10px] text-emerald-700 hover:bg-emerald-50">Lowest</Badge>}</p>
+                                <p className="text-xs text-muted-foreground">{[q.seller_city, q.seller_rating ? `★ ${q.seller_rating}` : null, q.buyer_viewed_at ? "buyer opened" : null].filter(Boolean).join(" · ")}</p>
                                 {q.note && <p className="max-w-[220px] truncate text-xs text-muted-foreground">{q.note}</p>}
                               </TableCell>
                               <TableCell className="text-right tabular-nums">{q.quantity_offered}</TableCell>
@@ -162,11 +173,15 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
                             {["PAID", "PACKED"].includes(o.status) && <Button size="sm" onClick={() => setDispatching(o)}>Dispatch…</Button>}
                             {o.status === "DISPATCHED" && <Button size="sm" variant="outline" disabled={setOrderStatus.isPending} onClick={() => setOrderStatus.mutate({ id: o.id, status: "DELIVERED" })}>Mark delivered</Button>}
                             {["DISPATCHED", "DELIVERED"].includes(o.status) && <Button size="sm" onClick={() => setReceiving(o)}>Confirm receipt…</Button>}
+                            {["PAID", "PACKED"].includes(o.status) && <Button size="sm" variant="outline" className="text-red-600" onClick={() => setRefunding(o)}>Cancel & refund…</Button>}
                           </div>
                         )}
-                        {(o.awb || o.dispute_reason) && (
+                        {(o.awb || o.dispute_reason || o.fulfilment_type === "PICKUP" || o.cancel_reason || o.payment_method) && (
                           <div className="mt-2 space-y-1 border-t pt-2 text-xs text-muted-foreground">
+                            {o.payment_method && <p>Paid via {o.payment_method === "WALLET" ? "Dealker wallet (debited from the buyer's ledger)" : "payment recorded by admin"}</p>}
+                            {o.fulfilment_type === "PICKUP" && o.pickup_at && <p className="flex items-center gap-1.5"><Store className="h-3.5 w-3.5" />Pickup {dateTime(o.pickup_at)}{o.pickup_note ? ` · ${o.pickup_note}` : ""}{o.received_quantity != null && ` · buyer received ${o.received_quantity}/${o.quantity}`}</p>}
                             {o.awb && <p className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" />{o.courier_name} · AWB {o.awb}{o.received_quantity != null && ` · buyer received ${o.received_quantity}/${o.quantity}`}</p>}
+                            {o.cancel_reason && <p className="text-red-600">Cancelled: {o.cancel_reason}</p>}
                             {o.dispute_reason && <p className="text-red-600">Dispute: {o.dispute_reason}</p>}
                             {o.dispute_resolution && <p>Resolution: {o.dispute_resolution}</p>}
                           </div>
@@ -179,13 +194,16 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
                     return (
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
                         <span>Buyer payment due: <span className="font-semibold tabular-nums">{formatINR(due)}</span> — held in escrow until delivery.</span>
-                        <Button size="sm" disabled={pay.isPending} onClick={() => pay.mutate({ id: r.id, method: "ONLINE" })}>Record payment</Button>
+                        <div className="flex gap-2">
+                          {r.buyer_name !== "Dealker" && <Button size="sm" disabled={pay.isPending} onClick={() => pay.mutate({ id: r.id, method: "WALLET" })}>Charge buyer’s wallet</Button>}
+                          <Button size="sm" variant="outline" disabled={pay.isPending} onClick={() => pay.mutate({ id: r.id, method: "ONLINE" })}>Record payment taken outside</Button>
+                        </div>
                       </div>
                     )
                   })()}
                   {data.payment && (
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Buyer paid <span className="font-medium text-foreground">{formatINR(data.payment.amount)}</span> into escrow on {dateShort(data.payment.paid_at)} (ref {data.payment.reference}).
+                      Buyer paid <span className="font-medium text-foreground">{formatINR(data.payment.amount)}</span> into escrow on {dateShort(data.payment.paid_at)} via {data.payment.method === "WALLET" ? "their Dealker wallet" : "a payment recorded by admin"} (ref {data.payment.reference}).
                     </p>
                   )}
                 </section>
@@ -228,6 +246,7 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
       <AddQuoteDialog key={addingQuote ? "q" : "x"} requirement={addingQuote && r ? r : null} onClose={() => setAddingQuote(false)} />
       <DispatchDialog order={dispatching} onClose={() => setDispatching(null)} />
       <ReceiveDialog key={receiving?.id ?? "r"} order={receiving} onClose={() => setReceiving(null)} />
+      <CancelOrderDialog key={refunding?.id ?? "c"} order={refunding} onClose={() => setRefunding(null)} />
     </Sheet>
   )
 }

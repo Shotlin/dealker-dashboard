@@ -1,5 +1,5 @@
 import api from "@/lib/api"
-import type { B2bOrder, B2bRequirement, B2bRequirementDetail, B2bSettings, B2bStats } from "@/types/b2b.admin.types"
+import type { B2bOrder, B2bRequirement, B2bRequirementDetail, B2bSettings, B2bStats, DemandInsights } from "@/types/b2b.admin.types"
 
 const clean = (p: Record<string, unknown>) =>
   Object.fromEntries(Object.entries(p).filter(([, v]) => v !== "" && v !== undefined && v !== null && v !== "all"))
@@ -7,6 +7,8 @@ type Paged<T> = { data: T[]; pagination: { page: number; limit: number; total: n
 
 export const b2bAdminApi = {
   stats: () => api.get<{ data: B2bStats }>("/admin/b2b/stats").then((r) => r.data.data),
+  insights: (days: number) => api.get<{ data: DemandInsights }>("/admin/b2b/insights", { params: { days } }).then((r) => r.data.data),
+  cancelOrder: (id: string, reason: string) => api.post<{ data: { refunded: number } }>(`/admin/b2b/orders/${id}/cancel`, { reason }).then((r) => r.data.data),
   requirements: (p: Record<string, unknown>) => api.get<Paged<B2bRequirement>>("/admin/b2b/requirements", { params: clean(p) }).then((r) => r.data),
   requirement: (id: string) => api.get<{ data: B2bRequirementDetail }>(`/admin/b2b/requirements/${id}`).then((r) => r.data.data),
   cancel: (id: string, reason: string) => api.post(`/admin/b2b/requirements/${id}/cancel`, { reason }).then(() => undefined),
@@ -19,7 +21,7 @@ export const b2bAdminApi = {
   withdrawQuote: (quoteId: string) => api.post(`/admin/b2b/quotes/${quoteId}/withdraw`).then(() => undefined),
   award: (id: string, selections: { quoteId: string; quantity: number }[]) => api.post(`/admin/b2b/requirements/${id}/award`, { selections }).then((r) => r.data.data),
   pay: (id: string, b: { method?: string; reference?: string }) => api.post(`/admin/b2b/requirements/${id}/pay`, b).then((r) => r.data.data),
-  setOrderStatus: (id: string, b: { status: "PACKED" | "DISPATCHED" | "DELIVERED"; courierName?: string; awb?: string; trackingUrl?: string }) =>
+  setOrderStatus: (id: string, b: { status: "PACKED" | "DISPATCHED" | "DELIVERED"; courierName?: string; awb?: string; trackingUrl?: string; fulfilmentType?: "DELIVERY" | "PICKUP"; pickupAt?: string; pickupNote?: string }) =>
     api.post(`/admin/b2b/orders/${id}/status`, b).then(() => undefined),
   receive: (id: string, b: { receivedQuantity?: number; ok?: boolean; note?: string }) => api.post(`/admin/b2b/orders/${id}/receive`, b).then(() => undefined),
   settings: () => api.get<{ data: B2bSettings }>("/admin/b2b/settings").then((r) => r.data.data),

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useCategories } from "@/hooks/useCategories"
 import { useB2bMutations, useB2bVendors } from "@/hooks/useB2bAdmin"
 import type { B2bOrder, B2bRequirement } from "@/types/b2b.admin.types"
+import { formatINR } from "@/lib/utils"
 import { COND_LABEL } from "./shared"
 
 const DEALKER = "__dealker__"
@@ -25,19 +26,22 @@ export function NewRequirementDialog({ open, onClose }: { open: boolean; onClose
   const cats = useCategories()
   const { createRequirement } = useB2bMutations()
   const inOneWeek = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 16)
-  const [f, setF] = useState({ buyer: DEALKER, productName: "", brand: "", categoryId: "", quantity: "", targetPrice: "", conditionPref: "ANY", deliveryCity: "", deliveryPincode: "", responseDeadline: inOneWeek, description: "" })
+  const [f, setF] = useState({ buyer: DEALKER, productName: "", brand: "", categoryId: "", quantity: "", targetPrice: "", targetPriceMax: "", storage: "", minBattery: "", displayPref: "ANY", fulfilmentPref: "ANY", urgent: "no", conditionPref: "ANY", deliveryCity: "", deliveryPincode: "", responseDeadline: inOneWeek, description: "" })
   const set = (k: keyof typeof f, v: string) => setF((s) => ({ ...s, [k]: v }))
-  const ready = f.productName.trim().length >= 2 && Number(f.quantity) > 0 && f.responseDeadline
+  const rangeBad = f.targetPrice !== "" && f.targetPriceMax !== "" && Number(f.targetPriceMax) < Number(f.targetPrice)
+  const ready = f.productName.trim().length >= 2 && Number(f.quantity) > 0 && f.responseDeadline && !rangeBad
   const submit = () =>
     createRequirement.mutate({
       buyerVendorId: f.buyer === DEALKER ? null : f.buyer, productName: f.productName.trim(), brand: f.brand || undefined, categoryId: f.categoryId || undefined,
-      quantity: Number(f.quantity), targetPrice: f.targetPrice ? Number(f.targetPrice) : null, conditionPref: f.conditionPref, deliveryCity: f.deliveryCity || undefined,
+      quantity: Number(f.quantity), targetPrice: f.targetPrice ? Number(f.targetPrice) : null, targetPriceMax: f.targetPriceMax ? Number(f.targetPriceMax) : null,
+      storage: f.storage || undefined, minBatteryHealth: f.minBattery ? Number(f.minBattery) : null, displayPref: f.displayPref, fulfilmentPref: f.fulfilmentPref, isUrgent: f.urgent === "yes",
+      conditionPref: f.conditionPref, deliveryCity: f.deliveryCity || undefined,
       deliveryPincode: f.deliveryPincode || undefined, responseDeadline: new Date(f.responseDeadline).toISOString(), description: f.description || undefined,
     }, { onSuccess: onClose })
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
-        <DialogHeader><DialogTitle>New buying requirement</DialogTitle><DialogDescription>Post what is needed. All verified vendors (except the buyer) are notified and can send quotes.</DialogDescription></DialogHeader>
+        <DialogHeader><DialogTitle>New buying requirement</DialogTitle><DialogDescription>Post what is needed. All verified vendors (except the buyer) are notified; those holding matching stock get a personal “you can supply this” alert.</DialogDescription></DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
           <F label="Buyer" className="sm:col-span-2">
             <Select value={f.buyer} onValueChange={(v) => set("buyer", v)}>
@@ -47,7 +51,9 @@ export function NewRequirementDialog({ open, onClose }: { open: boolean; onClose
           </F>
           <F label="Product *" className="sm:col-span-2"><Input value={f.productName} onChange={(e) => set("productName", e.target.value)} placeholder="Apple iPhone 16 (128GB)" /></F>
           <F label="Quantity needed *"><Input type="number" min={1} value={f.quantity} onChange={(e) => set("quantity", e.target.value)} /></F>
-          <F label="Target price per unit (₹)"><Input type="number" min={0} value={f.targetPrice} onChange={(e) => set("targetPrice", e.target.value)} /></F>
+          <F label="Storage"><Input value={f.storage} onChange={(e) => set("storage", e.target.value)} placeholder="128GB" /></F>
+          <F label="Lowest price per unit (₹)"><Input type="number" min={0} value={f.targetPrice} onChange={(e) => set("targetPrice", e.target.value)} /></F>
+          <F label="Highest price per unit (₹)"><Input type="number" min={0} value={f.targetPriceMax} onChange={(e) => set("targetPriceMax", e.target.value)} />{rangeBad && <p className="mt-1 text-xs text-red-600">Cannot be lower than the lowest price.</p>}</F>
           <F label="Brand"><Input value={f.brand} onChange={(e) => set("brand", e.target.value)} /></F>
           <F label="Category">
             <Select value={f.categoryId} onValueChange={(v) => set("categoryId", v)}>
@@ -59,6 +65,25 @@ export function NewRequirementDialog({ open, onClose }: { open: boolean; onClose
             <Select value={f.conditionPref} onValueChange={(v) => set("conditionPref", v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent><SelectItem value="ANY">Any</SelectItem><SelectItem value="NEW">New only</SelectItem><SelectItem value="USED_OR_REFURBISHED">Used / refurbished</SelectItem></SelectContent>
+            </Select>
+          </F>
+          <F label="Minimum battery health (%)"><Input type="number" min={1} max={100} value={f.minBattery} onChange={(e) => set("minBattery", e.target.value)} placeholder="Optional" /></F>
+          <F label="Display">
+            <Select value={f.displayPref} onValueChange={(v) => set("displayPref", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="ANY">Any</SelectItem><SelectItem value="ORIGINAL">Original preferred</SelectItem><SelectItem value="GRADE_AB">Grade A / B</SelectItem></SelectContent>
+            </Select>
+          </F>
+          <F label="Pickup or delivery">
+            <Select value={f.fulfilmentPref} onValueChange={(v) => set("fulfilmentPref", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="ANY">Either</SelectItem><SelectItem value="PICKUP">Pickup</SelectItem><SelectItem value="DELIVERY">Delivery</SelectItem></SelectContent>
+            </Select>
+          </F>
+          <F label="Urgent?">
+            <Select value={f.urgent} onValueChange={(v) => set("urgent", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="no">No</SelectItem><SelectItem value="yes">Yes — alert every vendor now</SelectItem></SelectContent>
             </Select>
           </F>
           <F label="Quotes accepted until *"><Input type="datetime-local" value={f.responseDeadline} onChange={(e) => set("responseDeadline", e.target.value)} /></F>
@@ -116,22 +141,74 @@ export function AddQuoteDialog({ requirement, onClose }: { requirement: B2bRequi
 
 export function DispatchDialog({ order, onClose }: { order: B2bOrder | null; onClose: () => void }) {
   const { setOrderStatus } = useB2bMutations()
+  const [mode, setMode] = useState<"DELIVERY" | "PICKUP">("DELIVERY")
   const [courier, setCourier] = useState("Delhivery")
   const [awb, setAwb] = useState("")
   const [url, setUrl] = useState("")
+  const [pickupAt, setPickupAt] = useState(new Date(Date.now() + 86400000).toISOString().slice(0, 16))
+  const [note, setNote] = useState("")
   if (!order) return null
+  const ready = mode === "PICKUP" ? Boolean(pickupAt) && new Date(pickupAt) > new Date() : Boolean(awb.trim())
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader><DialogTitle>Dispatch {order.order_number}</DialogTitle><DialogDescription>{order.seller_name} → {order.buyer_name} · {order.quantity} units</DialogDescription></DialogHeader>
         <div className="space-y-4">
-          <F label="Courier"><Select value={courier} onValueChange={setCourier}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{COURIERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></F>
-          <F label="Tracking number (AWB) *"><Input value={awb} onChange={(e) => setAwb(e.target.value)} /></F>
-          <F label="Tracking link"><Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" /></F>
+          <div className="grid grid-cols-2 gap-2">
+            {(["DELIVERY", "PICKUP"] as const).map((m) => (
+              <button key={m} type="button" onClick={() => setMode(m)}
+                className={`rounded-lg border px-3 py-2 text-sm font-medium ${mode === m ? "border-primary bg-primary/5 text-primary" : "text-muted-foreground"}`}>
+                {m === "DELIVERY" ? "Courier delivery" : "Buyer pickup"}
+              </button>
+            ))}
+          </div>
+          {mode === "DELIVERY" ? (
+            <>
+              <F label="Courier"><Select value={courier} onValueChange={setCourier}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{COURIERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></F>
+              <F label="Tracking number (AWB) *"><Input value={awb} onChange={(e) => setAwb(e.target.value)} /></F>
+              <F label="Tracking link"><Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" /></F>
+            </>
+          ) : (
+            <>
+              <F label="Pickup date & time *"><Input type="datetime-local" value={pickupAt} onChange={(e) => setPickupAt(e.target.value)} /></F>
+              <F label="Note for the buyer"><Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Who to ask for, landmark…" /></F>
+            </>
+          )}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button disabled={!awb.trim() || setOrderStatus.isPending} onClick={() => setOrderStatus.mutate({ id: order.id, status: "DISPATCHED", courierName: courier, awb: awb.trim(), trackingUrl: url || undefined }, { onSuccess: onClose })}>Mark dispatched</Button>
+          <Button disabled={!ready || setOrderStatus.isPending}
+            onClick={() => setOrderStatus.mutate(mode === "PICKUP"
+              ? { id: order.id, status: "DISPATCHED", fulfilmentType: "PICKUP", pickupAt: new Date(pickupAt).toISOString(), pickupNote: note || undefined }
+              : { id: order.id, status: "DISPATCHED", courierName: courier, awb: awb.trim(), trackingUrl: url || undefined }, { onSuccess: onClose })}>
+            {mode === "PICKUP" ? "Schedule pickup" : "Mark dispatched"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/** Platform cancels a paid order the seller cannot fulfil — a wallet payment is refunded automatically. */
+export function CancelOrderDialog({ order, onClose }: { order: B2bOrder | null; onClose: () => void }) {
+  const { cancelOrder } = useB2bMutations()
+  const [reason, setReason] = useState("")
+  if (!order) return null
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Cancel {order.order_number} and refund the buyer</DialogTitle>
+          <DialogDescription>
+            {order.buyer_name} gets {order.quantity} × {formatINR(order.unit_price)} back
+            {order.payment_method === "WALLET" ? " in their Dealker wallet" : " — this payment was recorded outside the app, so settle it with them directly"}.
+            The units go back on the requirement and sellers can quote again.
+          </DialogDescription>
+        </DialogHeader>
+        <F label="Reason (shown to the buyer) *"><Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></F>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>Keep order</Button>
+          <Button variant="destructive" disabled={reason.trim().length < 3 || cancelOrder.isPending} onClick={() => cancelOrder.mutate({ id: order.id, reason: reason.trim() }, { onSuccess: onClose })}>Cancel & refund</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -32,7 +32,11 @@ import type { VendorWalletRow } from "@/services/money.service"
 const inr = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(n)
 
-const label = (code: string | null) => (code ? code.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase()) : "—")
+/** Entries the system writes itself (never offered in the manual-entry form, but filterable). */
+const SYSTEM_REASONS = ["B2B_PURCHASE", "B2B_REFUND"]
+const SPECIAL_LABELS: Record<string, string> = { B2B_PURCHASE: "B2B purchase (held in escrow)", B2B_REFUND: "B2B refund" }
+const label = (code: string | null) =>
+  code ? SPECIAL_LABELS[code] ?? code.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase()) : "—"
 
 export default function VendorWalletPage() {
   const overview = useVendorWalletOverview()
@@ -124,7 +128,7 @@ function LedgerSheet({ vendor, onClose }: { vendor: VendorWalletRow | null; onCl
   const reasons = useWalletReasons()
   const txns = useVendorWalletTxns(vendor?.vendor_id ?? null, { direction, reasonCode, page, limit: 20 })
 
-  const allReasons = Array.from(new Set([...(reasons.data?.credit ?? []), ...(reasons.data?.debit ?? [])]))
+  const allReasons = Array.from(new Set([...(reasons.data?.credit ?? []), ...(reasons.data?.debit ?? []), ...SYSTEM_REASONS]))
   const rows = txns.data?.data ?? []
   const meta = txns.data?.meta
 

@@ -2,15 +2,17 @@
 
 import { OrdersHubTabs } from "@/components/order-page/OrdersHubTabs"
 import { Suspense, useState } from "react"
-import { Plus, AlertTriangle, Banknote, Boxes, CheckCircle2, Handshake, Landmark, Percent, Send, Truck } from "lucide-react"
+import { Plus, AlertTriangle, Banknote, Boxes, CheckCircle2, Eye, Handshake, Landmark, Percent, Send, Truck } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { NewRequirementDialog } from "@/components/b2b/AdminActions"
+import { DemandTab } from "@/components/b2b/DemandTab"
 import { OrdersTab } from "@/components/b2b/OrdersTab"
 import { RequirementSheet } from "@/components/b2b/RequirementSheet"
 import { SettingsTab } from "@/components/b2b/SettingsTab"
@@ -59,23 +61,33 @@ function RequirementsTable({ limit = 25, compact = false, onOpen }: { limit?: nu
       <Table>
         <TableHeader><TableRow className="hover:bg-transparent">
           <TableHead>Requirement</TableHead><TableHead>Buyer</TableHead><TableHead className="text-right">Qty (awarded)</TableHead>
-          <TableHead className="text-right">Quotes</TableHead><TableHead className="text-right">Best price</TableHead><TableHead className="text-right">Target</TableHead>
+          <TableHead className="text-right">Seen</TableHead><TableHead className="text-right">Quotes</TableHead><TableHead className="text-right">Best price</TableHead><TableHead className="text-right">Target</TableHead>
           <TableHead className="text-right">Order value</TableHead><TableHead>Dispatch</TableHead><TableHead>Status</TableHead>
         </TableRow></TableHeader>
         <TableBody>
-          {isLoading ? Array.from({ length: 5 }).map((_, i) => <TableRow key={i}><TableCell colSpan={9}><Skeleton className="h-10" /></TableCell></TableRow>)
-            : rows.length === 0 ? <TableRow><TableCell colSpan={9} className="h-40 text-center text-muted-foreground">No requirements found.</TableCell></TableRow>
+          {isLoading ? Array.from({ length: 5 }).map((_, i) => <TableRow key={i}><TableCell colSpan={10}><Skeleton className="h-10" /></TableCell></TableRow>)
+            : rows.length === 0 ? <TableRow><TableCell colSpan={10} className="h-40 text-center text-muted-foreground">No requirements found.</TableCell></TableRow>
             : rows.map((r) => (
               <TableRow key={r.id} className="cursor-pointer" onClick={() => onOpen(r.id)}>
                 <TableCell>
-                  <p className="max-w-[260px] truncate text-sm font-medium">{r.product_name}</p>
-                  <p className="text-xs text-muted-foreground">{r.requirement_number} · {dateShort(r.created_at)}</p>
+                  <div className="flex items-center gap-3">
+                    {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" className="h-9 w-9 rounded-md border object-cover" /> : null}
+                    <div className="min-w-0">
+                      <p className="max-w-[260px] truncate text-sm font-medium">
+                        {r.product_name}
+                        {r.tags?.includes("URGENT") && <Badge className="ml-2 bg-red-50 text-[10px] text-red-700 hover:bg-red-50">Urgent</Badge>}
+                        {r.tags?.includes("BULK") && <Badge className="ml-1 bg-amber-50 text-[10px] text-amber-700 hover:bg-amber-50">Bulk</Badge>}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{r.requirement_number} · {dateShort(r.created_at)}{r.min_battery_health ? ` · battery ${r.min_battery_health}%+` : ""}{r.fulfilment_pref && r.fulfilment_pref !== "ANY" ? ` · ${r.fulfilment_pref.toLowerCase()}` : ""}</p>
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell className="text-sm">{r.buyer_name}</TableCell>
                 <TableCell className="text-right tabular-nums text-sm">{r.quantity_needed} <span className="text-muted-foreground">({r.quantity_awarded})</span></TableCell>
+                <TableCell className="text-right tabular-nums text-sm text-muted-foreground"><span className="inline-flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{r.view_count ?? 0}</span></TableCell>
                 <TableCell className="text-right tabular-nums text-sm">{r.quote_count ?? 0}</TableCell>
                 <TableCell className="text-right tabular-nums text-sm">{r.best_price != null ? formatINR(r.best_price) : "—"}</TableCell>
-                <TableCell className="text-right tabular-nums text-sm text-muted-foreground">{r.target_price != null ? formatINR(r.target_price) : "—"}</TableCell>
+                <TableCell className="text-right tabular-nums text-sm text-muted-foreground">{r.target_price != null ? formatINR(r.target_price) : "—"}{r.target_price_max != null && r.target_price_max !== r.target_price ? <span className="block text-[11px]">to {formatINR(r.target_price_max)}</span> : null}</TableCell>
                 <TableCell className="text-right tabular-nums text-sm">{r.order_value ? formatINR(r.order_value) : "—"}</TableCell>
                 <TableCell className="text-xs text-muted-foreground tabular-nums">{r.order_count ? `${r.dispatched_orders}/${r.order_count} sent` : "—"}</TableCell>
                 <TableCell><ReqStatusBadge status={r.status} /></TableCell>
@@ -111,7 +123,7 @@ function B2bPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Vendors marketplace</h1>
-          <p className="text-sm text-muted-foreground">Vendors post what they need, other vendors quote, the buyer splits the order, and Dealker holds the money in escrow until delivery. You can see and run every step from here.</p>
+          <p className="text-sm text-muted-foreground">Vendors post what they need, matching sellers are alerted and quote, the buyer splits the order and pays from their Dealker wallet, and the money stays in escrow until delivery. You can see and run every step from here.</p>
         </div>
         <Button onClick={() => setCreating(true)}><Plus className="mr-1.5 h-4 w-4" />New requirement</Button>
       </div>
@@ -119,6 +131,7 @@ function B2bPage() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="h-auto flex-wrap justify-start gap-1 bg-muted/60 p-1">
           <TabsTrigger value="overview" className="px-3 py-1.5">Overview</TabsTrigger>
+          <TabsTrigger value="demand" className="px-3 py-1.5">Demand</TabsTrigger>
           <TabsTrigger value="requirements" className="px-3 py-1.5">Requirements {s && <span className="ml-1.5 rounded-full bg-background px-1.5 text-[11px] tabular-nums text-muted-foreground">{s.total_requirements}</span>}</TabsTrigger>
           <TabsTrigger value="orders" className="px-3 py-1.5">Orders & dispatch {s && <span className="ml-1.5 rounded-full bg-background px-1.5 text-[11px] tabular-nums text-muted-foreground">{s.orders}</span>}</TabsTrigger>
           <TabsTrigger value="disputes" className="px-3 py-1.5">Disputes {s && s.disputes > 0 && <span className="ml-1.5 rounded-full bg-red-100 px-1.5 text-[11px] font-medium tabular-nums text-red-700">{s.disputes}</span>}</TabsTrigger>
@@ -152,6 +165,7 @@ function B2bPage() {
           </div>
         </TabsContent>
 
+        <TabsContent value="demand" className="mt-4"><DemandTab onOpen={setOpenId} /></TabsContent>
         <TabsContent value="requirements" className="mt-4"><RequirementsTable onOpen={setOpenId} /></TabsContent>
         <TabsContent value="orders" className="mt-4"><OrdersTab key={orderStatus} initialStatus={orderStatus} /></TabsContent>
         <TabsContent value="disputes" className="mt-4"><OrdersTab key="disputes" initialStatus="DISPUTED" /></TabsContent>

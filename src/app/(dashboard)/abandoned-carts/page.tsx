@@ -41,8 +41,8 @@ import { StatCard } from "@/components/dashboard/StatCard"
 import { useAbandonedCarts, useAbandonedCartsSummary } from "@/hooks/useAbandonedCarts"
 import { useDebounce } from "@/hooks/useDebounce"
 import { formatINR, formatNumberShort, cn } from "@/lib/utils"
-import type { AbandonedCartFilters, AbandonedCartStatus } from "@/types/abandoned-cart.types"
-import { STATUS_CONFIG, priorityBand } from "@/components/abandoned-carts/constants"
+import type { AbandonedCartChannel, AbandonedCartFilters, AbandonedCartStatus } from "@/types/abandoned-cart.types"
+import { CHANNEL_CONFIG, STATUS_CONFIG, priorityBand } from "@/components/abandoned-carts/constants"
 import { AbandonedTimer } from "@/components/abandoned-carts/AbandonedTimer"
 import { AbandonedCartDetailDrawer } from "@/components/abandoned-carts/AbandonedCartDetailDrawer"
 import { SendReminderDialog } from "@/components/abandoned-carts/SendReminderDialog"
@@ -76,6 +76,10 @@ function AbandonedCartsContent() {
   const [statusFilter, setStatusFilter] = useState<AbandonedCartStatus | "ALL">(() => {
     const v = searchParams.get("status")
     return v && STATUS_OPTIONS.includes(v as AbandonedCartStatus) ? (v as AbandonedCartStatus) : "OPEN"
+  })
+  const [channelFilter, setChannelFilter] = useState<AbandonedCartChannel | "ALL">(() => {
+    const v = searchParams.get("channel")
+    return v === "B2B" || v === "B2C" ? v : "ALL"
   })
   const [minValue, setMinValue] = useState(() => searchParams.get("minValue") ?? "")
   const [maxValue, setMaxValue] = useState(() => searchParams.get("maxValue") ?? "")
@@ -148,6 +152,13 @@ function AbandonedCartsContent() {
     updateQuery({ status: next === "OPEN" ? undefined : next, page: undefined })
   }
 
+  const handleChannelChange = (v: string) => {
+    const next = v as AbandonedCartChannel | "ALL"
+    setChannelFilter(next)
+    setPageState(1)
+    updateQuery({ channel: next === "ALL" ? undefined : next, page: undefined })
+  }
+
   const handleSortByChange = (v: string) => {
     setSortBy(v as AbandonedCartFilters["sortBy"])
     setPageState(1)
@@ -195,6 +206,7 @@ function AbandonedCartsContent() {
     page,
     limit,
     status: statusFilter === "ALL" ? undefined : statusFilter,
+    ...(channelFilter !== "ALL" && { channel: channelFilter }),
     ...(debouncedSearch && { search: debouncedSearch }),
     ...(minValue && { minValue: Number(minValue) }),
     ...(maxValue && { maxValue: Number(maxValue) }),
@@ -211,6 +223,7 @@ function AbandonedCartsContent() {
   const clearFilters = () => {
     setSearch("")
     setStatusFilter("OPEN")
+    setChannelFilter("ALL")
     setMinValue("")
     setMaxValue("")
     setSortBy("abandoned_at")
@@ -220,6 +233,7 @@ function AbandonedCartsContent() {
     updateQuery({
       search: undefined,
       status: undefined,
+      channel: undefined,
       minValue: undefined,
       maxValue: undefined,
       sortBy: undefined,
@@ -245,7 +259,7 @@ function AbandonedCartsContent() {
     }
   }
 
-  const hasActiveFilters = search || statusFilter !== "OPEN" || minValue || maxValue
+  const hasActiveFilters = search || statusFilter !== "OPEN" || channelFilter !== "ALL" || minValue || maxValue
 
   return (
     <div className="space-y-4">
@@ -305,6 +319,17 @@ function AbandonedCartsContent() {
                 {s === "ALL" ? "All Statuses" : STATUS_CONFIG[s].label}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={channelFilter} onValueChange={handleChannelChange}>
+          <SelectTrigger className="h-9 w-[150px]" aria-label="Channel">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All channels</SelectItem>
+            <SelectItem value="B2C">B2C (retail)</SelectItem>
+            <SelectItem value="B2B">B2B (wholesale)</SelectItem>
           </SelectContent>
         </Select>
 
@@ -463,10 +488,24 @@ function AbandonedCartsContent() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="text-sm font-medium text-foreground truncate max-w-[180px]">
-                          {cart.userName || "—"}
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-medium text-foreground truncate max-w-[150px]">
+                            {cart.userName || "—"}
+                          </p>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0 border-0 font-semibold"
+                            style={{ backgroundColor: CHANNEL_CONFIG[cart.channel].bg, color: CHANNEL_CONFIG[cart.channel].text }}
+                          >
+                            {cart.channel}
+                          </Badge>
+                        </div>
                         <p className="text-xs text-muted-foreground">{cart.userPhone}</p>
+                        {cart.vendorNames.length > 0 && (
+                          <p className="text-[11px] text-muted-foreground truncate max-w-[220px]" title={cart.vendorNames.join(", ")}>
+                            {cart.vendorNames.join(", ")}
+                          </p>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-semibold text-sm">
@@ -502,6 +541,11 @@ function AbandonedCartsContent() {
                     </TableCell>
                     <TableCell className="text-center text-sm text-muted-foreground">
                       {cart.reminderCount}
+                      {cart.vendorReminderCount > 0 && (
+                        <span className="block text-[11px]" title="Reminders sent by vendors about their own items">
+                          +{cart.vendorReminderCount} vendor
+                        </span>
+                      )}
                     </TableCell>
                   </TableRow>
                 )

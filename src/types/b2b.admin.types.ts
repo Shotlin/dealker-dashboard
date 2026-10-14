@@ -14,11 +14,16 @@ export interface B2bRequirement {
   response_deadline: string; required_by: string | null; status: ReqStatus; cancel_reason: string | null; created_at: string
   quote_count?: number; best_price?: number | null; quantity_offered_total?: number
   order_value?: number; order_count?: number; dispatched_orders?: number
+  /** Demand details the buyer asked for (migration 207). */
+  storage?: string | null; target_price_max?: number | null; min_battery_health?: number | null
+  display_pref?: "ANY" | "ORIGINAL" | "GRADE_AB"; fulfilment_pref?: "ANY" | "PICKUP" | "DELIVERY"; is_urgent?: boolean
+  tags?: ("URGENT" | "BULK")[]; thumbnail_url?: string | null; view_count?: number; views?: { v: number; vendors: number }
 }
 
 export interface B2bQuote {
   id: string; seller_vendor_id: string; seller_name: string; seller_rating: number | null; quantity_offered: number; quantity_awarded: number
-  unit_price: number; condition: string; delivery_days: number; note: string | null
+  unit_price: number; condition: string; delivery_days: number; note: string | null; seller_city?: string | null
+  offer_state?: string; buyer_viewed_at?: string | null; seller_completed_orders?: number
   status: "SUBMITTED" | "SELECTED" | "PARTIALLY_SELECTED" | "NOT_SELECTED" | "WITHDRAWN" | "EXPIRED"; created_at: string
 }
 
@@ -29,6 +34,8 @@ export interface B2bOrder {
   payment_status: "UNPAID" | "ESCROW_HELD" | "RELEASED" | "REFUNDED"; courier_name: string | null; awb: string | null; tracking_url: string | null
   dispatched_at: string | null; received_at: string | null; received_quantity: number | null; receipt_note: string | null
   released_amount: number | null; dispute_status: string | null; dispute_reason: string | null; dispute_resolution: string | null; created_at: string
+  fulfilment_type?: "DELIVERY" | "PICKUP"; pickup_at?: string | null; pickup_note?: string | null; payment_method?: string | null; cancel_reason?: string | null
+  thumbnail_url?: string | null
 }
 
 export interface B2bEvent { type: string; actor_label: string | null; note: string | null; order_id: string | null; created_at: string }
@@ -44,4 +51,23 @@ export interface B2bRequirementDetail {
 export interface B2bSettings {
   defaultPercent: number
   vendors: { id: string; name: string; override: number | null; orders: number }[]
+}
+
+/** GET /admin/b2b/insights — what buyers are asking for and how well it is served. */
+export interface DemandInsights {
+  days: number
+  funnel: {
+    posted: number; quoted: number; awarded: number; paid: number; completed: number
+    units_needed: number; units_awarded: number; fill_rate: number; urgent: number; bulk: number
+  }
+  avgMinutesToFirstOffer: number | null
+  reach: { vendors_viewed: number; views: number; dismissed: number }
+  topModels: {
+    model: string; example: string; brand: string | null; requests: number; units_needed: number; units_awarded: number
+    fill_rate: number; avg_target: number | null; offers: number; thumbnail_url: string | null
+  }[]
+  unserved: {
+    id: string; requirement_number: string; product_name: string; quantity_needed: number; target_price: number | null; target_price_max: number | null
+    created_at: string; response_deadline: string; status: ReqStatus; is_urgent: boolean; buyer_name: string; view_count: number
+  }[]
 }

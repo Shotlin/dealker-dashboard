@@ -1,8 +1,17 @@
 export type AbandonedCartStatus = "OPEN" | "RECOVERED" | "CONVERTED" | "EXPIRED"
 
+/** B2C = retail cart, B2B = wholesale cart. */
+export type AbandonedCartChannel = "B2B" | "B2C"
+
 /** Row shape for the Abandoned Carts list table. */
 export interface AbandonedCart {
   id: string
+  priceMode: "retail" | "wholesale"
+  channel: AbandonedCartChannel
+  /** Names of every vendor that has an item in this cart. */
+  vendorNames: string[]
+  /** Reminders sent by vendors about their own items. */
+  vendorReminderCount: number
   userId: string
   userName: string | null
   userPhone: string
@@ -23,6 +32,7 @@ export interface AbandonedCartItem {
   productId: string | null
   shopId: string | null
   shopName?: string | null
+  vendorName?: string | null
   productName: string
   thumbnailUrl: string | null
   unit: string | null
@@ -33,8 +43,8 @@ export interface AbandonedCartItem {
 }
 
 export interface AbandonedCartEvent {
-  eventType: "DETECTED" | "RESWEPT" | "RECOVERED" | "CONVERTED" | "EXPIRED" | "REMINDER_SENT" | "COUPON_ISSUED"
-  actorType: "SYSTEM" | "ADMIN" | "CUSTOMER"
+  eventType: "DETECTED" | "RESWEPT" | "RECOVERED" | "CONVERTED" | "EXPIRED" | "REMINDER_SENT" | "COUPON_ISSUED" | "VENDOR_REMINDER_SENT"
+  actorType: "SYSTEM" | "ADMIN" | "CUSTOMER" | "VENDOR"
   actorId: string | null
   metadata: Record<string, unknown>
   createdAt: string
@@ -45,6 +55,17 @@ export interface AbandonedCartNotificationEntry {
   title: string | null
   body: string | null
   sentBy: string | null
+  createdAt: string
+}
+
+export interface AbandonedCartVendorReminder {
+  id: string
+  vendorId: string
+  vendorName: string
+  template: string
+  title: string | null
+  body: string | null
+  productCount: number
   createdAt: string
 }
 
@@ -83,6 +104,8 @@ export interface AbandonedCartDetail extends Omit<AbandonedCart, "userName" | "u
   items: AbandonedCartItem[]
   events: AbandonedCartEvent[]
   notificationsSent: AbandonedCartNotificationEntry[]
+  /** Reminders vendors sent about their own items (platform audit trail). */
+  vendorReminders: AbandonedCartVendorReminder[]
   couponsIssued: AbandonedCartCouponEntry[]
 }
 
@@ -108,6 +131,7 @@ export interface AbandonedCartFilters {
   limit?: number
   search?: string
   status?: AbandonedCartStatus | "ALL"
+  channel?: AbandonedCartChannel | "ALL"
   minValue?: number
   maxValue?: number
   sortBy?: "priority_score" | "cart_value" | "abandoned_at" | "item_count"
@@ -116,6 +140,8 @@ export interface AbandonedCartFilters {
 
 export interface AbandonedCartSummary {
   openCount: number
+  openB2b: number
+  openB2c: number
   openValue: number
   avgCartValue: number
   recoveredToday: number

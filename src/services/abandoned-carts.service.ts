@@ -18,6 +18,7 @@ export async function getAbandonedCarts(filters: AbandonedCartFilters = {}) {
   if (filters.limit) params.limit = filters.limit
   if (filters.search) params.search = filters.search
   if (filters.status) params.status = filters.status
+  if (filters.channel) params.channel = filters.channel
   if (filters.minValue !== undefined) params.minValue = filters.minValue
   if (filters.maxValue !== undefined) params.maxValue = filters.maxValue
   if (filters.sortBy) params.sortBy = filters.sortBy

@@ -29,7 +29,7 @@ import {
 } from "lucide-react"
 import { useAbandonedCartDetail } from "@/hooks/useAbandonedCarts"
 import { formatINR, formatDateTime, cn } from "@/lib/utils"
-import { STATUS_CONFIG, priorityBand } from "./constants"
+import { CHANNEL_CONFIG, STATUS_CONFIG, priorityBand } from "./constants"
 import { AbandonedTimer } from "./AbandonedTimer"
 import { SendReminderDialog } from "./SendReminderDialog"
 import { SendCouponDialog } from "./SendCouponDialog"
@@ -49,6 +49,7 @@ const EVENT_ICONS: Record<string, React.ReactNode> = {
   EXPIRED: <XCircle className="h-3.5 w-3.5" />,
   REMINDER_SENT: <Bell className="h-3.5 w-3.5" />,
   COUPON_ISSUED: <Ticket className="h-3.5 w-3.5" />,
+  VENDOR_REMINDER_SENT: <Bell className="h-3.5 w-3.5" />,
 }
 
 export function AbandonedCartDetailDrawer({ cartId, open, onClose }: AbandonedCartDetailDrawerProps) {
@@ -89,6 +90,15 @@ export function AbandonedCartDetailDrawer({ cartId, open, onClose }: AbandonedCa
                         style={{ backgroundColor: status.bg, color: status.text }}
                       >
                         {status.label}
+                      </Badge>
+                    )}
+                    {cart.channel && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs px-2.5 py-1 border-0 font-medium"
+                        style={{ backgroundColor: CHANNEL_CONFIG[cart.channel].bg, color: CHANNEL_CONFIG[cart.channel].text }}
+                      >
+                        {CHANNEL_CONFIG[cart.channel].label}
                       </Badge>
                     )}
                     {band && (
@@ -218,8 +228,10 @@ export function AbandonedCartDetailDrawer({ cartId, open, onClose }: AbandonedCa
                               {item.quantity} × {formatINR(item.unitPrice)}
                               {item.unit && ` · ${item.unit}`}
                             </p>
-                            {item.shopName && (
-                              <p className="text-[11px] text-muted-foreground truncate">Sold by {item.shopName}</p>
+                            {(item.vendorName || item.shopName) && (
+                              <p className="text-[11px] text-muted-foreground truncate">
+                                Sold by {item.vendorName ?? item.shopName}
+                              </p>
                             )}
                           </div>
                           <span className="text-sm font-semibold">{formatINR(item.lineTotal)}</span>
@@ -335,6 +347,34 @@ export function AbandonedCartDetailDrawer({ cartId, open, onClose }: AbandonedCa
                               <p className="font-medium text-foreground">{n.title}</p>
                               {n.body && <p className="text-muted-foreground mt-0.5">{n.body}</p>}
                               <p className="text-muted-foreground mt-1">{formatDateTime(n.createdAt)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {cart.vendorReminders.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          Vendor Reminders ({cart.vendorReminders.length})
+                        </h4>
+                        <div className="space-y-2">
+                          {cart.vendorReminders.map((r) => (
+                            <div key={r.id} className="text-xs rounded-lg bg-muted/40 p-2.5">
+                              <p className="font-medium text-foreground">
+                                {r.vendorName}
+                                <span className="font-normal text-muted-foreground">
+                                  {" "}
+                                  · {r.productCount} {r.productCount === 1 ? "product" : "products"}
+                                </span>
+                              </p>
+                              {r.title && <p className="text-foreground mt-0.5">{r.title}</p>}
+                              {r.body && <p className="text-muted-foreground mt-0.5">{r.body}</p>}
+                              <p className="text-muted-foreground mt-1">{formatDateTime(r.createdAt)}</p>
                             </div>
                           ))}
                         </div>
