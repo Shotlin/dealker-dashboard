@@ -65,6 +65,12 @@ describe("middleware — unauthenticated", () => {
     expect(res.headers.get("location")).toBeNull()
   })
 
+  it.each(["/privacy", "/terms", "/about"])("serves the public page %s without a login", (pathname) => {
+    const res = middleware(makeRequest({ pathname }))
+    expect(res.headers.get("location")).toBeNull()
+    expect(res.status).toBe(200)
+  })
+
   it("skips Next.js internals and API routes regardless of auth", () => {
     for (const pathname of ["/_next/static/foo.js", "/api/v1/health"]) {
       const res = middleware(makeRequest({ pathname }))

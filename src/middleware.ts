@@ -37,7 +37,7 @@ import type { NextRequest } from "next/server"
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Routes that don't require authentication. */
-const PUBLIC_ROUTES = ["/login"] as const
+const PUBLIC_ROUTES = ["/login", "/privacy", "/terms", "/about"] as const
 
 /**
  * Routes a vendor without an active shop (and ≥2 assignments) is allowed to
