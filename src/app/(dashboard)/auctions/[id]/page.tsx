@@ -161,6 +161,39 @@ export default function AuctionControlRoom() {
         </section>
       </div>
 
+      {(a.video_url || a.qc_report || (a.images?.length ?? 0) > 0) && (
+        <section className="rounded-xl border bg-card p-5" aria-label="Seller media and QC">
+          <h2 className="mb-2 text-sm font-semibold">What bidders see: photos, video &amp; seller QC {typeof a.view_count === "number" && <span className="ml-2 text-xs font-normal text-muted-foreground">{a.view_count} views</span>}</h2>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div>
+              <p className="mb-1 text-xs text-muted-foreground">Photos ({a.images?.length ?? 0})</p>
+              <div className="flex flex-wrap gap-2">{(a.images ?? []).slice(0, 8).map((u: string) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <a key={u} href={u} target="_blank" rel="noreferrer"><img src={u} alt="" className="h-16 w-16 rounded-md border object-cover" /></a>
+              ))}</div>
+            </div>
+            <div>
+              <p className="mb-1 text-xs text-muted-foreground">Video</p>
+              {a.video_url ? <video src={a.video_url} controls className="max-h-40 w-full rounded-md border bg-black" /> : <p className="text-sm text-muted-foreground">No video added.</p>}
+            </div>
+            <div>
+              <p className="mb-1 text-xs text-muted-foreground">Seller QC report (self-declared)</p>
+              {a.qc_report ? (
+                <ul className="space-y-0.5 text-sm">
+                  {Object.entries(a.qc_report.checks ?? {}).map(([k, v]) => <li key={k}>{v ? "✓" : "✗"} {k}</li>)}
+                  {Object.entries(a.qc_report.checklist ?? {}).map(([k, v]) => <li key={k}>✓ {k}: <span className="text-muted-foreground">{v}</span></li>)}
+                  {a.qc_report.notes && <li className="pt-1 text-xs text-muted-foreground">{a.qc_report.notes}</li>}
+                  {(a.qc_report.photos?.length ?? 0) > 0 && <li className="flex flex-wrap gap-2 pt-1">{a.qc_report.photos!.map((u: string) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <a key={u} href={u} target="_blank" rel="noreferrer"><img src={u} alt="" className="h-12 w-12 rounded-md border object-cover" /></a>
+                  ))}</li>}
+                </ul>
+              ) : <p className="text-sm text-muted-foreground">No QC report added.</p>}
+            </div>
+          </div>
+        </section>
+      )}
+
       {["AWAITING_PAYMENT", "SOLD"].includes(status) && a.winning_bid != null && (
         <section className="rounded-xl border border-violet-300 bg-violet-50/50 p-5 dark:bg-violet-950/20" aria-label="Winner and payment">
           <h2 className="mb-1 text-sm font-semibold">{status === "SOLD" ? "Sold" : "Waiting for the winner to pay"}{a.offer_round > 1 && " · second-chance offer"}</h2>

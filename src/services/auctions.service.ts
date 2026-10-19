@@ -15,7 +15,13 @@ export type AuctionStatus =
   | "DRAFT" | "PENDING_APPROVAL" | "REJECTED" | "SCHEDULED" | "LIVE" | "PAUSED"
   | "AWAITING_PAYMENT" | "SOLD" | "UNSOLD" | "CANCELLED" | "DEFAULTED"
 
+export interface AuctionQcReport { checklist?: Record<string, string>; checks?: Record<string, boolean>; photos?: string[]; notes?: string }
+
 export interface Auction {
+  video_url?: string | null
+  qc_report?: AuctionQcReport | null
+  view_count?: number
+  images?: string[]
   id: string
   auction_number: string
   product_id: string
