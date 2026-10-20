@@ -43,6 +43,12 @@ const TEXT_FIELDS: Record<TabbedVariant, Array<[string, string]>> = {
     ["see_all_label", "See All button label (empty = hide)"],
     ["empty_text", "Text when a tab has no products"],
   ],
+  price_shop: [
+    ["title", "Title"],
+    ["badge_text", "Badge next to the title (e.g. “50% OFF”, empty = hide)"],
+    ["see_all_label", "See all button label (empty = hide)"],
+    ["empty_text", "Text when a price range has no products"],
+  ],
   collection_showcase: [
     ["title", "Title (used when there is no title image)"],
     ["subtitle", "Line under the title (e.g. “Celebrate the special bond”)"],
@@ -58,6 +64,16 @@ const COLOR_FIELDS: Record<TabbedVariant, Array<[string, string]>> = {
     ["accent_soft_color", "Accent tint (selected tab / chip fill)"],
     ["text_color", "Text"],
     ["muted_color", "Secondary text"],
+  ],
+  price_shop: [
+    ["bg_color", "Section background"],
+    ["text_color", "Text"],
+    ["accent_color", "Selected price text"],
+    ["pill_color", "Price box"],
+    ["pill_selected_color", "Selected price box"],
+    ["indicator_color", "Underline under the selected box"],
+    ["badge_bg_color", "Badge background"],
+    ["badge_text_color", "Badge text"],
   ],
   collection_showcase: [
     ["bg_color", "Section background"],
@@ -81,7 +97,8 @@ export default function StealDealsEditor({
   config,
   onChange,
 }: StealDealsEditorProps) {
-  const collection = variant === "collection_showcase";
+  const collection = variant !== "steal_deals";
+  const priceShop = variant === "price_shop";
   const tabs = stealTabs(config);
   const { data: categories } = useCategories();
   const available = useMemo(
@@ -102,6 +119,7 @@ export default function StealDealsEditor({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
+        {!priceShop && (
         <ThemeImageUploader
           label="Title image (optional)"
           kind="banner"
@@ -109,6 +127,7 @@ export default function StealDealsEditor({
           value={stealString(config, "title_image_url", variant) || null}
           onChange={(url) => patch("title_image_url", url ?? "")}
         />
+        )}
         {TEXT_FIELDS[variant].map(([key, label]) => (
           <div key={key} className="space-y-2">
             <Label className="text-xs font-medium text-slate-600">
@@ -160,6 +179,7 @@ export default function StealDealsEditor({
             index={i}
             tab={tab}
             collection={collection}
+            priceShop={priceShop}
             total={tabs.length}
             expanded={open === i}
             categories={available}
@@ -200,6 +220,7 @@ export default function StealDealsEditor({
 interface TabCardProps {
   index: number;
   collection: boolean;
+  priceShop: boolean;
   tab: StealTab;
   total: number;
   expanded: boolean;
@@ -213,6 +234,7 @@ interface TabCardProps {
 function TabCard({
   index,
   collection,
+  priceShop,
   tab,
   total,
   expanded,
@@ -279,18 +301,18 @@ function TabCard({
               </Label>
               <Input
                 value={tab.label}
-                placeholder="Trending, ₹99 …"
+                placeholder={priceShop ? "Under" : "Trending, ₹99 …"}
                 onChange={(e) => onChange({ label: e.target.value })}
               />
             </div>
-            {!collection && (
+            {(!collection || priceShop) && (
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-slate-600">
-                  Small text under it
+                  {priceShop ? "Price shown big (e.g. ₹499)" : "Small text under it"}
                 </Label>
                 <Input
                   value={tab.sub_label ?? ""}
-                  placeholder="Store"
+                  placeholder={priceShop ? "₹499" : "Store"}
                   onChange={(e) => onChange({ sub_label: e.target.value })}
                 />
               </div>

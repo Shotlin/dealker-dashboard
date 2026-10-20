@@ -3,6 +3,10 @@ import {
   BadgePercent,
   Flame,
   Sparkles,
+  Store,
+  Tags,
+  PanelTop,
+  LayoutDashboard,
   Gavel,
   History,
   Timer,
@@ -19,7 +23,8 @@ import {
 } from "lucide-react"
 import type { SectionType, ThemeStoreKey } from "@/types/theme.types"
 import { DEALER_BLOCK_DEFAULTS } from "./dealerBlocks"
-import { COLLECTION_DEFAULTS, STEAL_DEALS_DEFAULTS } from "./stealDeals"
+import { COLLECTION_DEFAULTS, PRICE_SHOP_DEFAULTS, STEAL_DEALS_DEFAULTS } from "./stealDeals"
+import { CATEGORY_HUB_DEFAULTS } from "./categoryHub"
 
 /**
  * Section template group — drives Section Library filtering and grouping.
@@ -726,6 +731,62 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     tags: ["Festival", "New"],
     dataSources: ["manual_products"],
     useCase: "Run a themed collection with its own title image, colours, tabs, categories and products.",
+  },
+  {
+    id: "brand_spotlight",
+    type: "brand_spotlight",
+    label: "Brand Spotlight",
+    icon: Store,
+    description: "A brand header (logo, name, tagline) with one featured product in a tinted card, then “More items from the brand” as product boxes.",
+    maxPerTab: 6,
+    defaultConfig: { ...DEALER_BLOCK_DEFAULTS.brand_spotlight },
+    accentClassName: "bg-sky-100 text-sky-700 border-sky-200",
+    group: "offers",
+    tags: ["Deals", "New"],
+    dataSources: ["manual_products"],
+    useCase: "Give a brand (boAt, Samsung, Anker…) its own block: pick its products; the first one is featured.",
+  },
+  {
+    id: "price_shop",
+    type: "price_shop",
+    label: "Shop by Price",
+    icon: Tags,
+    description: "“Under ₹499 / ₹999 …” price boxes; tapping one shows the products up to that price as Dealker product boxes with a See all button.",
+    maxPerTab: 4,
+    defaultConfig: JSON.parse(JSON.stringify(PRICE_SHOP_DEFAULTS)),
+    accentClassName: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    group: "offers",
+    tags: ["Deals", "New"],
+    dataSources: ["manual_products", "discounted"],
+    useCase: "Let customers shop headphones, chargers, phones… by budget.",
+  },
+  {
+    id: "category_hub",
+    type: "category_hub",
+    label: "Category Hub",
+    icon: LayoutDashboard,
+    description: "Text tabs (Price Drop, Gourmet, Home…). Each tab has a row of tile cards and a titled category grid with a See All button.",
+    maxPerTab: 3,
+    defaultConfig: JSON.parse(JSON.stringify(CATEGORY_HUB_DEFAULTS)),
+    accentClassName: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    group: "categories",
+    tags: ["New"],
+    dataSources: ["static"],
+    useCase: "Give customers a tabbed doorway into your categories.",
+  },
+  {
+    id: "banner_rail",
+    type: "banner_rail",
+    label: "Banner Rail",
+    icon: PanelTop,
+    description: "Header artwork that fades into a tinted panel with Dealker product boxes and a See All button.",
+    maxPerTab: 6,
+    defaultConfig: { ...DEALER_BLOCK_DEFAULTS.banner_rail },
+    accentClassName: "bg-sky-100 text-sky-700 border-sky-200",
+    group: "products",
+    tags: ["New"],
+    dataSources: ["manual_products"],
+    useCase: "Show a brand or campaign banner with its products underneath.",
   },
   {
     id: "recent_recommended",

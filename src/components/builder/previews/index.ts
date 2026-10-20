@@ -11,6 +11,7 @@ import DealerBlocksPreview from "./DealerBlocksPreview"
 import FeeStripPreview from "./FeeStripPreview"
 import MosaicPreview from "./MosaicPreview"
 import ProductGridPreview from "./ProductGridPreview"
+import CategoryHubPreview from "./CategoryHubPreview"
 import SpacerPreview from "./SpacerPreview"
 import StealDealsPreview from "./StealDealsPreview"
 import TextHeaderPreview from "./TextHeaderPreview"
@@ -45,6 +46,10 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   live_auction: DealerBlocksPreview,
   deal_of_day: DealerBlocksPreview,
   recent_recommended: DealerBlocksPreview,
+  brand_spotlight: DealerBlocksPreview,
+  banner_rail: DealerBlocksPreview,
+  price_shop: StealDealsPreview,
+  category_hub: CategoryHubPreview,
   steal_deals: StealDealsPreview,
   collection_showcase: StealDealsPreview,
 }

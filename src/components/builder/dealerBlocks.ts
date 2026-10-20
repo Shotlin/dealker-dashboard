@@ -8,12 +8,16 @@ import type { SectionType } from "@/types/theme.types";
 export type DealerBlockType =
   | "live_auction"
   | "deal_of_day"
-  | "recent_recommended";
+  | "recent_recommended"
+  | "brand_spotlight"
+  | "banner_rail";
 
 export const DEALER_BLOCK_TYPES: DealerBlockType[] = [
   "live_auction",
   "deal_of_day",
   "recent_recommended",
+  "brand_spotlight",
+  "banner_rail",
 ];
 
 export function isDealerBlock(
@@ -64,6 +68,30 @@ export const DEALER_BLOCK_DEFAULTS: Record<
     view_all_text_color: "#1F4FE0",
     panel_color: "#FFFFFF",
     grab_button_color: "#1B5BF2",
+  },
+  banner_rail: {
+    header_image_url: "",
+    title: "",
+    title_color: "#111111",
+    panel_color: "#DCE9F8",
+    see_all_label: "See All",
+  },
+  brand_spotlight: {
+    brand_name: "",
+    brand_logo_url: "",
+    tagline: "Limited Time Deals",
+    more_title: "More Items From the Brand",
+    add_label: "ADD",
+    bg_color: "#E6EEFB",
+    panel_color: "#FFFFFF",
+    featured_start_color: "#F3F7FF",
+    featured_end_color: "#D5E3FA",
+    accent_color: "#E8175D",
+    text_color: "#111111",
+    muted_color: "#6B7280",
+    price_badge_color: "#FFE53B",
+    price_badge_text_color: "#111111",
+    off_text_color: "#2E8B2E",
   },
   recent_recommended: {
     left_title: "Recently Viewed",
@@ -131,6 +159,40 @@ export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
     col("panel_color", "Card panel background"),
     txt("button_label", "Card button label"),
     col("grab_button_color", "Card button colour"),
+  ],
+  banner_rail: [
+    {
+      key: "header_image_url",
+      label: "Header image",
+      kind: "image",
+      hint: "Wide artwork, about 1148 × 360 px (e.g. the brand name over its products). It fades into the panel colour below it.",
+    },
+    txt("title", "Title (only used when there is no header image)"),
+    col("title_color", "Title colour"),
+    col("panel_color", "Panel colour (behind the products)"),
+    txt("see_all_label", "See All button label (empty = hide)"),
+  ],
+  brand_spotlight: [
+    {
+      key: "brand_logo_url",
+      label: "Brand logo",
+      kind: "image",
+      hint: "Square logo on a white tile, about 300 × 300 px (PNG with transparent background works best).",
+    },
+    txt("brand_name", "Brand name (empty = the first product's brand)"),
+    txt("tagline", "Line under the brand name"),
+    txt("more_title", "Heading above the product row"),
+    txt("add_label", "Add button label"),
+    col("bg_color", "Section background (the tint around the card)"),
+    col("panel_color", "White panel"),
+    col("featured_start_color", "Featured product gradient — start"),
+    col("featured_end_color", "Featured product gradient — end"),
+    col("accent_color", "Add button / accent"),
+    col("text_color", "Text"),
+    col("muted_color", "Secondary text"),
+    col("price_badge_color", "Price badge"),
+    col("price_badge_text_color", "Price badge text"),
+    col("off_text_color", "“₹N OFF” text"),
   ],
   recent_recommended: [
     txt("left_title", "Left card title"),

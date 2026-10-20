@@ -93,6 +93,16 @@ export default function DealerBlockEditor({ type, config, onChange }: DealerBloc
           Each Deal of the Day has its own background, end time and products. Pick the products under “Product source” (leave it empty to show the store&apos;s current deals — then two sections would show the same ones). You can add several of these to any store or tab.
         </p>
       )}
+      {type === "banner_rail" && (
+        <p className="text-xs text-slate-500">
+          Pick the products under “Product source”. “See All” opens the category of the first product.
+        </p>
+      )}
+      {type === "brand_spotlight" && (
+        <p className="text-xs text-slate-500">
+          Pick the products under “Product source” (Manual works best): the <b>first</b> product is the big featured card, the rest fill “More items from the brand”. Up to 12 products.
+        </p>
+      )}
       {type === "recent_recommended" && (
         <p className="text-xs text-slate-500">
           “Recently Viewed” uses the customer&apos;s own history; “Recommended” uses the product source (default: trending).

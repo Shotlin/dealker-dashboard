@@ -22,6 +22,54 @@ function StealDealsPreview({ section, isSelected, onClick, products }: PreviewPr
   const first = tabs[0]
   const items = (products ?? []).slice(0, 3)
 
+  if (variant === "price_shop") {
+    const priceTabs = stealTabs(config)
+    return (
+      <button
+        type="button"
+        className={cn(styles.sectionSlot, styles.sectionSlotHover, isSelected && styles.sectionSlotSelected)}
+        onClick={onClick}
+        aria-pressed={isSelected}
+      >
+        <div style={{ padding: "6px 8px" }}>
+          <div style={{ background: s("bg_color"), borderRadius: 14, padding: "10px 10px 8px", color: s("text_color"), textAlign: "left" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 14, fontWeight: 800 }}>{s("title")}</span>
+              {s("badge_text") && (
+                <span style={{ background: s("badge_bg_color"), color: s("badge_text_color"), borderRadius: 5, fontSize: 8, fontWeight: 800, fontStyle: "italic", padding: "2px 6px" }}>
+                  {s("badge_text")}
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+              {priceTabs.slice(0, 4).map((t, i) => (
+                <div key={i} style={{ flex: 1, height: 38, borderRadius: 9, background: i === 0 ? s("pill_selected_color") : s("pill_color"), color: i === 0 ? s("accent_color") : s("text_color"), display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontStyle: "italic" }}>
+                  <span style={{ fontSize: 7.5 }}>{t.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 800 }}>{t.sub_label}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ height: 2, background: s("indicator_color"), width: "25%", marginTop: 5 }} />
+            <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+              {[0, 1, 2].map((i) => {
+                const p = (products ?? [])[i]
+                return (
+                  <div key={i} style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ aspectRatio: "1", background: "#F6F6F6", borderRadius: 6, overflow: "hidden" }}>
+                      {p?.thumbnail_url && <img src={p.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
+                    </div>
+                    <div style={{ fontSize: 8, fontWeight: 800, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p?.name ?? "Product"}</div>
+                    <div style={{ fontSize: 8.5, fontWeight: 800 }}>{p ? inr(p.sale_price ?? p.price) : "₹—"}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </button>
+    )
+  }
+
   return (
     <button
       type="button"

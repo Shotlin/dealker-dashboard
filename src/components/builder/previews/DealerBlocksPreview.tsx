@@ -347,6 +347,84 @@ function DealerBlocksPreview({
         </div>
       </div>
     );
+  } else if (type === "banner_rail") {
+    body = (
+      <div style={{ background: v("panel_color"), borderRadius: 16, overflow: "hidden", textAlign: "left", paddingBottom: 8 }}>
+        {v("header_image_url") ? (
+          <img src={v("header_image_url")} alt="" style={{ width: "100%", aspectRatio: "1148 / 360", objectFit: "cover", display: "block" }} />
+        ) : (
+          <div style={{ padding: "10px 12px 0", fontSize: 14, fontWeight: 800, color: v("title_color") }}>{v("title") || "Banner title"}</div>
+        )}
+        <div style={{ display: "flex", gap: 6, padding: "6px 8px 0" }}>
+          {[0, 1, 2].map((i) => {
+            const p = (products ?? [])[i];
+            return (
+              <div key={i} style={{ flex: 1, minWidth: 0, background: "#fff", borderRadius: 8, padding: 4 }}>
+                <div style={{ aspectRatio: "1", background: "#F6F6F6", borderRadius: 5, overflow: "hidden" }}>
+                  {p?.thumbnail_url && <img src={p.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
+                </div>
+                <div style={{ fontSize: 8, fontWeight: 800, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p?.name ?? "Product"}</div>
+                <div style={{ fontSize: 8.5, fontWeight: 800 }}>{p ? inr(p.sale_price ?? p.price) : "₹—"}</div>
+              </div>
+            );
+          })}
+        </div>
+        {v("see_all_label") && (
+          <div style={{ margin: "7px 8px 0", background: "#F3F4F6", border: "1px solid #E2E4E8", borderRadius: 8, textAlign: "center", fontSize: 9, fontWeight: 800, padding: "5px 0" }}>
+            {v("see_all_label")} ▸
+          </div>
+        )}
+      </div>
+    );
+  } else if (type === "brand_spotlight") {
+    const first = items[0];
+    const more = (products ?? []).slice(1, 4);
+    const brand = v("brand_name") || first?.brand || "Brand";
+    body = (
+      <div style={{ background: v("bg_color"), borderRadius: 14, padding: "8px 0", color: v("text_color"), textAlign: "left" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 10px" }}>
+          <div style={{ width: 30, height: 30, borderRadius: 9, background: "#fff", border: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            {v("brand_logo_url") ? (
+              <img src={v("brand_logo_url")} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            ) : (
+              <b style={{ fontSize: 13 }}>{String(brand).slice(0, 1).toUpperCase()}</b>
+            )}
+          </div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.1 }}>{brand}</div>
+            <div style={{ fontSize: 8, color: v("muted_color") }}>{v("tagline")}</div>
+          </div>
+        </div>
+        <div style={{ background: v("panel_color"), borderRadius: 12, margin: "7px 7px 0", padding: 6 }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", background: `linear-gradient(90deg, ${v("featured_start_color")}, ${v("featured_end_color")})`, borderRadius: 10, padding: 5 }}>
+            <div style={{ width: 44, height: 46, background: "#fff", borderRadius: 7, overflow: "hidden" }}>
+              {first?.thumbnail_url && <img src={first.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 8.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{first?.name ?? "Featured product"}</div>
+              <span style={{ background: v("price_badge_color"), color: v("price_badge_text_color"), border: "1px solid #111", borderRadius: 4, fontSize: 9, fontWeight: 800, padding: "0 4px" }}>
+                {first ? inr(first.sale_price ?? first.price) : "₹—"}
+              </span>
+            </div>
+            <span style={{ border: `1.2px solid ${v("accent_color")}`, color: v("accent_color"), borderRadius: 6, fontSize: 8, fontWeight: 800, padding: "3px 7px", background: "#fff" }}>{v("add_label")}</span>
+          </div>
+          <div style={{ fontSize: 9, fontWeight: 800, margin: "7px 2px 4px" }}>{v("more_title")}</div>
+          <div style={{ display: "flex", gap: 5 }}>
+            {[0, 1, 2].map((i) => {
+              const p = more[i];
+              return (
+                <div key={i} style={{ flex: 1, minWidth: 0, border: "1px solid #eee", borderRadius: 8, padding: 3 }}>
+                  <div style={{ aspectRatio: "1", background: "#F6F6F6", borderRadius: 5, overflow: "hidden" }}>
+                    {p?.thumbnail_url && <img src={p.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
+                  </div>
+                  <div style={{ fontSize: 7.5, fontWeight: 800, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p?.name ?? "Product"}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
   } else {
     const card = (title: string, list: typeof items) => (
       <div

@@ -2,6 +2,7 @@
 
 import DealerBlockEditor from "./editors/DealerBlockEditor";
 import StealDealsEditor from "./editors/StealDealsEditor";
+import CategoryHubEditor from "./editors/CategoryHubEditor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { ImagePlus, Loader2, Plus, Star, Trash2, X } from "lucide-react";
@@ -58,6 +59,8 @@ const MERCH_BINDING_SECTION_TYPES = new Set([
   "arched_product_showcase",
   "deal_of_day",
   "recent_recommended",
+  "brand_spotlight",
+  "banner_rail",
 ]);
 
 export default function PropertyEditor({
@@ -187,8 +190,11 @@ function StyleEditorRouter({
       return <TextHeaderEditor config={config} onChange={onChange} />;
     case "spacer":
       return <SpacerEditor config={config} onChange={onChange} />;
+    case "category_hub":
+      return <CategoryHubEditor config={config} onChange={onChange} />;
     case "steal_deals":
     case "collection_showcase":
+    case "price_shop":
       return (
         <StealDealsEditor
           variant={section.section_type}
@@ -199,6 +205,8 @@ function StyleEditorRouter({
     case "live_auction":
     case "deal_of_day":
     case "recent_recommended":
+    case "brand_spotlight":
+    case "banner_rail":
       return (
         <DealerBlockEditor
           type={section.section_type}

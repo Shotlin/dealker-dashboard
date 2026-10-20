@@ -56,9 +56,32 @@ export const COLLECTION_DEFAULTS: Record<string, unknown> = {
   ] satisfies StealTab[],
 }
 
-export type TabbedVariant = "steal_deals" | "collection_showcase"
+/** Same keys and defaults as `kPriceShopDefaults` in the Flutter app. */
+export const PRICE_SHOP_DEFAULTS: Record<string, unknown> = {
+  title: "Shop by price",
+  badge_text: "50% OFF",
+  see_all_label: "See all",
+  empty_text: "No products in this range yet",
+  bg_color: "#FFFFFF",
+  text_color: "#1F2937",
+  accent_color: "#2B2FD6",
+  pill_color: "#F0F0F0",
+  pill_selected_color: "#DDE6FF",
+  badge_bg_color: "#DDE6FF",
+  badge_text_color: "#2B2FD6",
+  indicator_color: "#1F1B3A",
+  tabs: [
+    { label: "Under", sub_label: "₹499", max_price: 499, chips: [], category_ids: [], product_ids: [] },
+    { label: "Under", sub_label: "₹999", max_price: 999, chips: [], category_ids: [], product_ids: [] },
+    { label: "Under", sub_label: "₹1,999", max_price: 1999, chips: [], category_ids: [], product_ids: [] },
+    { label: "Under", sub_label: "₹4,999", max_price: 4999, chips: [], category_ids: [], product_ids: [] },
+  ] satisfies StealTab[],
+}
+
+export type TabbedVariant = "steal_deals" | "collection_showcase" | "price_shop"
 
 export function tabbedDefaults(v: TabbedVariant): Record<string, unknown> {
+  if (v === "price_shop") return PRICE_SHOP_DEFAULTS
   return v === "steal_deals" ? STEAL_DEALS_DEFAULTS : COLLECTION_DEFAULTS
 }
 
