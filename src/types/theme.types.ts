@@ -337,6 +337,7 @@ export const SECTION_TYPES = [
   "live_auction",
   "deal_of_day",
   "recent_recommended",
+  "steal_deals",
 ] as const
 
 export type SectionType = typeof SECTION_TYPES[number]

@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react"
 import {
   BadgePercent,
+  Flame,
   Gavel,
   History,
   Timer,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react"
 import type { SectionType, ThemeStoreKey } from "@/types/theme.types"
 import { DEALER_BLOCK_DEFAULTS } from "./dealerBlocks"
+import { STEAL_DEALS_DEFAULTS } from "./stealDeals"
 
 /**
  * Section template group — drives Section Library filtering and grouping.
@@ -695,6 +697,20 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     tags: ["Deals"],
     dataSources: ["manual_products", "discounted"],
     useCase: "Run timed deals (Diwali, Flash Sale, Deal of the Day…), each with its own art, end time and products.",
+  },
+  {
+    id: "steal_deals",
+    type: "steal_deals",
+    label: "Steal Deals",
+    icon: Flame,
+    description: "Price tabs (Trending, ₹99 Store, ₹199 Store…), category chips that change per tab, and a product rail with a + button. Every tab, chip and product is set here.",
+    maxPerTab: 4,
+    defaultConfig: JSON.parse(JSON.stringify(STEAL_DEALS_DEFAULTS)),
+    accentClassName: "bg-rose-100 text-rose-700 border-rose-200",
+    group: "offers",
+    tags: ["Deals", "New"],
+    dataSources: ["manual_products", "discounted"],
+    useCase: "Run \"Add any 10 items\" style deals: pick price tabs, the categories shown under each tab and the products.",
   },
   {
     id: "recent_recommended",

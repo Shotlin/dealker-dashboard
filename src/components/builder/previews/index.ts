@@ -12,6 +12,7 @@ import FeeStripPreview from "./FeeStripPreview"
 import MosaicPreview from "./MosaicPreview"
 import ProductGridPreview from "./ProductGridPreview"
 import SpacerPreview from "./SpacerPreview"
+import StealDealsPreview from "./StealDealsPreview"
 import TextHeaderPreview from "./TextHeaderPreview"
 import TrendingPreview from "./TrendingPreview"
 
@@ -44,4 +45,5 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   live_auction: DealerBlocksPreview,
   deal_of_day: DealerBlocksPreview,
   recent_recommended: DealerBlocksPreview,
+  steal_deals: StealDealsPreview,
 }

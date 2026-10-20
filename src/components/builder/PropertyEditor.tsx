@@ -1,6 +1,7 @@
 "use client";
 
 import DealerBlockEditor from "./editors/DealerBlockEditor";
+import StealDealsEditor from "./editors/StealDealsEditor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { ImagePlus, Loader2, Plus, Star, Trash2, X } from "lucide-react";
@@ -186,6 +187,8 @@ function StyleEditorRouter({
       return <TextHeaderEditor config={config} onChange={onChange} />;
     case "spacer":
       return <SpacerEditor config={config} onChange={onChange} />;
+    case "steal_deals":
+      return <StealDealsEditor config={config} onChange={onChange} />;
     case "live_auction":
     case "deal_of_day":
     case "recent_recommended":
