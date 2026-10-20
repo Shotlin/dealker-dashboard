@@ -188,7 +188,14 @@ function StyleEditorRouter({
     case "spacer":
       return <SpacerEditor config={config} onChange={onChange} />;
     case "steal_deals":
-      return <StealDealsEditor config={config} onChange={onChange} />;
+    case "collection_showcase":
+      return (
+        <StealDealsEditor
+          variant={section.section_type}
+          config={config}
+          onChange={onChange}
+        />
+      );
     case "live_auction":
     case "deal_of_day":
     case "recent_recommended":

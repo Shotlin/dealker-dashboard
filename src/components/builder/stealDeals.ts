@@ -11,6 +11,8 @@ export interface StealTab {
   /** Only products priced at or below this show in the tab (the "₹99 Store" rule). */
   max_price?: number | null
   chips: StealChip[]
+  /** Collection Showcase tabs: categories whose products fill the tab. */
+  category_ids?: string[]
   product_ids: string[]
 }
 
@@ -25,9 +27,8 @@ export const STEAL_DEALS_DEFAULTS: Record<string, unknown> = {
   accent_soft_color: "#FDE9F0",
   text_color: "#111111",
   muted_color: "#6F6F6F",
-  price_badge_color: "#2E8B2E",
-  price_badge_shadow_color: "#1B5E20",
-  off_text_color: "#2E8B2E",
+  title_image_url: "",
+  see_all_label: "See All",
   tabs: [
     { label: "Trending", chips: [], product_ids: [] },
     { label: "₹99", sub_label: "Store", max_price: 99, chips: [], product_ids: [] },
@@ -36,13 +37,42 @@ export const STEAL_DEALS_DEFAULTS: Record<string, unknown> = {
   ] satisfies StealTab[],
 }
 
+/** Same keys and defaults as `kCollectionShowcaseDefaults` in the Flutter app. */
+export const COLLECTION_DEFAULTS: Record<string, unknown> = {
+  title: "Collection",
+  title_image_url: "",
+  subtitle: "Celebrate the special bond",
+  see_all_label: "See All",
+  empty_text: "Nothing here yet",
+  bg_color: "#FFFFFF",
+  accent_color: "#B8863B",
+  accent_soft_color: "#FBEBCB",
+  text_color: "#2B2E4E",
+  muted_color: "#6F6F6F",
+  tabs: [
+    { label: "Tab one", chips: [], category_ids: [], product_ids: [] },
+    { label: "Tab two", chips: [], category_ids: [], product_ids: [] },
+    { label: "Tab three", chips: [], category_ids: [], product_ids: [] },
+  ] satisfies StealTab[],
+}
+
+export type TabbedVariant = "steal_deals" | "collection_showcase"
+
+export function tabbedDefaults(v: TabbedVariant): Record<string, unknown> {
+  return v === "steal_deals" ? STEAL_DEALS_DEFAULTS : COLLECTION_DEFAULTS
+}
+
 export const STEAL_MAX_TABS = 6
 export const STEAL_MAX_CHIPS = 8
 
-export function stealString(config: Record<string, unknown>, key: string): string {
+export function stealString(
+  config: Record<string, unknown>,
+  key: string,
+  variant: TabbedVariant = "steal_deals",
+): string {
   const v = config[key]
   if (typeof v === "string") return v
-  const d = STEAL_DEALS_DEFAULTS[key]
+  const d = tabbedDefaults(variant)[key]
   return typeof d === "string" ? d : ""
 }
 
@@ -63,6 +93,9 @@ export function stealTabs(config: Record<string, unknown>): StealTab[] {
           label: typeof c.label === "string" ? c.label : "",
           image_url: typeof c.image_url === "string" ? c.image_url : "",
         })),
+      category_ids: (Array.isArray(t.category_ids) ? t.category_ids : []).filter(
+        (id): id is string => typeof id === "string",
+      ),
       product_ids: (Array.isArray(t.product_ids) ? t.product_ids : []).filter(
         (id): id is string => typeof id === "string",
       ),

@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react"
 import {
   BadgePercent,
   Flame,
+  Sparkles,
   Gavel,
   History,
   Timer,
@@ -18,7 +19,7 @@ import {
 } from "lucide-react"
 import type { SectionType, ThemeStoreKey } from "@/types/theme.types"
 import { DEALER_BLOCK_DEFAULTS } from "./dealerBlocks"
-import { STEAL_DEALS_DEFAULTS } from "./stealDeals"
+import { COLLECTION_DEFAULTS, STEAL_DEALS_DEFAULTS } from "./stealDeals"
 
 /**
  * Section template group — drives Section Library filtering and grouping.
@@ -711,6 +712,20 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     tags: ["Deals", "New"],
     dataSources: ["manual_products", "discounted"],
     useCase: "Run \"Add any 10 items\" style deals: pick price tabs, the categories shown under each tab and the products.",
+  },
+  {
+    id: "collection_showcase",
+    type: "collection_showcase",
+    label: "Collection Showcase",
+    icon: Sparkles,
+    description: "Festival / theme collection: your title artwork, a line of text, text tabs (each filled by categories and products), the Dealker product box and a See All button. Use it for Rakhi, Diwali, Top Electronics, anything.",
+    maxPerTab: 6,
+    defaultConfig: JSON.parse(JSON.stringify(COLLECTION_DEFAULTS)),
+    accentClassName: "bg-amber-100 text-amber-800 border-amber-200",
+    group: "offers",
+    tags: ["Festival", "New"],
+    dataSources: ["manual_products"],
+    useCase: "Run a themed collection with its own title image, colours, tabs, categories and products.",
   },
   {
     id: "recent_recommended",

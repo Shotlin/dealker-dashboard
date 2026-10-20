@@ -46,4 +46,5 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   deal_of_day: DealerBlocksPreview,
   recent_recommended: DealerBlocksPreview,
   steal_deals: StealDealsPreview,
+  collection_showcase: StealDealsPreview,
 }
