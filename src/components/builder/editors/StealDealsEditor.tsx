@@ -43,6 +43,12 @@ const TEXT_FIELDS: Record<TabbedVariant, Array<[string, string]>> = {
     ["see_all_label", "See All button label (empty = hide)"],
     ["empty_text", "Text when a tab has no products"],
   ],
+  price_sale: [
+    ["title", "Banner title"],
+    ["subtitle", "Line before the price (e.g. “Best brands at flat”)"],
+    ["see_all_label", "See all button label (empty = hide)"],
+    ["empty_text", "Text when a price range has no products"],
+  ],
   price_shop: [
     ["title", "Title"],
     ["badge_text", "Badge next to the title (e.g. “50% OFF”, empty = hide)"],
@@ -64,6 +70,19 @@ const COLOR_FIELDS: Record<TabbedVariant, Array<[string, string]>> = {
     ["accent_soft_color", "Accent tint (selected tab / chip fill)"],
     ["text_color", "Text"],
     ["muted_color", "Secondary text"],
+  ],
+  price_sale: [
+    ["bg_color", "Section background"],
+    ["title_color", "Banner title"],
+    ["subtitle_color", "Line before the price"],
+    ["price_color", "Animated price"],
+    ["pill_color", "Price box fill"],
+    ["pill_border_color", "Price box border"],
+    ["pill_selected_color", "Selected price box fill"],
+    ["pill_selected_border_color", "Selected price box border"],
+    ["pill_halo_color", "Glow box around the selected price"],
+    ["pill_text_color", "Price box text"],
+    ["indicator_color", "Underline under the selected box"],
   ],
   price_shop: [
     ["bg_color", "Section background"],
@@ -98,7 +117,8 @@ export default function StealDealsEditor({
   onChange,
 }: StealDealsEditorProps) {
   const collection = variant !== "steal_deals";
-  const priceShop = variant === "price_shop";
+  const priceShop = variant === "price_shop" || variant === "price_sale";
+  const priceSale = variant === "price_sale";
   const tabs = stealTabs(config);
   const { data: categories } = useCategories();
   const available = useMemo(
@@ -120,13 +140,13 @@ export default function StealDealsEditor({
     <div className="space-y-6">
       <div className="space-y-4">
         {!priceShop && (
-        <ThemeImageUploader
-          label="Title image (optional)"
-          kind="banner"
-          hint="Artwork for the heading, e.g. “Rakhi Picks” with its decoration (transparent PNG, about 900 × 200 px). When set it replaces the title text."
-          value={stealString(config, "title_image_url", variant) || null}
-          onChange={(url) => patch("title_image_url", url ?? "")}
-        />
+          <ThemeImageUploader
+            label="Title image (optional)"
+            kind="banner"
+            hint="Artwork for the heading, e.g. “Rakhi Picks” with its decoration (transparent PNG, about 900 × 200 px). When set it replaces the title text."
+            value={stealString(config, "title_image_url", variant) || null}
+            onChange={(url) => patch("title_image_url", url ?? "")}
+          />
         )}
         {TEXT_FIELDS[variant].map(([key, label]) => (
           <div key={key} className="space-y-2">
@@ -180,6 +200,7 @@ export default function StealDealsEditor({
             tab={tab}
             collection={collection}
             priceShop={priceShop}
+            priceSale={priceSale}
             total={tabs.length}
             expanded={open === i}
             categories={available}
@@ -221,6 +242,7 @@ interface TabCardProps {
   index: number;
   collection: boolean;
   priceShop: boolean;
+  priceSale: boolean;
   tab: StealTab;
   total: number;
   expanded: boolean;
@@ -235,6 +257,7 @@ function TabCard({
   index,
   collection,
   priceShop,
+  priceSale,
   tab,
   total,
   expanded,
@@ -308,7 +331,9 @@ function TabCard({
             {(!collection || priceShop) && (
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-slate-600">
-                  {priceShop ? "Price shown big (e.g. ₹499)" : "Small text under it"}
+                  {priceShop
+                    ? "Price shown big (e.g. ₹499)"
+                    : "Small text under it"}
                 </Label>
                 <Input
                   value={tab.sub_label ?? ""}
@@ -318,6 +343,35 @@ function TabCard({
               </div>
             )}
           </div>
+
+          {priceSale && (
+            <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/50 p-3">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-slate-600">
+                  Price in the banner line (slides when this box is picked)
+                </Label>
+                <Input
+                  value={tab.price_text ?? ""}
+                  placeholder={tab.sub_label || "₹199"}
+                  onChange={(e) => onChange({ price_text: e.target.value })}
+                />
+              </div>
+              <ThemeImageUploader
+                label="Banner artwork — left"
+                kind="banner"
+                hint="Combo pack photo (transparent PNG, about 400 × 360 px). Cross-fades when this box is picked."
+                value={tab.header_left_url || null}
+                onChange={(url) => onChange({ header_left_url: url ?? "" })}
+              />
+              <ThemeImageUploader
+                label="Banner artwork — right"
+                kind="banner"
+                hint="Second combo pack photo (transparent PNG)."
+                value={tab.header_right_url || null}
+                onChange={(url) => onChange({ header_right_url: url ?? "" })}
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-xs font-medium text-slate-600">

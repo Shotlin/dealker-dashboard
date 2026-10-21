@@ -13,6 +13,7 @@ import MosaicPreview from "./MosaicPreview"
 import ProductGridPreview from "./ProductGridPreview"
 import CategoryHubPreview from "./CategoryHubPreview"
 import SpacerPreview from "./SpacerPreview"
+import TopBrandsPreview from "./TopBrandsPreview"
 import StealDealsPreview from "./StealDealsPreview"
 import TextHeaderPreview from "./TextHeaderPreview"
 import TrendingPreview from "./TrendingPreview"
@@ -48,6 +49,9 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   recent_recommended: DealerBlocksPreview,
   brand_spotlight: DealerBlocksPreview,
   banner_rail: DealerBlocksPreview,
+  oval_spotlight: DealerBlocksPreview,
+  top_brands: TopBrandsPreview,
+  price_sale: StealDealsPreview,
   price_shop: StealDealsPreview,
   category_hub: CategoryHubPreview,
   steal_deals: StealDealsPreview,

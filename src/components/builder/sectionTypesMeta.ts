@@ -5,6 +5,9 @@ import {
   Sparkles,
   Store,
   Tags,
+  BadgeCheck,
+  Megaphone,
+  Egg,
   PanelTop,
   LayoutDashboard,
   Gavel,
@@ -23,8 +26,9 @@ import {
 } from "lucide-react"
 import type { SectionType, ThemeStoreKey } from "@/types/theme.types"
 import { DEALER_BLOCK_DEFAULTS } from "./dealerBlocks"
-import { COLLECTION_DEFAULTS, PRICE_SHOP_DEFAULTS, STEAL_DEALS_DEFAULTS } from "./stealDeals"
+import { COLLECTION_DEFAULTS, PRICE_SALE_DEFAULTS, PRICE_SHOP_DEFAULTS, STEAL_DEALS_DEFAULTS } from "./stealDeals"
 import { CATEGORY_HUB_DEFAULTS } from "./categoryHub"
+import { TOP_BRANDS_DEFAULTS } from "./topBrands"
 
 /**
  * Section template group — drives Section Library filtering and grouping.
@@ -787,6 +791,48 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     tags: ["New"],
     dataSources: ["manual_products"],
     useCase: "Show a brand or campaign banner with its products underneath.",
+  },
+  {
+    id: "top_brands",
+    type: "top_brands",
+    label: "Top Brands",
+    icon: BadgeCheck,
+    description: "A row of arched brand cards: a product photo on top, the brand logo at the bottom. Tapping opens the brand's category or a search for it.",
+    maxPerTab: 3,
+    defaultConfig: JSON.parse(JSON.stringify(TOP_BRANDS_DEFAULTS)),
+    accentClassName: "bg-lime-100 text-lime-700 border-lime-200",
+    group: "categories",
+    tags: ["New"],
+    dataSources: ["static"],
+    useCase: "Show Apple, Samsung, boAt… each with its best-selling product and logo.",
+  },
+  {
+    id: "price_sale",
+    type: "price_sale",
+    label: "Price Sale Banner",
+    icon: Megaphone,
+    description: "A sale banner with combo artwork on both sides and a “flat ₹199” price that slides when a price box is picked, then price boxes and Dealker product boxes (they cross-fade).",
+    maxPerTab: 4,
+    defaultConfig: JSON.parse(JSON.stringify(PRICE_SALE_DEFAULTS)),
+    accentClassName: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    group: "offers",
+    tags: ["Deals", "New"],
+    dataSources: ["manual_products", "discounted"],
+    useCase: "Run “Daily Essentials Sale – best brands at flat ₹199 / ₹299 …” with different combo art per price.",
+  },
+  {
+    id: "oval_spotlight",
+    type: "oval_spotlight",
+    label: "Oval Spotlight",
+    icon: Egg,
+    description: "A rounded oval panel with corner artwork, an elegant title (“Best in Bread & Buns”), and wide product cards with name, photo, price and Add.",
+    maxPerTab: 6,
+    defaultConfig: { ...DEALER_BLOCK_DEFAULTS.oval_spotlight },
+    accentClassName: "bg-orange-100 text-orange-700 border-orange-200",
+    group: "products",
+    tags: ["New"],
+    dataSources: ["manual_products"],
+    useCase: "Spotlight one category or theme with its own artwork and colours.",
   },
   {
     id: "recent_recommended",

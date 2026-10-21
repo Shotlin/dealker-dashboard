@@ -10,7 +10,8 @@ export type DealerBlockType =
   | "deal_of_day"
   | "recent_recommended"
   | "brand_spotlight"
-  | "banner_rail";
+  | "banner_rail"
+  | "oval_spotlight";
 
 export const DEALER_BLOCK_TYPES: DealerBlockType[] = [
   "live_auction",
@@ -18,6 +19,7 @@ export const DEALER_BLOCK_TYPES: DealerBlockType[] = [
   "recent_recommended",
   "brand_spotlight",
   "banner_rail",
+  "oval_spotlight",
 ];
 
 export function isDealerBlock(
@@ -68,6 +70,26 @@ export const DEALER_BLOCK_DEFAULTS: Record<
     view_all_text_color: "#1F4FE0",
     panel_color: "#FFFFFF",
     grab_button_color: "#1B5BF2",
+  },
+  oval_spotlight: {
+    title: "Best in Collection",
+    subtitle: "",
+    title_font: "serif",
+    art_left_url: "",
+    art_right_url: "",
+    add_label: "Add",
+    bg_color: "#FFFFFF",
+    oval_start_color: "#FFF3E8",
+    oval_end_color: "#FDE7D6",
+    oval_border_color: "#E2BFA2",
+    title_color: "#8C3F2B",
+    subtitle_color: "#6B4A44",
+    card_start_color: "#FFF9F3",
+    card_end_color: "#FBE3D1",
+    card_border_color: "#E8C3A6",
+    name_color: "#A0706A",
+    price_color: "#2A1A17",
+    accent_color: "#E8175D",
   },
   banner_rail: {
     header_image_url: "",
@@ -159,6 +181,36 @@ export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
     col("panel_color", "Card panel background"),
     txt("button_label", "Card button label"),
     col("grab_button_color", "Card button colour"),
+  ],
+  oval_spotlight: [
+    txt("title", "Title"),
+    txt("subtitle", "Line under the title"),
+    txt("title_font", "Title font: serif (elegant) or sans", "serif"),
+    {
+      key: "art_left_url",
+      label: "Corner artwork — left",
+      kind: "image",
+      hint: "Transparent PNG of a few products poking in from the top-left corner (about 400 × 400 px).",
+    },
+    {
+      key: "art_right_url",
+      label: "Corner artwork — right",
+      kind: "image",
+      hint: "Transparent PNG for the top-right corner.",
+    },
+    txt("add_label", "Add button label"),
+    col("bg_color", "Background outside the oval"),
+    col("oval_start_color", "Oval fill — top"),
+    col("oval_end_color", "Oval fill — bottom"),
+    col("oval_border_color", "Oval outline"),
+    col("title_color", "Title colour"),
+    col("subtitle_color", "Line under the title"),
+    col("card_start_color", "Card fill — top"),
+    col("card_end_color", "Card fill — bottom"),
+    col("card_border_color", "Card outline"),
+    col("name_color", "Product name"),
+    col("price_color", "Price & pack size"),
+    col("accent_color", "Add button"),
   ],
   banner_rail: [
     {

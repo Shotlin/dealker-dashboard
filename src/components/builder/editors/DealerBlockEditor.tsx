@@ -93,6 +93,11 @@ export default function DealerBlockEditor({ type, config, onChange }: DealerBloc
           Each Deal of the Day has its own background, end time and products. Pick the products under “Product source” (leave it empty to show the store&apos;s current deals — then two sections would show the same ones). You can add several of these to any store or tab.
         </p>
       )}
+      {type === "oval_spotlight" && (
+        <p className="text-xs text-slate-500">
+          Pick the products under “Product source”. Cards slide sideways inside the oval panel (up to 12).
+        </p>
+      )}
       {type === "banner_rail" && (
         <p className="text-xs text-slate-500">
           Pick the products under “Product source”. “See All” opens the category of the first product.

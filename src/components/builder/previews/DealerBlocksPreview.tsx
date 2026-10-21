@@ -347,6 +347,28 @@ function DealerBlocksPreview({
         </div>
       </div>
     );
+  } else if (type === "oval_spotlight") {
+    body = (
+      <div style={{ background: v("bg_color"), position: "relative", textAlign: "left", padding: "6px 0" }}>
+        <div style={{ background: `linear-gradient(${v("oval_start_color")}, ${v("oval_end_color")})`, border: `1px solid ${v("oval_border_color")}`, borderRadius: "50% / 18%", padding: "14px 10px 10px", position: "relative", overflow: "hidden" }}>
+          {v("art_left_url") && <img src={v("art_left_url")} alt="" style={{ position: "absolute", left: 0, top: 0, width: 50, height: 46, objectFit: "contain" }} />}
+          {v("art_right_url") && <img src={v("art_right_url")} alt="" style={{ position: "absolute", right: 0, top: 0, width: 50, height: 46, objectFit: "contain" }} />}
+          <div style={{ textAlign: "center", fontSize: 14, fontWeight: 700, color: v("title_color"), fontFamily: v("title_font") === "sans" ? "inherit" : "Georgia, serif", marginTop: 14 }}>{v("title")}</div>
+          {v("subtitle") && <div style={{ textAlign: "center", fontSize: 8.5, color: v("subtitle_color") }}>{v("subtitle")}</div>}
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            {[0, 1].map((i) => {
+              const p = (products ?? [])[i];
+              return (
+                <div key={i} style={{ flex: 1, minWidth: 0, borderRadius: 9, border: `1px solid ${v("card_border_color")}`, background: `linear-gradient(${v("card_start_color")}, ${v("card_end_color")})`, padding: 5, display: "flex", gap: 4 }}>
+                  <div style={{ flex: 1, fontSize: 8, fontWeight: 700, color: v("name_color"), overflow: "hidden" }}>{p?.name ?? "Product"}<div style={{ color: v("price_color"), fontWeight: 800, marginTop: 8 }}>{p ? inr(p.sale_price ?? p.price) : "₹—"}</div></div>
+                  <div style={{ width: 28, height: 34 }}>{p?.thumbnail_url && <img src={p.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
   } else if (type === "banner_rail") {
     body = (
       <div style={{ background: v("panel_color"), borderRadius: 16, overflow: "hidden", textAlign: "left", paddingBottom: 8 }}>

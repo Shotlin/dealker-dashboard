@@ -343,6 +343,9 @@ export const SECTION_TYPES = [
   "price_shop",
   "category_hub",
   "banner_rail",
+  "top_brands",
+  "price_sale",
+  "oval_spotlight",
 ] as const
 
 export type SectionType = typeof SECTION_TYPES[number]
