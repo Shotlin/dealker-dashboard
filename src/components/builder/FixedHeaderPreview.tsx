@@ -371,6 +371,13 @@ export function FixedHeaderPreview({
     .map((st) => ({ key: st.store_key, label: st.label, iconUrl: st.icon_url }))
   const tileList = tiles.length > 0 ? tiles : STORE_CHIPS.slice(0, 5).map((c) => ({ key: c.key, label: c.label, iconUrl: null as string | null }))
 
+  const storeIdx = Math.max(0, tileList.findIndex((t) => t.key === storeKey)) % 4
+  const pn = storeIdx + 1
+  const lk = look as Record<string, string | undefined>
+  const dl = DEFAULT_HOME_LOOK as Record<string, string>
+  const pick = (f: string) => lk[`storePalette${pn}${f}`] ?? dl[`storePalette${pn}${f}`]
+  const storePal = { bg: pick("Background"), fill: pick("TabFill"), edge: pick("TabEdge"), text: pick("Text") }
+
   return (
     <div style={{ color: topBarTextColor }}>
       {/* ── Top bar: status + delivery line + profile button ───────── */}
@@ -445,8 +452,8 @@ export function FixedHeaderPreview({
           display: "flex",
           gap: 7,
           overflowX: "auto",
-          padding: "0 10px 8px",
-          background: topBarBg,
+          padding: "6px 10px 8px",
+          background: storePal.bg,
           scrollbarWidth: "none",
           transition: "background 200ms ease",
         }}
@@ -460,8 +467,9 @@ export function FixedHeaderPreview({
                 flex: "0 0 62px",
                 height: 66,
                 borderRadius: 11,
-                background: isActive ? look.storeTileActiveColor : look.storeTileColor,
-                boxShadow: "0 3px 6px rgba(15,23,42,0.08)",
+                background: isActive ? storePal.fill : "transparent",
+                border: `1px solid ${isActive ? storePal.edge : "rgba(128,128,128,0.25)"}`,
+                borderBottom: isActive ? "none" : undefined,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -484,7 +492,8 @@ export function FixedHeaderPreview({
                   fontWeight: 700,
                   lineHeight: 1.05,
                   textAlign: "center",
-                  color: look.storeTileLabelColor,
+                  color: storePal.text,
+                  opacity: isActive ? 1 : 0.7,
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",

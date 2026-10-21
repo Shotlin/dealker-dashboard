@@ -3,6 +3,7 @@ export interface HubTile {
   label?: string;
   image_url?: string;
   category_id?: string;
+  search_query?: string;
 }
 
 export interface HubTab {
@@ -46,6 +47,7 @@ function tiles(raw: unknown): HubTile[] {
       label: typeof t.label === "string" ? t.label : "",
       image_url: typeof t.image_url === "string" ? t.image_url : "",
       category_id: typeof t.category_id === "string" ? t.category_id : "",
+      search_query: typeof t.search_query === "string" ? t.search_query : "",
     }));
 }
 

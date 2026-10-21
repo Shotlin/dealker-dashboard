@@ -15,6 +15,8 @@ export interface StealTab {
   header_left_url?: string;
   header_right_url?: string;
   price_text?: string;
+  /** Category Deals: the picture on the category tile. */
+  image_url?: string;
   /** Collection Showcase tabs: categories whose products fill the tab. */
   category_ids?: string[];
   product_ids: string[];
@@ -185,12 +187,55 @@ export const PRICE_SALE_DEFAULTS: Record<string, unknown> = {
   ] satisfies StealTab[],
 };
 
+/** Same keys and defaults as `kCategoryDealsDefaults` in the Flutter app. */
+export const CATEGORY_DEALS_DEFAULTS: Record<string, unknown> = {
+  title: "Crazy deals for you",
+  see_all_label: "See All",
+  empty_text: "No deals here yet",
+  bg_color: "#FFFFFF",
+  text_color: "#1B1B1B",
+  muted_color: "#8A8F98",
+  accent_color: "#0E7C66",
+  tile_color: "#F2F3F6",
+  tile_selected_color: "#D8F4E8",
+  indicator_color: "#0E7C66",
+  see_all_bg_color: "#F0FBF8",
+  tabs: [
+    {
+      label: "Mobiles",
+      image_url: "",
+      chips: [],
+      category_ids: [],
+      product_ids: [],
+    },
+    {
+      label: "Headphones",
+      image_url: "",
+      chips: [],
+      category_ids: [],
+      product_ids: [],
+    },
+    {
+      label: "Accessories",
+      image_url: "",
+      chips: [],
+      category_ids: [],
+      product_ids: [],
+    },
+  ] satisfies StealTab[],
+};
+
 export type TabbedVariant =
-  "steal_deals" | "collection_showcase" | "price_shop" | "price_sale";
+  | "steal_deals"
+  | "collection_showcase"
+  | "price_shop"
+  | "price_sale"
+  | "category_deals";
 
 export function tabbedDefaults(v: TabbedVariant): Record<string, unknown> {
   if (v === "price_shop") return PRICE_SHOP_DEFAULTS;
   if (v === "price_sale") return PRICE_SALE_DEFAULTS;
+  if (v === "category_deals") return CATEGORY_DEALS_DEFAULTS;
   return v === "steal_deals" ? STEAL_DEALS_DEFAULTS : COLLECTION_DEFAULTS;
 }
 

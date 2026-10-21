@@ -105,6 +105,23 @@ export interface HomeLookTheme {
   productTextColor?: string
   productBadgeColor?: string
   productStockColor?: string
+  /** Store tab palettes 1-4 (by tab position). */
+  storePalette1Background?: string
+  storePalette1TabFill?: string
+  storePalette1TabEdge?: string
+  storePalette1Text?: string
+  storePalette2Background?: string
+  storePalette2TabFill?: string
+  storePalette2TabEdge?: string
+  storePalette2Text?: string
+  storePalette3Background?: string
+  storePalette3TabFill?: string
+  storePalette3TabEdge?: string
+  storePalette3Text?: string
+  storePalette4Background?: string
+  storePalette4TabFill?: string
+  storePalette4TabEdge?: string
+  storePalette4Text?: string
 }
 
 export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
@@ -134,6 +151,22 @@ export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
   productTextColor: "#111111",
   productBadgeColor: "#1FB454",
   productStockColor: "#1FB454",
+  storePalette1Background: "#0A0115",
+  storePalette1TabFill: "#1C0442",
+  storePalette1TabEdge: "#F2E8FF",
+  storePalette1Text: "#FFFFFF",
+  storePalette2Background: "#DFE8FE",
+  storePalette2TabFill: "#E8F0FE",
+  storePalette2TabEdge: "#505A7A",
+  storePalette2Text: "#1B1E2B",
+  storePalette3Background: "#FEFCF8",
+  storePalette3TabFill: "#FCF6EC",
+  storePalette3TabEdge: "#5A5552",
+  storePalette3Text: "#2B2622",
+  storePalette4Background: "#000000",
+  storePalette4TabFill: "#02060C",
+  storePalette4TabEdge: "#FFFFFF",
+  storePalette4Text: "#FFFFFF",
 }
 
 export interface ThemeMeta {
@@ -346,6 +379,7 @@ export const SECTION_TYPES = [
   "top_brands",
   "price_sale",
   "oval_spotlight",
+  "category_deals",
 ] as const
 
 export type SectionType = typeof SECTION_TYPES[number]

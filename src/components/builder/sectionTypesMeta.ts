@@ -8,6 +8,7 @@ import {
   BadgeCheck,
   Megaphone,
   Egg,
+  Shapes,
   PanelTop,
   LayoutDashboard,
   Gavel,
@@ -26,7 +27,7 @@ import {
 } from "lucide-react"
 import type { SectionType, ThemeStoreKey } from "@/types/theme.types"
 import { DEALER_BLOCK_DEFAULTS } from "./dealerBlocks"
-import { COLLECTION_DEFAULTS, PRICE_SALE_DEFAULTS, PRICE_SHOP_DEFAULTS, STEAL_DEALS_DEFAULTS } from "./stealDeals"
+import { CATEGORY_DEALS_DEFAULTS, COLLECTION_DEFAULTS, PRICE_SALE_DEFAULTS, PRICE_SHOP_DEFAULTS, STEAL_DEALS_DEFAULTS } from "./stealDeals"
 import { CATEGORY_HUB_DEFAULTS } from "./categoryHub"
 import { TOP_BRANDS_DEFAULTS } from "./topBrands"
 
@@ -833,6 +834,20 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     tags: ["New"],
     dataSources: ["manual_products"],
     useCase: "Spotlight one category or theme with its own artwork and colours.",
+  },
+  {
+    id: "category_deals",
+    type: "category_deals",
+    label: "Category Deals",
+    icon: Shapes,
+    description: "Title with a See All button, a row of category picture tiles (the picked one turns mint), and that category's products as Dealker boxes.",
+    maxPerTab: 4,
+    defaultConfig: JSON.parse(JSON.stringify(CATEGORY_DEALS_DEFAULTS)),
+    accentClassName: "bg-teal-100 text-teal-700 border-teal-200",
+    group: "categories",
+    tags: ["Deals", "New"],
+    dataSources: ["manual_products", "discounted"],
+    useCase: "“Crazy deals for home needs”: pick the categories, their pictures and products.",
   },
   {
     id: "recent_recommended",

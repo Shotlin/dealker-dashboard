@@ -414,9 +414,26 @@ function RegionFields({
     case "store_chips":
       return (
         <div className="space-y-4">
-          <LookColor label="Tile background" field="storeTileColor" look={look} patchLook={patchLook} />
-          <LookColor label="Selected tile background" field="storeTileActiveColor" look={look} patchLook={patchLook} />
-          <LookColor label="Tile label color" field="storeTileLabelColor" look={look} patchLook={patchLook} />
+          <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Tab 1 colours</p>
+          <LookColor label="Header + search background" field="storePalette1Background" look={look} patchLook={patchLook} />
+          <LookColor label="Raised tab + panel colour" field="storePalette1TabFill" look={look} patchLook={patchLook} />
+          <LookColor label="Raised tab outline" field="storePalette1TabEdge" look={look} patchLook={patchLook} />
+          <LookColor label="Header / tab text" field="storePalette1Text" look={look} patchLook={patchLook} />
+          <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Tab 2 colours</p>
+          <LookColor label="Header + search background" field="storePalette2Background" look={look} patchLook={patchLook} />
+          <LookColor label="Raised tab + panel colour" field="storePalette2TabFill" look={look} patchLook={patchLook} />
+          <LookColor label="Raised tab outline" field="storePalette2TabEdge" look={look} patchLook={patchLook} />
+          <LookColor label="Header / tab text" field="storePalette2Text" look={look} patchLook={patchLook} />
+          <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Tab 3 colours</p>
+          <LookColor label="Header + search background" field="storePalette3Background" look={look} patchLook={patchLook} />
+          <LookColor label="Raised tab + panel colour" field="storePalette3TabFill" look={look} patchLook={patchLook} />
+          <LookColor label="Raised tab outline" field="storePalette3TabEdge" look={look} patchLook={patchLook} />
+          <LookColor label="Header / tab text" field="storePalette3Text" look={look} patchLook={patchLook} />
+          <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Tab 4 colours</p>
+          <LookColor label="Header + search background" field="storePalette4Background" look={look} patchLook={patchLook} />
+          <LookColor label="Raised tab + panel colour" field="storePalette4TabFill" look={look} patchLook={patchLook} />
+          <LookColor label="Raised tab outline" field="storePalette4TabEdge" look={look} patchLook={patchLook} />
+          <LookColor label="Header / tab text" field="storePalette4Text" look={look} patchLook={patchLook} />
           <p className="text-xs text-slate-500">
             Store names and icons are edited under Storefront → Stores.
           </p>

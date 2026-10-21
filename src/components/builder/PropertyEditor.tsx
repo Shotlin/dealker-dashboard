@@ -200,6 +200,7 @@ function StyleEditorRouter({
     case "collection_showcase":
     case "price_shop":
     case "price_sale":
+    case "category_deals":
       return (
         <StealDealsEditor
           variant={section.section_type}

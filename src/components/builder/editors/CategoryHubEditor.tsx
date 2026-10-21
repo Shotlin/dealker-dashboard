@@ -115,6 +115,13 @@ function TileList({
               placeholder={cat?.name ?? "Text on the tile"}
               onChange={(e) => update(i, { [titleKey]: e.target.value })}
             />
+            {!t.category_id && (
+              <Input
+                value={t.search_query ?? ""}
+                placeholder="Or search text (e.g. Samsung) — used when no category is picked"
+                onChange={(e) => update(i, { search_query: e.target.value })}
+              />
+            )}
             <ThemeImageUploader
               label="Image"
               kind="banner"

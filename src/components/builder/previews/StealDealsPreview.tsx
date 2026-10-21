@@ -27,6 +27,147 @@ function StealDealsPreview({
   const first = tabs[0];
   const items = (products ?? []).slice(0, 3);
 
+  if (variant === "category_deals") {
+    const catTabs = stealTabs(config);
+    return (
+      <button
+        type="button"
+        className={cn(
+          styles.sectionSlot,
+          styles.sectionSlotHover,
+          isSelected && styles.sectionSlotSelected,
+        )}
+        onClick={onClick}
+        aria-pressed={isSelected}
+      >
+        <div style={{ padding: "6px 8px" }}>
+          <div
+            style={{
+              background: s("bg_color"),
+              borderRadius: 14,
+              padding: "10px 10px 8px",
+              color: s("text_color"),
+              textAlign: "left",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 800 }}>
+                {s("title")}
+              </span>
+              {s("see_all_label") && (
+                <span
+                  style={{
+                    fontSize: 8,
+                    fontWeight: 800,
+                    color: s("accent_color"),
+                    background: s("see_all_bg_color"),
+                    border: `1px solid ${s("accent_color")}33`,
+                    borderRadius: 6,
+                    padding: "2px 6px",
+                  }}
+                >
+                  {s("see_all_label")} ›
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 7, marginTop: 8 }}>
+              {catTabs.slice(0, 4).map((t, i) => (
+                <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                  <div
+                    style={{
+                      aspectRatio: "1",
+                      borderRadius: 9,
+                      background:
+                        i === 0 ? s("tile_selected_color") : s("tile_color"),
+                      padding: 3,
+                    }}
+                  >
+                    {t.image_url && (
+                      <img
+                        src={t.image_url}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 7.5,
+                      marginTop: 2,
+                      fontWeight: i === 0 ? 800 : 500,
+                      color: i === 0 ? s("accent_color") : s("muted_color"),
+                    }}
+                  >
+                    {t.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                height: 2,
+                background: s("indicator_color"),
+                width: "25%",
+                marginTop: 4,
+              }}
+            />
+            <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+              {[0, 1, 2].map((i) => {
+                const p = (products ?? [])[i];
+                return (
+                  <div key={i} style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        aspectRatio: "1",
+                        background: "#F6F6F6",
+                        borderRadius: 6,
+                        overflow: "hidden",
+                      }}
+                    >
+                      {p?.thumbnail_url && (
+                        <img
+                          src={p.thumbnail_url}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "contain",
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 8,
+                        fontWeight: 800,
+                        marginTop: 3,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {p?.name ?? "Product"}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </button>
+    );
+  }
+
   if (variant === "price_shop" || variant === "price_sale") {
     const priceTabs = stealTabs(config);
     return (

@@ -50,6 +50,7 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   brand_spotlight: DealerBlocksPreview,
   banner_rail: DealerBlocksPreview,
   oval_spotlight: DealerBlocksPreview,
+  category_deals: StealDealsPreview,
   top_brands: TopBrandsPreview,
   price_sale: StealDealsPreview,
   price_shop: StealDealsPreview,

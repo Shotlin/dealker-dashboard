@@ -43,6 +43,11 @@ const TEXT_FIELDS: Record<TabbedVariant, Array<[string, string]>> = {
     ["see_all_label", "See All button label (empty = hide)"],
     ["empty_text", "Text when a tab has no products"],
   ],
+  category_deals: [
+    ["title", "Title"],
+    ["see_all_label", "See All button label (empty = hide)"],
+    ["empty_text", "Text when a category has no products"],
+  ],
   price_sale: [
     ["title", "Banner title"],
     ["subtitle", "Line before the price (e.g. “Best brands at flat”)"],
@@ -70,6 +75,16 @@ const COLOR_FIELDS: Record<TabbedVariant, Array<[string, string]>> = {
     ["accent_soft_color", "Accent tint (selected tab / chip fill)"],
     ["text_color", "Text"],
     ["muted_color", "Secondary text"],
+  ],
+  category_deals: [
+    ["bg_color", "Section background"],
+    ["text_color", "Title"],
+    ["muted_color", "Unselected category name"],
+    ["accent_color", "Selected category name & See All text"],
+    ["tile_color", "Category tile"],
+    ["tile_selected_color", "Selected category tile"],
+    ["indicator_color", "Underline under the selected tile"],
+    ["see_all_bg_color", "See All button fill"],
   ],
   price_sale: [
     ["bg_color", "Section background"],
@@ -119,6 +134,7 @@ export default function StealDealsEditor({
   const collection = variant !== "steal_deals";
   const priceShop = variant === "price_shop" || variant === "price_sale";
   const priceSale = variant === "price_sale";
+  const categoryDeals = variant === "category_deals";
   const tabs = stealTabs(config);
   const { data: categories } = useCategories();
   const available = useMemo(
@@ -139,7 +155,7 @@ export default function StealDealsEditor({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        {!priceShop && (
+        {!priceShop && !categoryDeals && (
           <ThemeImageUploader
             label="Title image (optional)"
             kind="banner"
@@ -201,6 +217,7 @@ export default function StealDealsEditor({
             collection={collection}
             priceShop={priceShop}
             priceSale={priceSale}
+            categoryDeals={categoryDeals}
             total={tabs.length}
             expanded={open === i}
             categories={available}
@@ -243,6 +260,7 @@ interface TabCardProps {
   collection: boolean;
   priceShop: boolean;
   priceSale: boolean;
+  categoryDeals: boolean;
   tab: StealTab;
   total: number;
   expanded: boolean;
@@ -258,6 +276,7 @@ function TabCard({
   collection,
   priceShop,
   priceSale,
+  categoryDeals,
   tab,
   total,
   expanded,
@@ -373,6 +392,16 @@ function TabCard({
             </div>
           )}
 
+          {categoryDeals && (
+            <ThemeImageUploader
+              label="Tile picture"
+              kind="banner"
+              hint="Square photo of the category (e.g. a bedsheet). Picking a category below fills it with the category's own image if this is empty."
+              value={tab.image_url || null}
+              onChange={(url) => onChange({ image_url: url ?? "" })}
+            />
+          )}
+
           <div className="space-y-2">
             <Label className="text-xs font-medium text-slate-600">
               Max price ₹ (optional — only products up to this price show)
@@ -429,7 +458,8 @@ function TabCard({
                   <div className="flex-1">
                     <Select
                       value={id || "__none__"}
-                      onValueChange={(value) =>
+                      onValueChange={(value) => {
+                        const picked = categories.find((c) => c.id === value);
                         onChange({
                           category_ids: (tab.category_ids ?? []).map(
                             (x, idx) =>
@@ -439,8 +469,16 @@ function TabCard({
                                   : value
                                 : x,
                           ),
-                        })
-                      }
+                          // Category Deals: pre-fill the tile from the category.
+                          ...(categoryDeals && picked && ci === 0
+                            ? {
+                                label: tab.label || picked.name,
+                                image_url:
+                                  tab.image_url || picked.image_url || "",
+                              }
+                            : {}),
+                        });
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Choose a category" />
