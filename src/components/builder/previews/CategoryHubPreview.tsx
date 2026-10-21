@@ -6,166 +6,84 @@ import type { PreviewProps } from "./index";
 import styles from "../MobilePreviewFrame.module.css";
 import { hubString, hubTabs } from "../categoryHub";
 
-/** Mirrors the app's CategoryHubSection (first tab only). */
+/**
+ * Mirrors the app's `CategoryHubSection` (category_hub_section.dart) in app points:
+ * text tabs with an underline, a row of 112x128 tile cards, then a titled 4-column grid.
+ */
+const JAKARTA = "'Plus Jakarta Sans', system-ui, sans-serif";
+
 function CategoryHubPreview({ section, isSelected, onClick }: PreviewProps) {
   const config = section.config as Record<string, unknown>;
   const s = (k: string) => hubString(config, k);
   const tabs = hubTabs(config);
-  const first = tabs[0];
+  if (tabs.length === 0) return null;
+  const hub = tabs[0];
+  const text = s("text_color");
+  const muted = s("muted_color");
+  const indicator = s("indicator_color");
+  const tile = s("tile_color");
+  const tileBorder = s("tile_border_color");
+  const accent = s("accent_color");
+  const seeAll = s("see_all_label");
+  const gridW = (402 - 16 - 28 - 10 * 3) / 4;
 
   return (
     <button
       type="button"
-      className={cn(
-        styles.sectionSlot,
-        styles.sectionSlotHover,
-        isSelected && styles.sectionSlotSelected,
-      )}
+      className={cn(styles.sectionSlot, styles.sectionSlotHover, isSelected && styles.sectionSlotSelected)}
       onClick={onClick}
       aria-pressed={isSelected}
+      style={{ textAlign: "left" }}
     >
-      <div style={{ padding: "6px 8px" }}>
-        <div
-          style={{
-            background: s("bg_color"),
-            borderRadius: 14,
-            color: s("text_color"),
-            textAlign: "left",
-            paddingBottom: 8,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              padding: "0 10px",
-              borderBottom: `1px solid ${s("muted_color")}33`,
-              height: 26,
-              alignItems: "flex-end",
-            }}
-          >
-            {tabs.slice(0, 5).map((t, i) => (
-              <span
-                key={i}
-                style={{
-                  fontSize: 9,
-                  fontWeight: 800,
-                  paddingBottom: 4,
-                  borderBottom:
-                    i === 0
-                      ? `3px solid ${s("indicator_color")}`
-                      : "3px solid transparent",
-                  color: i === 0 ? s("indicator_color") : s("text_color"),
-                }}
-              >
-                {t.label}
-              </span>
+      <div style={{ margin: "6px 8px", background: s("bg_color"), borderRadius: 18, padding: "6px 0 16px", overflow: "hidden" }}>
+        <div style={{ display: "flex", gap: 22, padding: "0 14px", height: 46, overflow: "hidden" }}>
+          {tabs.map((t, i) => (
+            <div key={i} style={{ position: "relative", display: "flex", alignItems: "center", flexShrink: 0 }}>
+              <span style={{ fontFamily: JAKARTA, fontSize: 15, fontWeight: i === 0 ? 800 : 700, color: i === 0 ? indicator : text, whiteSpace: "nowrap" }}>{t.label}</span>
+              {i === 0 && <span style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 4, background: indicator, borderRadius: "6px 6px 0 0" }} />}
+            </div>
+          ))}
+        </div>
+        <div style={{ height: 1.2, background: `${muted}33` }} />
+        <div style={{ height: 14 }} />
+        {hub.tiles.length > 0 && (
+          <div style={{ display: "flex", gap: 12, padding: "0 14px", height: 128, overflow: "hidden" }}>
+            {hub.tiles.map((t, i) => (
+              <div key={i} style={{ position: "relative", width: 112, flexShrink: 0, boxSizing: "border-box", borderRadius: 14, border: `1px solid ${tileBorder}`, background: `linear-gradient(180deg, #fff, ${tile})`, overflow: "hidden" }}>
+                {t.image_url && <img src={t.image_url} alt="" draggable={false} style={{ position: "absolute", left: 6, right: 6, bottom: 4, width: 98, height: 70, objectFit: "contain", objectPosition: "bottom center" }} />}
+                <div style={{ position: "absolute", left: 9, top: 8, right: 30, fontFamily: JAKARTA, fontSize: 12, fontWeight: 800, color: text, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.title}</div>
+                <span style={{ position: "absolute", right: 6, top: 6, width: 20, height: 20, borderRadius: 999, background: "#fff", display: "grid", placeItems: "center" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill={text}><path d="M19 9l1.250-2.750L23 5l-2.750-1.250L19 1l-1.250 2.750L15 5l2.750 1.250zm-7.500.5L9 4 6.500 9.500 1 12l5.500 2.500L9 20l2.500-5.500L17 12zM19 15l-1.250 2.750L15 19l2.750 1.250L19 23l1.250-2.750L23 19l-2.750-1.250z" /></svg>
+                </span>
+              </div>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 6, padding: "8px 10px 0" }}>
-            {[0, 1, 2].map((i) => {
-              const t = first?.tiles[i];
-              return (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    height: 52,
-                    borderRadius: 8,
-                    border: `1px solid ${s("tile_border_color")}`,
-                    background: `linear-gradient(#fff, ${s("tile_color")})`,
-                    padding: 4,
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div style={{ fontSize: 7.5, fontWeight: 800 }}>
-                    {t?.title || "Tile"}
+        )}
+        {hub.grid.length > 0 && (
+          <>
+            <div style={{ height: 22 }} />
+            <div style={{ display: "flex", alignItems: "center", padding: "0 14px", gap: 10 }}>
+              <span style={{ flex: 1, minWidth: 0, fontFamily: JAKARTA, fontSize: 19, fontWeight: 800, color: text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hub.grid_title}</span>
+              {seeAll && (
+                <span style={{ display: "flex", alignItems: "center", padding: "8px 14px", background: `${accent}12`, borderRadius: 12, border: `1px solid ${accent}40`, fontFamily: JAKARTA, fontSize: 13, fontWeight: 800, color: accent, whiteSpace: "nowrap" }}>
+                  {seeAll}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+                </span>
+              )}
+            </div>
+            <div style={{ height: 14 }} />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 10px", padding: "0 14px" }}>
+              {hub.grid.map((g, i) => (
+                <div key={i} style={{ width: gridW }}>
+                  <div style={{ width: gridW, height: gridW, boxSizing: "border-box", padding: 6, background: tile, borderRadius: 14 }}>
+                    {g.image_url && <img src={g.image_url} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
                   </div>
-                  {t?.image_url && (
-                    <img
-                      src={t.image_url}
-                      alt=""
-                      style={{
-                        position: "absolute",
-                        bottom: 2,
-                        left: "20%",
-                        width: "60%",
-                        height: "55%",
-                        objectFit: "contain",
-                      }}
-                    />
-                  )}
+                  <div style={{ marginTop: 6, textAlign: "center", fontFamily: JAKARTA, fontSize: 11.5, fontWeight: 600, color: text, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{g.label}</div>
                 </div>
-              );
-            })}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "10px 10px 0",
-            }}
-          >
-            <span style={{ fontSize: 11, fontWeight: 800 }}>
-              {first?.grid_title || "Category grid"}
-            </span>
-            {s("see_all_label") && (
-              <span
-                style={{
-                  fontSize: 8,
-                  fontWeight: 800,
-                  color: s("accent_color"),
-                  border: `1px solid ${s("accent_color")}44`,
-                  borderRadius: 6,
-                  padding: "2px 6px",
-                }}
-              >
-                {s("see_all_label")} ›
-              </span>
-            )}
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 5,
-              padding: "6px 10px 0",
-            }}
-          >
-            {[0, 1, 2, 3].map((i) => {
-              const g = first?.grid[i];
-              return (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      aspectRatio: "1",
-                      background: s("tile_color"),
-                      borderRadius: 7,
-                      overflow: "hidden",
-                    }}
-                  >
-                    {g?.image_url && (
-                      <img
-                        src={g.image_url}
-                        alt=""
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain",
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div style={{ fontSize: 7, marginTop: 2 }}>
-                    {g?.label || "Category"}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </button>
   );

@@ -8,15 +8,16 @@ import CarouselPreview from "./CarouselPreview"
 import CategoryIconsPreview from "./CategoryIconsPreview"
 import CustomBannerPreview from "./CustomBannerPreview"
 import DealerBlocksPreview from "./DealerBlocksPreview"
+import DealerSectionsPreview from "./DealerSectionsPreview"
 import FeeStripPreview from "./FeeStripPreview"
 import MosaicPreview from "./MosaicPreview"
-import ProductGridPreview from "./ProductGridPreview"
 import CategoryHubPreview from "./CategoryHubPreview"
 import SpacerPreview from "./SpacerPreview"
 import TopBrandsPreview from "./TopBrandsPreview"
 import StealDealsPreview from "./StealDealsPreview"
+import TabbedSectionsPreview from "./TabbedSectionsPreview"
 import TextHeaderPreview from "./TextHeaderPreview"
-import TrendingPreview from "./TrendingPreview"
+import ProductSectionsPreview from "./ProductSectionsPreview"
 
 export interface PreviewProps {
   section: SectionManifest
@@ -35,26 +36,26 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   fee_strip: FeeStripPreview,
   seasonal_mosaic: MosaicPreview,
   round_category_icons: CategoryIconsPreview,
-  category_product_grid: ProductGridPreview,
-  product_carousel: TrendingPreview,
-  trending_products: TrendingPreview,
+  category_product_grid: ProductSectionsPreview,
+  product_carousel: ProductSectionsPreview,
+  trending_products: ProductSectionsPreview,
   promo_carousel: CarouselPreview,
   bank_offers: FeeStripPreview,
   custom_banner: CustomBannerPreview,
   text_header: TextHeaderPreview,
   arched_product_showcase: ArchedShowcasePreview,
   spacer: SpacerPreview,
-  live_auction: DealerBlocksPreview,
-  deal_of_day: DealerBlocksPreview,
+  live_auction: DealerSectionsPreview,
+  deal_of_day: DealerSectionsPreview,
   recent_recommended: DealerBlocksPreview,
-  brand_spotlight: DealerBlocksPreview,
-  banner_rail: DealerBlocksPreview,
-  oval_spotlight: DealerBlocksPreview,
+  brand_spotlight: DealerSectionsPreview,
+  banner_rail: DealerSectionsPreview,
+  oval_spotlight: DealerSectionsPreview,
   category_deals: StealDealsPreview,
   top_brands: TopBrandsPreview,
   price_sale: StealDealsPreview,
-  price_shop: StealDealsPreview,
+  price_shop: TabbedSectionsPreview,
   category_hub: CategoryHubPreview,
-  steal_deals: StealDealsPreview,
-  collection_showcase: StealDealsPreview,
+  steal_deals: TabbedSectionsPreview,
+  collection_showcase: TabbedSectionsPreview,
 }

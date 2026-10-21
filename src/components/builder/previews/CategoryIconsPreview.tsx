@@ -5,258 +5,104 @@ import { cn } from "@/lib/utils"
 import type { PreviewProps } from "./index"
 import styles from "../MobilePreviewFrame.module.css"
 
-const FALLBACK_ICONS = ["🥦", "🥛", "🍞", "🧃", "🍎", "✨", "🥩", "🧄"]
-const FALLBACK_LABELS = [
-  "Fruits & Veg",
-  "Dairy & Eggs",
-  "Bakery & Bread",
-  "Beverages",
-  "Fresh",
-  "Beauty",
-  "Meat",
-  "Spices",
-]
+/**
+ * Mirrors the app's `_ManifestCategoryRail` (section_registry.dart) in app points
+ * (.w = 402/375, .h = 874/812, .r = .w): tile width = clamp(icon + 18, 82, 120),
+ * box radius = clamp(icon x 0.34, 16, 26), 1px #F0F0F0 border, picture cover-fit,
+ * labels 11sp / 700 / 2 lines, 8.h below the box.
+ */
+const W = 402 / 375
+const H = 874 / 812
 
-interface CategoryIconPreviewItem {
-  category_id?: string
-  label?: string
-  image_url?: string
+interface Item {
+  key: string
+  label: string
+  imageUrl: string | null
 }
 
-function normalizeItems(value: unknown): CategoryIconPreviewItem[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 
-  return value
-    .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
-    .map((item) => ({
-      category_id:
-        typeof item.category_id === "string" ? item.category_id : undefined,
-      label: typeof item.label === "string" ? item.label : undefined,
-      image_url:
-        typeof item.image_url === "string" ? item.image_url : undefined,
-    }))
-}
-
-function CategoryIconsPreview({
-  section,
-  isSelected,
-  onClick,
-  categories,
-}: PreviewProps) {
+function CategoryIconsPreview({ section, isSelected, onClick, categories }: PreviewProps) {
   const config = section.config as Record<string, unknown>
-  const iconSize =
-    typeof config.icon_size === "number" && config.icon_size > 0 ? config.icon_size : 64
-  const gap =
-    typeof config.gap === "number" && config.gap >= 0 ? config.gap : 12
+  const iconSize = clamp(typeof config.icon_size === "number" ? config.icon_size : 64, 40, 96)
+  const gap = clamp(typeof config.gap === "number" ? config.gap : 12, 4, 24)
   const showLabels = config.show_labels !== false
-  const configuredItems = normalizeItems(config.items)
-  const categoryMap = new Map((categories ?? []).map((category) => [category.id, category]))
+  const byId = new Map((categories ?? []).map((c) => [c.id, c]))
 
-  const resolvedCategories = (categories ?? []).slice(0, 8)
-  const resolvedItems = configuredItems.length > 0
-    ? configuredItems.slice(0, 10).map((item, index) => {
-      const linkedCategory = item.category_id ? categoryMap.get(item.category_id) : undefined
-      return {
-        key: `${item.category_id ?? "custom"}-${index}`,
-        label:
-          item.label?.trim() ||
-          linkedCategory?.name ||
-          FALLBACK_LABELS[index % FALLBACK_LABELS.length],
-        imageUrl: item.image_url?.trim() || linkedCategory?.image_url || null,
-        emoji: FALLBACK_ICONS[index % FALLBACK_ICONS.length],
-      }
+  const configured: Item[] = (Array.isArray(config.items) ? config.items : [])
+    .filter((i): i is Record<string, unknown> => !!i && typeof i === "object")
+    .map((i, idx) => {
+      const linked = typeof i.category_id === "string" ? byId.get(i.category_id) : undefined
+      const label = (typeof i.label === "string" && i.label.trim()) || linked?.name || ""
+      const imageUrl = (typeof i.image_url === "string" && i.image_url.trim()) || linked?.image_url || null
+      return { key: `c-${idx}`, label, imageUrl }
     })
-    : []
+    .filter((i) => i.label || i.imageUrl)
+    .slice(0, 10)
+
+  // No configured tiles: like the app, show the active top-level categories.
+  const fallback: Item[] = (categories ?? [])
+    .filter((c) => c.is_active && !c.parent_id)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .slice(0, 10)
+    .map((c) => ({ key: c.id, label: c.name, imageUrl: c.image_url ?? null }))
+  const items = configured.length > 0 ? configured : fallback
+  if (items.length === 0) return null
+
+  const tileW = clamp(iconSize + 18, 82, 120) * W
+  const boxRadius = clamp(iconSize * 0.34, 16, 26) * W
+  const artRadius = clamp(clamp(iconSize * 0.34, 16, 26) - 2, 14, 24) * W
+  const railH = (showLabels ? iconSize + 40 : iconSize + 12) * H
 
   return (
     <button
       type="button"
-      className={cn(
-        styles.sectionSlot,
-        styles.sectionSlotHover,
-        isSelected && styles.sectionSlotSelected
-      )}
+      className={cn(styles.sectionSlot, styles.sectionSlotHover, isSelected && styles.sectionSlotSelected)}
       onClick={onClick}
       aria-pressed={isSelected}
     >
-      <div style={{ padding: "10px 0 6px" }}>
-        <div
-          style={{
-            display: "flex",
-            gap,
-            overflowX: "auto",
-            scrollbarWidth: "none",
-            padding: "0 16px",
-          }}
-        >
-          {resolvedItems.length > 0
-            ? resolvedItems.map((item) => (
+      <div style={{ padding: `${10 * H}px ${16 * W}px ${2 * H}px` }}>
+        <div style={{ display: "flex", gap: gap * W, height: railH, overflow: "hidden", alignItems: "center" }}>
+          {items.map((item) => (
+            <div key={item.key} style={{ width: tileW, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center" }}>
               <div
-                key={item.key}
                 style={{
-                  minWidth: 82,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 8,
+                  width: iconSize * W,
+                  height: iconSize * H,
+                  boxSizing: "border-box",
+                  borderRadius: boxRadius,
+                  background: "#fff",
+                  border: "1px solid #F0F0F0",
+                  boxShadow: "0 1px 0 rgba(0,0,0,0.024)",
+                  overflow: "hidden",
                 }}
               >
-                <div
+                <div style={{ width: "100%", height: "100%", borderRadius: artRadius, overflow: "hidden", background: item.imageUrl ? "transparent" : "#F3F6E7" }}>
+                  {item.imageUrl && <img src={item.imageUrl} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
+                </div>
+              </div>
+              {showLabels && (
+                <span
                   style={{
-                    width: iconSize,
-                    height: iconSize,
-                    borderRadius: 22,
-                    background: "#ffffff",
-                    border: "1px solid #f0f0f0",
-                    boxShadow: "0 3px 8px rgba(0,0,0,0.04)",
-                    display: "grid",
-                    placeItems: "center",
+                    marginTop: 8 * H,
+                    width: "100%",
+                    textAlign: "center",
+                    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                    fontSize: 11 * W,
+                    fontWeight: 700,
+                    lineHeight: 1.05,
+                    color: "#131313",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
                     overflow: "hidden",
                   }}
                 >
-                  {item.imageUrl ? (
-                    <img
-                      src={item.imageUrl}
-                      alt={item.label}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <span style={{ fontSize: iconSize * 0.36 }}>
-                      {item.emoji}
-                    </span>
-                  )}
-                </div>
-                {showLabels ? (
-                  <span
-                    style={{
-                      width: 82,
-                      fontSize: 11,
-                      lineHeight: 1.05,
-                      fontWeight: 700,
-                      color: "#131313",
-                      textAlign: "center",
-                      overflow: "hidden",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                    }}
-                  >
-                    {item.label}
-                  </span>
-                ) : null}
-              </div>
-            ))
-            : resolvedCategories.length > 0
-            ? resolvedCategories.map((cat, index) => (
-              <div
-                key={cat.id}
-                style={{
-                  minWidth: 82,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                {/* Category icon container — matches Flutter: 64px, borderRadius 22 */}
-                <div
-                  style={{
-                    width: iconSize,
-                    height: iconSize,
-                    borderRadius: 22,
-                    background: "#ffffff",
-                    border: "1px solid #f0f0f0",
-                    boxShadow: "0 3px 8px rgba(0,0,0,0.04)",
-                    display: "grid",
-                    placeItems: "center",
-                    overflow: "hidden",
-                  }}
-                >
-                  {cat.image_url ? (
-                    <img
-                      src={cat.image_url}
-                      alt={cat.name}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <span style={{ fontSize: iconSize * 0.36 }}>
-                      {FALLBACK_ICONS[index % FALLBACK_ICONS.length]}
-                    </span>
-                  )}
-                </div>
-                {showLabels ? (
-                  <span
-                    style={{
-                      width: 82,
-                      fontSize: 11,
-                      lineHeight: 1.05,
-                      fontWeight: 700,
-                      color: "#131313",
-                      textAlign: "center",
-                      overflow: "hidden",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                    }}
-                  >
-                    {cat.name}
-                  </span>
-                ) : null}
-              </div>
-            ))
-            : /* Fallback: emoji icons when no API data */
-              FALLBACK_ICONS.slice(0, 6).map((emoji, index) => (
-              <div
-                key={emoji}
-                style={{
-                  minWidth: 82,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <div
-                  style={{
-                    width: iconSize,
-                    height: iconSize,
-                    borderRadius: 22,
-                    background: "#ffffff",
-                    border: "1px solid #f0f0f0",
-                    boxShadow: "0 3px 8px rgba(0,0,0,0.04)",
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: iconSize * 0.36,
-                  }}
-                >
-                  {emoji}
-                </div>
-                {showLabels ? (
-                  <span
-                    style={{
-                      width: 82,
-                      fontSize: 11,
-                      lineHeight: 1.05,
-                      fontWeight: 700,
-                      color: "#131313",
-                      textAlign: "center",
-                    }}
-                  >
-                    {FALLBACK_LABELS[index]}
-                  </span>
-                ) : null}
-              </div>
-            ))}
+                  {item.label}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </button>

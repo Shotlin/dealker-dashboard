@@ -10,8 +10,11 @@ import type { PreviewProps } from "./index"
 import styles from "../MobilePreviewFrame.module.css"
 
 const FALLBACK_ASPECT_RATIO = 336 / 74
-const MIN_STRIP_HEIGHT = 60
-const MAX_STRIP_HEIGHT = 96
+/** The app lays sections out in 914px design units on a 402pt screen (.h = 874/812, .r = 1.07). */
+const K = 402 / 914
+const H = 874 / 812
+const MIN_STRIP_HEIGHT = 40 * H
+const MAX_STRIP_HEIGHT = 140 * H
 
 function FeeStripPreview({
   section,
@@ -126,29 +129,36 @@ function FeeStripPreview({
             ))}
           </div>
         ) : isFeeCard ? (
-          <div style={{ padding: "6px 10px 4px", position: "relative" }}>
+          <div style={{ padding: `${14 * K}px ${22 * K}px ${10 * K}px`, position: "relative" }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
                 background: look.feeCardColor,
                 color: look.feeCardTextColor,
-                borderRadius: 12,
-                padding: "8px 10px",
+                borderRadius: 22 * K,
+                padding: `${14 * K}px ${18 * K}px ${6 * K}px ${26 * K}px`,
+                fontFamily: "Poppins, system-ui, sans-serif",
               }}
             >
               {feeTitle && (
-                <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.06em", lineHeight: 1 }}>{feeTitle}</div>
+                <div style={{ width: 240 * K, flexShrink: 0, fontSize: 84 * K, fontWeight: 900, letterSpacing: -4 * K, lineHeight: 1, whiteSpace: "nowrap" }}>{feeTitle}</div>
               )}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 8px", flex: 1, fontSize: 9.5 }}>
-                {feeLines.slice(0, 4).map((line, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <span style={{ width: 11, height: 11, borderRadius: 999, background: look.feeCardCheckColor, color: look.feeCardColor, fontSize: 8, display: "grid", placeItems: "center" }}>✓</span>
-                    <span>{line}</span>
+              <div style={{ width: 22 * K, flexShrink: 0 }} />
+              <div style={{ display: "flex", flex: 1, minWidth: 0, alignItems: "flex-start", gap: 16 * K }}>
+                {[feeLines.filter((_, i) => i % 2 === 0), feeLines.filter((_, i) => i % 2 === 1)].map((col, ci) => (
+                  <div key={ci} style={{ flex: 1, minWidth: 0 }}>
+                    {col.map((line, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 * K, paddingBottom: 10 * K }}>
+                        <span style={{ width: 26 * K, height: 26 * K, flexShrink: 0, borderRadius: 999, background: look.feeCardCheckColor, color: look.feeCardColor, fontSize: 18 * K, lineHeight: 1, display: "grid", placeItems: "center" }}>✓</span>
+                        <span style={{ fontSize: 20 * K, fontWeight: 500, lineHeight: 1.1, whiteSpace: "nowrap" }}>{line}</span>
+                      </div>
+                    ))}
+                    {ci === 1 && feeFootnote && (
+                      <div style={{ fontSize: 15 * K, lineHeight: 1.2, opacity: 0.75 }}>{feeFootnote}</div>
+                    )}
                   </div>
                 ))}
-                {feeFootnote && <div style={{ fontSize: 7.5, opacity: 0.75, gridColumn: "2" }}>{feeFootnote}</div>}
               </div>
             </div>
             {onChromeRegionClick && (
@@ -165,29 +175,24 @@ function FeeStripPreview({
             )}
           </div>
         ) : imageUrl ? (
-          <div
-            style={{
-              height: Math.min(
-                MAX_STRIP_HEIGHT,
-                Math.max(MIN_STRIP_HEIGHT, 430 / aspectRatio)
-              ),
-              width: "100%",
-              overflow: "hidden",
-              borderRadius: 0,
-              background: containerColor,
-            }}
-          >
-            <img
-              src={imageUrl}
-              alt="Strip"
+          /* App: rounded card inset 22 design-px from the edges, sized to the image's own
+             shape (clamped 40..140 .h), artwork covers the card. */
+          <div style={{ padding: `${10 * H}px ${22 * K}px ${4 * H}px` }}>
+            <div
               style={{
-                display: "block",
+                height: Math.min(MAX_STRIP_HEIGHT, Math.max(MIN_STRIP_HEIGHT, (402 - 44 * K) / aspectRatio)),
                 width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                objectPosition: "center",
+                overflow: "hidden",
+                borderRadius: 16 * 1.072,
+                background: containerColor,
               }}
-            />
+            >
+              <img
+                src={imageUrl}
+                alt="Strip"
+                style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+              />
+            </div>
           </div>
         ) : (
           /* Exact Flutter match: #1C9A38 green, ticket icon, bold white text */

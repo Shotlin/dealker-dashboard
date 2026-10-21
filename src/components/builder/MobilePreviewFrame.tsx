@@ -25,13 +25,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core"
-import { cn } from "@/lib/utils"
 import { DEFAULT_HOME_LOOK, type SectionManifest, type ThemeData, type ThemeTab } from "@/types/theme.types"
 import {
   usePreviewData,
   resolveProductsForSection,
 } from "@/hooks/usePreviewData"
 import { FixedHeaderPreview } from "./FixedHeaderPreview"
+import { ZoomTo402 } from "./ZoomTo402"
 import { useStoreContext } from "@/contexts/StoreContext"
 import { previewRegistry } from "./previews"
 import { QuickActionsToolbar } from "./QuickActionsToolbar"
@@ -103,6 +103,8 @@ export function MobilePreviewFrame({
   isDragActive = false,
 }: MobilePreviewFrameProps) {
   const navLook = { ...DEFAULT_HOME_LOOK, ...(themeData?.sections.homeLook ?? {}) }
+  // The app paints the page below the header with homeLook.canvasColor (white if unset).
+  const canvasColor = themeData?.sections.homeLook?.canvasColor ?? "#FFFFFF"
   const frameRef = useRef<HTMLDivElement | null>(null)
   const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const [availableSize, setAvailableSize] = useState({
@@ -206,8 +208,9 @@ export function MobilePreviewFrame({
 
             <div
               className={styles.scrollableContent}
-              style={{ opacity: isStale ? 0.97 : 1, transition: "opacity 100ms ease" }}
+              style={{ opacity: isStale ? 0.97 : 1, transition: "opacity 100ms ease", background: canvasColor }}
             >
+              <ZoomTo402 background={canvasColor}>
               {orderedSections.length === 0 ? (
                 <PreviewEmptyDropZone />
               ) : (
@@ -282,6 +285,7 @@ export function MobilePreviewFrame({
                   })}
                 </SortableContext>
               )}
+              </ZoomTo402>
             </div>
 
             <div
@@ -306,53 +310,64 @@ export function MobilePreviewFrame({
                   : undefined
               }
             >
-              <div
-                className={styles.bottomNavDock}
-                style={{ background: navLook.navBackgroundColor, display: "flex", alignItems: "center" }}
-              >
-                <div style={{ display: "flex", flex: 1 }}>
-                  {["Home", "Categories", "Auction", "Order"].map((label, index) => {
-                    const Icon = NAV_ICON_MAP[label] ?? Grid2x2
-                    const isActive = index === 0
-                    return (
+              {/* Mirrors the app's AppShell bottom bar (app_bottom_nav.dart), in app points. */}
+              <ZoomTo402>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: `${4 * (874 / 812)}px ${12 * (402 / 375)}px ${22}px`,
+                    background: navLook.navBackgroundColor,
+                    boxShadow: "0 -6px 20px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <div style={{ display: "flex", flex: 1 }}>
+                    {["Home", "Categories", "Auction", "Order"].map((label, index) => {
+                      const Icon = NAV_ICON_MAP[label] ?? Grid2x2
+                      const isActive = index === 0
+                      const color = isActive ? navLook.navActiveColor : navLook.navLabelColor
+                      return (
+                        <div
+                          key={label}
+                          aria-label={label}
+                          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: `${4 * (874 / 812)}px ${1 * (402 / 375)}px`, color, transition: "color 220ms ease" }}
+                        >
+                          <div style={{ width: 48 * (402 / 375), height: 34 * (874 / 812), display: "grid", placeItems: "center", transform: isActive ? "scale(1.05)" : "none", transition: "transform 220ms ease" }}>
+                            <Icon size={28 * (402 / 375)} strokeWidth={isActive ? 2.4 : 1.8} />
+                          </div>
+                          <span style={{ marginTop: 3 * (874 / 812), fontSize: 11 * (402 / 375), lineHeight: 1.2, fontWeight: isActive ? 700 : 500, whiteSpace: "nowrap" }}>{label}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {navLook.repairLabel.trim() !== "" && (
+                    <>
+                      <div style={{ width: 1, height: 44 * (874 / 812), margin: `0 ${6 * (402 / 375)}px`, background: navLook.navLabelColor, opacity: 0.18 }} />
                       <div
-                        key={label}
-                        className={cn(styles.navItem, isActive && styles.navItemActive)}
-                        style={{ color: isActive ? navLook.navActiveColor : navLook.navLabelColor, transition: "color 200ms ease" }}
-                        aria-label={label}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: 402 * 0.27,
+                          height: 50 * (874 / 812),
+                          boxSizing: "border-box",
+                          padding: `0 ${6 * (402 / 375)}px`,
+                          borderRadius: 18 * (402 / 375),
+                          background: navLook.repairPillColor,
+                          color: navLook.repairPillTextColor,
+                          fontSize: 11 * (402 / 375),
+                          fontWeight: 600,
+                          lineHeight: 1.15,
+                          whiteSpace: "pre-line",
+                        }}
                       >
-                        <Icon className={styles.navIcon} strokeWidth={2.2} />
-                        <span>{label}</span>
+                        <Smartphone size={22 * (402 / 375)} strokeWidth={1.8} />
+                        <span style={{ flex: 1, marginLeft: 3 * (402 / 375) }}>{navLook.repairLabel}</span>
+                        <ChevronRight size={14 * (402 / 375)} strokeWidth={2} />
                       </div>
-                    )
-                  })}
+                    </>
+                  )}
                 </div>
-                {navLook.repairLabel.trim() !== "" && (
-                  <>
-                    <div style={{ width: 1, height: 34, margin: "0 6px", background: navLook.navLabelColor, opacity: 0.18 }} />
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        width: "27%",
-                        padding: "8px 8px",
-                        borderRadius: 14,
-                        background: navLook.repairPillColor,
-                        color: navLook.repairPillTextColor,
-                        fontSize: 10,
-                        fontWeight: 600,
-                        lineHeight: 1.15,
-                        whiteSpace: "pre-line",
-                      }}
-                    >
-                      <Smartphone size={16} />
-                      <span style={{ flex: 1 }}>{navLook.repairLabel}</span>
-                      <ChevronRight size={12} />
-                    </div>
-                  </>
-                )}
-              </div>
+              </ZoomTo402>
             </div>
           </div>
         </div>

@@ -8,6 +8,9 @@ import { DEFAULT_HOME_LOOK } from "@/types/theme.types"
 import type { PreviewProps } from "./index"
 import styles from "../MobilePreviewFrame.module.css"
 
+/** The app lays sections out in 914px design units on a 402pt screen. */
+const K = 402 / 914
+
 function CarouselPreview({
   section,
   isSelected,
@@ -64,35 +67,38 @@ function CarouselPreview({
       onClick={onClick}
       aria-pressed={isSelected}
     >
-      <div style={{ padding: "8px 10px" }}>
+      <div style={{ padding: isPromo ? `0 ${22 * K}px` : "8px 10px" }}>
         {hasImages ? (
           <div>
             {isPromo ? (
-              /* Dealker hero: black phone-bezel frame, dots overlaid bottom-right (matches the app). */
+              /* App: plain banner card, no frame (a phone bezel, if any, is part of the uploaded
+                 image). Radius = section `border_radius` (default 12, max 24), 870:382, dots
+                 bottom-right at 0.75 x design scale. */
               <div
                 style={{
                   position: "relative",
-                  background: look.heroFrameColor,
-                  borderRadius: 22,
-                  padding: 6,
                   aspectRatio: "870 / 382",
+                  borderRadius: Math.min(24, Math.max(0, typeof config.border_radius === "number" ? config.border_radius : 12)),
+                  overflow: "hidden",
                 }}
               >
                 <img
                   src={allImages[0]}
                   alt="Promo Banner"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", borderRadius: 16 }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />
                 {allImages.length > 1 && (
-                  <div style={{ position: "absolute", right: 16, bottom: 14, display: "flex", gap: 6 }}>
+                  <div style={{ position: "absolute", right: 18 * K, bottom: 16 * K, display: "flex" }}>
                     {allImages.map((_, i) => (
                       <span
                         key={`hd-${i}`}
                         style={{
-                          width: 9,
-                          height: 9,
+                          width: 20 * K * 0.75,
+                          height: 20 * K * 0.75,
+                          marginLeft: 12 * K * 0.75,
                           borderRadius: 999,
-                          border: `1.5px solid ${look.heroDotColor}`,
+                          boxSizing: "border-box",
+                          border: `${2.5 * K * 0.75}px solid ${look.heroDotColor}`,
                           background: i === 0 ? look.heroDotColor : "transparent",
                         }}
                       />
@@ -119,7 +125,7 @@ function CarouselPreview({
                       cursor: "pointer",
                     }}
                   >
-                    Frame colors
+                    Dot colors
                   </span>
                 )}
               </div>

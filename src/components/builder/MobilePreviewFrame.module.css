@@ -109,13 +109,12 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  padding-top: 48px;
 }
 
 .scrollableContent {
   flex: 1;
   overflow-y: auto;
-  padding: 0 0 84px;
+  padding: 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(16, 24, 40, 0.18) transparent;
   -webkit-overflow-scrolling: touch;
@@ -136,17 +135,10 @@
 }
 
 .bottomNav {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 86px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-bottom: 16px;
+  /* A real bar under the scrolling content, like the app's bottomNavigationBar. */
+  position: relative;
+  flex-shrink: 0;
   z-index: 20;
-  pointer-events: none;
 }
 
 .bottomNavDock {
