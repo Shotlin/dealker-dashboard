@@ -11,7 +11,8 @@ export type DealerBlockType =
   | "recent_recommended"
   | "brand_spotlight"
   | "banner_rail"
-  | "oval_spotlight";
+  | "oval_spotlight"
+  | "shops_nearby";
 
 export const DEALER_BLOCK_TYPES: DealerBlockType[] = [
   "live_auction",
@@ -20,6 +21,7 @@ export const DEALER_BLOCK_TYPES: DealerBlockType[] = [
   "brand_spotlight",
   "banner_rail",
   "oval_spotlight",
+  "shops_nearby",
 ];
 
 export function isDealerBlock(
@@ -70,6 +72,17 @@ export const DEALER_BLOCK_DEFAULTS: Record<
     view_all_text_color: "#1F4FE0",
     panel_color: "#FFFFFF",
     grab_button_color: "#1B5BF2",
+  },
+  shops_nearby: {
+    title: "Shops",
+    view_all_label: "View all →",
+    max_shops: 12,
+    bg_color: "#FFFFFF",
+    text_color: "#0F1E4D",
+    muted_color: "#6B7280",
+    accent_color: "#1D4ED8",
+    accent_soft_color: "#EEF3FF",
+    card_border_color: "#E7EEFB",
   },
   oval_spotlight: {
     title: "Best in Collection",
@@ -181,6 +194,22 @@ export const DEALER_BLOCK_FIELDS: Record<DealerBlockType, BlockField[]> = {
     col("panel_color", "Card panel background"),
     txt("button_label", "Card button label"),
     col("grab_button_color", "Card button colour"),
+  ],
+  shops_nearby: [
+    txt("title", "Title"),
+    txt("view_all_label", "“View all” label (empty = hide)"),
+    {
+      key: "max_shops",
+      label: "Shops shown (1–30)",
+      kind: "number",
+      hint: "Active vendor shops that sell something — nearest first when the customer has a saved address, best rated otherwise. Filled automatically from your shops (name, logo, rating, distance); nothing to pick here.",
+    },
+    col("bg_color", "Section background"),
+    col("text_color", "Title & shop names"),
+    col("muted_color", "Secondary text (rating count, distance)"),
+    col("accent_color", "Follow button / icon / “View all”"),
+    col("accent_soft_color", "“Following” button fill"),
+    col("card_border_color", "Card border"),
   ],
   oval_spotlight: [
     txt("title", "Title"),

@@ -214,6 +214,7 @@ function StyleEditorRouter({
     case "brand_spotlight":
     case "banner_rail":
     case "oval_spotlight":
+    case "shops_nearby":
       return (
         <DealerBlockEditor
           type={section.section_type}

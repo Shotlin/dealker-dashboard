@@ -369,6 +369,29 @@ function DealerBlocksPreview({
         </div>
       </div>
     );
+  } else if (type === "shops_nearby") {
+    body = (
+      <div style={{ background: v("bg_color"), border: `1px solid ${v("card_border_color")}`, borderRadius: 16, padding: "10px 0 8px", textAlign: "left" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 18, height: 18, borderRadius: "50%", background: v("accent_soft_color"), border: `1px solid ${v("accent_color")}55`, display: "inline-block" }} />
+            <b style={{ fontSize: 12, color: v("text_color") }}>{v("title")}</b>
+            <span style={{ fontSize: 9, color: v("muted_color") }}>(Nearby 12)</span>
+          </div>
+          <span style={{ fontSize: 9, fontWeight: 800, color: v("accent_color") }}>{v("view_all_label")}</span>
+        </div>
+        <div style={{ display: "flex", gap: 6, padding: "8px 10px 0", overflow: "hidden" }}>
+          {["TN", "MT", "SM", "GG"].map((t, i) => (
+            <div key={t} style={{ flex: "0 0 62px", border: `1px solid ${v("card_border_color")}`, borderRadius: 10, padding: "6px 4px", textAlign: "center", background: "#fff" }}>
+              <div style={{ width: 24, height: 24, borderRadius: "50%", margin: "0 auto", background: ["#2563eb", "#0e9f6e", "#e11d48", "#7c3aed"][i], color: "#fff", fontSize: 8, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{t}</div>
+              <div style={{ fontSize: 7.5, fontWeight: 800, marginTop: 3, color: v("text_color") }}>Shop name</div>
+              <div style={{ fontSize: 6.5, color: v("muted_color") }}>4.6 ★ · 1.2 km</div>
+              <div style={{ marginTop: 4, background: v("accent_color"), color: "#fff", borderRadius: 5, fontSize: 7, fontWeight: 800, padding: "2px 0" }}>+ Follow</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   } else if (type === "banner_rail") {
     body = (
       <div style={{ background: v("panel_color"), borderRadius: 16, overflow: "hidden", textAlign: "left", paddingBottom: 8 }}>

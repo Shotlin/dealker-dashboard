@@ -52,6 +52,7 @@ export const previewRegistry: Record<SectionType, FC<PreviewProps>> = {
   banner_rail: DealerSectionsPreview,
   oval_spotlight: DealerSectionsPreview,
   category_deals: StealDealsPreview,
+  shops_nearby: DealerBlocksPreview,
   top_brands: TopBrandsPreview,
   price_sale: StealDealsPreview,
   price_shop: TabbedSectionsPreview,

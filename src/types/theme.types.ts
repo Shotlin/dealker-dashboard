@@ -100,6 +100,8 @@ export interface HomeLookTheme {
   repairPillTextColor?: string
   /** Footer pill text (use a line break for two lines); empty hides the pill. */
   repairLabel?: string
+  /** Picture used as the footer's repair button (empty = the app's bundled banner). */
+  repairBannerUrl?: string
   productBoxColor?: string
   productBoxBorderColor?: string
   productTextColor?: string
@@ -146,6 +148,7 @@ export const DEFAULT_HOME_LOOK: Required<Omit<HomeLookTheme, "canvasColor">> = {
   repairPillColor: "#FBE36B",
   repairPillTextColor: "#111111",
   repairLabel: "Repair\nMobile etc.",
+  repairBannerUrl: "",
   productBoxColor: "#FFFFFF",
   productBoxBorderColor: "#EFE3B5",
   productTextColor: "#111111",
@@ -380,6 +383,7 @@ export const SECTION_TYPES = [
   "price_sale",
   "oval_spotlight",
   "category_deals",
+  "shops_nearby",
 ] as const
 
 export type SectionType = typeof SECTION_TYPES[number]

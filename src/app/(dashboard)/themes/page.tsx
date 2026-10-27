@@ -443,6 +443,10 @@ function ThemeListContent() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => router.push("/themes/product-page")}>
+            <LayoutGrid className="mr-2 size-4" />
+            Product page
+          </Button>
           <Button variant="outline" onClick={() => router.push("/themes/builder")}>
             <LayoutGrid className="mr-2 h-4 w-4" />
             Section builder

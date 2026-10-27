@@ -8,19 +8,6 @@ import {
   type CSSProperties,
 } from "react"
 import {
-  House,
-  ShoppingCart,
-  Grid2x2,
-  UserRound,
-  Tag,
-  RotateCcw,
-  Gavel,
-  ClipboardList,
-  Smartphone,
-  ChevronRight,
-} from "lucide-react"
-import type { LucideIcon } from "lucide-react"
-import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
@@ -71,18 +58,6 @@ const PHONE_WIDTH = 430
 const PHONE_HEIGHT = 932
 const FIT_STAGE_GUTTER = 12
 
-const NAV_ICON_MAP: Record<string, LucideIcon> = {
-  Home: House,
-  Cart: ShoppingCart,
-  Categories: Grid2x2,
-  Auction: Gavel,
-  Order: ClipboardList,
-  Profile: UserRound,
-  "Buy Again": RotateCcw,
-  Deals: Tag,
-  Account: UserRound,
-}
-
 export function MobilePreviewFrame({
   sections,
   selectedSectionId,
@@ -113,7 +88,7 @@ export function MobilePreviewFrame({
   })
 
   const { categories, products } = usePreviewData()
-  const { activeStoreKey, storeConfig } = useStoreContext()
+  const { activeStoreKey } = useStoreContext()
 
   const deferredSections = useDeferredValue(sections)
   const isStale = deferredSections !== sections
@@ -316,53 +291,66 @@ export function MobilePreviewFrame({
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    padding: `${4 * (874 / 812)}px ${12 * (402 / 375)}px ${22}px`,
+                    padding: `${3 * (874 / 812)}px ${navLook.repairLabel.trim() !== "" ? 0 : 10 * (402 / 375)}px ${22}px ${10 * (402 / 375)}px`,
                     background: navLook.navBackgroundColor,
                     boxShadow: "0 -6px 20px rgba(0,0,0,0.08)",
                   }}
                 >
                   <div style={{ display: "flex", flex: 1 }}>
-                    {["Home", "Categories", "Auction", "Order"].map((label, index) => {
-                      const Icon = NAV_ICON_MAP[label] ?? Grid2x2
+                    {(["Home", "Categories", "Auction", "Order"] as const).map((label, index) => {
                       const isActive = index === 0
+                      const file = { Home: "home", Categories: "categories", Auction: "auction", Order: "orders" }[label]
                       const color = isActive ? navLook.navActiveColor : navLook.navLabelColor
+                      const glyph = (kind: "outline" | "filled", c: string, visible: boolean) => (
+                        <span
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            background: c,
+                            WebkitMask: `url(/footer/${file}-${kind}.png) center / contain no-repeat`,
+                            mask: `url(/footer/${file}-${kind}.png) center / contain no-repeat`,
+                            opacity: visible ? 1 : 0,
+                            transition: "opacity 220ms ease",
+                          }}
+                        />
+                      )
                       return (
                         <div
                           key={label}
                           aria-label={label}
-                          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: `${4 * (874 / 812)}px ${1 * (402 / 375)}px`, color, transition: "color 220ms ease" }}
+                          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: `${2 * (874 / 812)}px ${1 * (402 / 375)}px`, color, transition: "color 220ms ease" }}
                         >
-                          <div style={{ width: 48 * (402 / 375), height: 34 * (874 / 812), display: "grid", placeItems: "center", transform: isActive ? "scale(1.05)" : "none", transition: "transform 220ms ease" }}>
-                            <Icon size={28 * (402 / 375)} strokeWidth={isActive ? 2.4 : 1.8} />
+                          <div style={{ width: 40 * (402 / 375), height: 27 * (874 / 812), display: "grid", placeItems: "center", transform: isActive ? "scale(1.06)" : "none", transition: "transform 220ms ease" }}>
+                            <div style={{ position: "relative", width: 25 * (402 / 375), height: 25 * (402 / 375) }}>
+                              {glyph("outline", navLook.navLabelColor, !isActive)}
+                              {glyph("filled", navLook.navActiveColor, isActive)}
+                            </div>
                           </div>
-                          <span style={{ marginTop: 3 * (874 / 812), fontSize: 11 * (402 / 375), lineHeight: 1.2, fontWeight: isActive ? 700 : 500, whiteSpace: "nowrap" }}>{label}</span>
+                          <span style={{ fontSize: 10.5 * (402 / 375), lineHeight: 1.1, fontWeight: isActive ? 700 : 500, whiteSpace: "nowrap" }}>{label}</span>
                         </div>
                       )
                     })}
                   </div>
                   {navLook.repairLabel.trim() !== "" && (
                     <>
-                      <div style={{ width: 1, height: 44 * (874 / 812), margin: `0 ${6 * (402 / 375)}px`, background: navLook.navLabelColor, opacity: 0.18 }} />
+                      <div style={{ width: 6 * (402 / 375), flexShrink: 0 }} />
                       <div
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: 402 * 0.27,
-                          height: 50 * (874 / 812),
-                          boxSizing: "border-box",
-                          padding: `0 ${6 * (402 / 375)}px`,
-                          borderRadius: 18 * (402 / 375),
-                          background: navLook.repairPillColor,
-                          color: navLook.repairPillTextColor,
-                          fontSize: 11 * (402 / 375),
-                          fontWeight: 600,
-                          lineHeight: 1.15,
-                          whiteSpace: "pre-line",
+                          width: 402 * 0.29,
+                          height: (402 * 0.29) / 2.4,
+                          borderRadius: `${16 * (402 / 375)}px 0 0 ${16 * (402 / 375)}px`,
+                          overflow: "hidden",
+                          boxShadow: "-2px 3px 8px rgba(79,63,224,0.15)",
+                          flexShrink: 0,
                         }}
                       >
-                        <Smartphone size={22 * (402 / 375)} strokeWidth={1.8} />
-                        <span style={{ flex: 1, marginLeft: 3 * (402 / 375) }}>{navLook.repairLabel}</span>
-                        <ChevronRight size={14 * (402 / 375)} strokeWidth={2} />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={navLook.repairBannerUrl ? navLook.repairBannerUrl : "/footer/repair-banner.png"}
+                          alt={navLook.repairLabel}
+                          draggable={false}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        />
                       </div>
                     </>
                   )}

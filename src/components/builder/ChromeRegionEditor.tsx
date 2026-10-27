@@ -445,18 +445,22 @@ function RegionFields({
           <LookColor label="Nav background" field="navBackgroundColor" look={look} patchLook={patchLook} />
           <LookColor label="Active tab color" field="navActiveColor" look={look} patchLook={patchLook} />
           <LookColor label="Inactive icon / label color" field="navLabelColor" look={look} patchLook={patchLook} />
-          <LookColor label="Repair pill background" field="repairPillColor" look={look} patchLook={patchLook} />
-          <LookColor label="Repair pill text / icon" field="repairPillTextColor" look={look} patchLook={patchLook} />
+          <ThemeImageUploader
+            label="Repair button picture"
+            hint="Image only — the app adds no text. Upload a wide banner, ratio 12:5 (e.g. 1200 × 500 px, PNG/JPG/WebP). It sits at the right end of the footer and opens the repair flow. Leave empty to use the built-in Dealker repair banner."
+            value={look.repairBannerUrl ? look.repairBannerUrl : null}
+            onChange={(url) => patchLook({ repairBannerUrl: url ?? "" })}
+          />
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-slate-600">Repair pill text</Label>
+            <Label className="text-xs font-medium text-slate-600">Repair button label (screen readers) — empty hides the button</Label>
             <Input
               value={look.repairLabel ?? DEFAULT_HOME_LOOK.repairLabel}
               onChange={(e) => patchLook({ repairLabel: e.target.value })}
-              placeholder="Repair Mobile etc. (empty hides the pill)"
+              placeholder="Repair Mobile etc."
             />
           </div>
           <p className="text-xs text-slate-500">
-            The footer tabs are Home, Categories, Auction and Order; the pill opens the repair flow.
+            The footer tabs are Home, Categories, Auction and Order (icons fade between outline and filled); the picture on the right opens the repair flow.
           </p>
         </div>
       )

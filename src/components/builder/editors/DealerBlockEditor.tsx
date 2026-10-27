@@ -93,6 +93,11 @@ export default function DealerBlockEditor({ type, config, onChange }: DealerBloc
           Each Deal of the Day has its own background, end time and products. Pick the products under “Product source” (leave it empty to show the store&apos;s current deals — then two sections would show the same ones). You can add several of these to any store or tab.
         </p>
       )}
+      {type === "shops_nearby" && (
+        <p className="text-xs text-slate-500">
+          Shows your active vendor shops automatically. Shops with a logo show it; others show their initials. Customers can follow a shop with one tap (log-in required).
+        </p>
+      )}
       {type === "oval_spotlight" && (
         <p className="text-xs text-slate-500">
           Pick the products under “Product source”. Cards slide sideways inside the oval panel (up to 12).
