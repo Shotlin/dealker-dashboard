@@ -16,9 +16,11 @@ import { DemandTab } from "@/components/b2b/DemandTab"
 import { OrdersTab } from "@/components/b2b/OrdersTab"
 import { RequirementSheet } from "@/components/b2b/RequirementSheet"
 import { SettingsTab } from "@/components/b2b/SettingsTab"
+import { WholesaleShelfTab } from "@/components/b2b/WholesaleShelfTab"
 import { ReqStatusBadge, dateShort } from "@/components/b2b/shared"
 import { useB2bRequirements, useB2bStats } from "@/hooks/useB2bAdmin"
 import { useDebounce } from "@/hooks/useDebounce"
+import { useListingStats } from "@/hooks/useListings"
 import { cn, formatINR, formatShort } from "@/lib/utils"
 
 function Kpi({ icon: Icon, label, value, sub, tone, onClick }: { icon: React.ElementType; label: string; value: string; sub?: string; tone?: string; onClick?: () => void }) {
@@ -115,6 +117,7 @@ function B2bPage() {
   const [orderStatus, setOrderStatus] = useState("")
   const [creating, setCreating] = useState(false)
   const { data: s } = useB2bStats()
+  const { data: ls } = useListingStats()
   const goOrders = (status: string) => { setOrderStatus(status); setTab("orders") }
 
   return (
@@ -123,7 +126,7 @@ function B2bPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Vendors marketplace</h1>
-          <p className="text-sm text-muted-foreground">Vendors post what they need, matching sellers are alerted and quote, the buyer splits the order and pays from their Dealker wallet, and the money stays in escrow until delivery. You can see and run every step from here.</p>
+          <p className="text-sm text-muted-foreground">Vendors post what they need, matching sellers are alerted and quote, the buyer splits the order and pays from their Dealker wallet, and the money stays in escrow until delivery. The Wholesale shelf shows the stock vendors can also buy directly from each other. You can see and run every step from here.</p>
         </div>
         <Button onClick={() => setCreating(true)}><Plus className="mr-1.5 h-4 w-4" />New requirement</Button>
       </div>
@@ -132,6 +135,7 @@ function B2bPage() {
         <TabsList className="h-auto flex-wrap justify-start gap-1 bg-muted/60 p-1">
           <TabsTrigger value="overview" className="px-3 py-1.5">Overview</TabsTrigger>
           <TabsTrigger value="demand" className="px-3 py-1.5">Demand</TabsTrigger>
+          <TabsTrigger value="shelf" className="px-3 py-1.5">Wholesale shelf {ls?.b2b_listings != null && <span className="ml-1.5 rounded-full bg-background px-1.5 text-[11px] tabular-nums text-muted-foreground">{ls.b2b_listings}</span>}</TabsTrigger>
           <TabsTrigger value="requirements" className="px-3 py-1.5">Requirements {s && <span className="ml-1.5 rounded-full bg-background px-1.5 text-[11px] tabular-nums text-muted-foreground">{s.total_requirements}</span>}</TabsTrigger>
           <TabsTrigger value="orders" className="px-3 py-1.5">Orders & dispatch {s && <span className="ml-1.5 rounded-full bg-background px-1.5 text-[11px] tabular-nums text-muted-foreground">{s.orders}</span>}</TabsTrigger>
           <TabsTrigger value="disputes" className="px-3 py-1.5">Disputes {s && s.disputes > 0 && <span className="ml-1.5 rounded-full bg-red-100 px-1.5 text-[11px] font-medium tabular-nums text-red-700">{s.disputes}</span>}</TabsTrigger>
@@ -166,6 +170,7 @@ function B2bPage() {
         </TabsContent>
 
         <TabsContent value="demand" className="mt-4"><DemandTab onOpen={setOpenId} /></TabsContent>
+        <TabsContent value="shelf" className="mt-4"><WholesaleShelfTab /></TabsContent>
         <TabsContent value="requirements" className="mt-4"><RequirementsTable onOpen={setOpenId} /></TabsContent>
         <TabsContent value="orders" className="mt-4"><OrdersTab key={orderStatus} initialStatus={orderStatus} /></TabsContent>
         <TabsContent value="disputes" className="mt-4"><OrdersTab key="disputes" initialStatus="DISPUTED" /></TabsContent>

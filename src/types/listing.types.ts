@@ -32,6 +32,10 @@ export interface ListingCard {
   merch_section: SectionKey | null
   sell_b2c: boolean
   sell_b2b: boolean
+  /** Wholesale channel (present when the listing is sold B2B). */
+  wholesale_price?: number | null
+  min_order_qty?: number
+  b2b_discount_pct?: number | null
 }
 
 export interface ListingDetail {
@@ -112,6 +116,11 @@ export interface ListingStats {
   rejected: number
   used: number
   out_of_stock: number
+  /** Wholesale shelf totals (admin view). */
+  b2b_listings?: number
+  b2b_vendors?: number
+  b2b_units?: number
+  b2b_deals?: number
 }
 
 export interface ListingFilters {
