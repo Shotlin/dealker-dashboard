@@ -10,6 +10,9 @@ import { toast } from "sonner"
 import {
   apiMessage,
   evidenceApi,
+  exchangeProgramsApi,
+  type ExchangeDeviceType,
+  type ExchangeProgramInput,
   journeyApi,
   requestsApi,
   sellSettingsApi,
@@ -223,6 +226,42 @@ export function useUnblockImei() {
   return useMutation({
     mutationFn: (imei: string) => journeyApi.unblock(imei),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["sell-finance", "blocklist"] }); toast.success("IMEI removed from the blocklist") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+// ── exchange programmes ─────────────────────────────────────────────────
+
+const xKeys = { types: ["exchange", "types"] as const, programs: ["exchange", "programs"] as const }
+
+export const useExchangeTypes = () => useQuery({ queryKey: xKeys.types, queryFn: exchangeProgramsApi.types, staleTime: 60_000 })
+export const useExchangePrograms = () => useQuery({ queryKey: xKeys.programs, queryFn: exchangeProgramsApi.programs })
+
+export function useSaveExchangeType() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (v: { key?: string; body: Partial<ExchangeDeviceType> }) =>
+      v.key ? exchangeProgramsApi.updateType(v.key, v.body) : exchangeProgramsApi.createType(v.body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: xKeys.types }); toast.success("Device type saved") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export function useSaveExchangeProgram() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (v: { id?: string; body: Partial<ExchangeProgramInput> }) =>
+      v.id ? exchangeProgramsApi.updateProgram(v.id, v.body) : exchangeProgramsApi.createProgram(v.body as ExchangeProgramInput),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: xKeys.programs }); toast.success("Exchange programme saved — the product pages update immediately") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export function useDeleteExchangeProgram() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: exchangeProgramsApi.deleteProgram,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: xKeys.programs }); toast.success("Programme removed") },
     onError: (e) => toast.error(apiMessage(e)),
   })
 }

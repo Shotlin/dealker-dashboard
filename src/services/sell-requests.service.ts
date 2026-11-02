@@ -18,7 +18,8 @@ export type RequestKind = "SELL" | "EXCHANGE"
 export type SellRequestStatus = "PENDING" | "APPROVED" | "IN_PROGRESS" | "COMPLETED" | "REJECTED" | "CANCELLED"
 export type SellRequestType = "SELL_TO_AB" | "BUY_NOW" | "EXCHANGE"
 export type DeviceCondition = "EXCELLENT" | "GOOD" | "FAIR" | "POOR"
-export type DeviceCategory = "Smartphone" | "Tablet" | "Laptop"
+/** Old-device type key (Smartphone, Tablet, Laptop, Headphones … — managed under Exchange programmes). */
+export type DeviceCategory = string
 export type Scratches = "NONE" | "MINOR" | "MAJOR"
 
 export interface DeviceQA {
@@ -400,6 +401,51 @@ export const sellSettingsApi = {
     api.put<ApiResponse<SellSettings>>(`${SHARED}/settings`, body).then((r) => r.data.data),
   createModel: (body: ModelInput) => api.post<ApiResponse<CatalogModel>>(`${SHARED}/models`, body).then((r) => r.data.data),
   updateModel: (id: string, body: Partial<ModelInput>) => api.put<ApiResponse<CatalogModel>>(`${SHARED}/models/${id}`, body).then((r) => r.data.data),
+}
+
+// ── Exchange programmes (which products accept a trade-in, and which old devices count) ──
+
+export type DeviceIcon = "phone" | "tablet" | "laptop" | "headphones" | "earbuds" | "watch" | "speaker" | "camera" | "console" | "other"
+export interface ExchangeDeviceType {
+  key: string
+  label: string
+  icon: DeviceIcon
+  needsImei: boolean
+  hasScreen: boolean
+  hasBattery: boolean
+  hasCamera: boolean
+  sortOrder: number
+  isActive: boolean
+}
+export interface ExchangeProgram {
+  id: string
+  name: string
+  deviceTypes: string[]
+  categoryIds: string[]
+  productIds: string[]
+  maxValuePct: number
+  isActive: boolean
+  sortOrder: number
+  categories: Array<{ id: string; name: string }>
+  products: Array<{ id: string; name: string }>
+}
+export interface ExchangeProgramInput {
+  name: string
+  deviceTypes: string[]
+  categoryIds: string[]
+  productIds?: string[]
+  maxValuePct: number
+  isActive?: boolean
+}
+const XB = BASES.EXCHANGE
+export const exchangeProgramsApi = {
+  types: () => api.get<ApiResponse<ExchangeDeviceType[]>>(`${XB}/types`).then((r) => r.data.data),
+  createType: (body: Partial<ExchangeDeviceType>) => api.post<ApiResponse<ExchangeDeviceType>>(`${XB}/types`, body).then((r) => r.data.data),
+  updateType: (key: string, body: Partial<ExchangeDeviceType>) => api.put<ApiResponse<ExchangeDeviceType>>(`${XB}/types/${encodeURIComponent(key)}`, body).then((r) => r.data.data),
+  programs: () => api.get<ApiResponse<ExchangeProgram[]>>(`${XB}/programs`).then((r) => r.data.data),
+  createProgram: (body: ExchangeProgramInput) => api.post<ApiResponse<ExchangeProgram>>(`${XB}/programs`, body).then((r) => r.data.data),
+  updateProgram: (id: string, body: Partial<ExchangeProgramInput>) => api.put<ApiResponse<ExchangeProgram>>(`${XB}/programs/${id}`, body).then((r) => r.data.data),
+  deleteProgram: (id: string) => api.delete(`${XB}/programs/${id}`).then(() => undefined),
 }
 
 /** Pull the backend's human message out of an axios error. */

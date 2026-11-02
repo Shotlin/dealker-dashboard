@@ -4,7 +4,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Pencil, Plus, RotateCcw } from "lucide-react"
+import { ArrowLeft, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton"
 import { QueryErrorBlock } from "@/components/shared/query-error-block"
@@ -15,10 +15,11 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useSaveSellModel, useSellModels, useSellSettings, useUpdateSellSettings } from "@/hooks/useSellRequests"
+import { useDeleteExchangeProgram, useExchangePrograms, useExchangeTypes, useSaveExchangeProgram, useSaveExchangeType, useSaveSellModel, useSellModels, useSellSettings, useUpdateSellSettings } from "@/hooks/useSellRequests"
+import { useCategories } from "@/hooks/useCategories"
 import { usePermissions } from "@/hooks/usePermissions"
 import { formatINR } from "@/lib/utils"
-import type { CatalogModel, DeviceCategory } from "@/services/sell-requests.service"
+import type { CatalogModel, DeviceCategory, DeviceIcon, ExchangeDeviceType, ExchangeProgram } from "@/services/sell-requests.service"
 
 type RuleMeta = { key: string; label: string; unit: string; hint?: string }
 
@@ -218,6 +219,7 @@ function JourneyPanelSettings() {
 
 function ModelDialog({ model, open, onClose }: { model: CatalogModel | null; open: boolean; onClose: () => void }) {
   const save = useSaveSellModel()
+  const types = useExchangeTypes()
   const [name, setName] = useState("")
   const [category, setCategory] = useState<DeviceCategory>("Smartphone")
   const [variants, setVariants] = useState("")
@@ -239,14 +241,14 @@ function ModelDialog({ model, open, onClose }: { model: CatalogModel | null; ope
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{model ? `Edit ${model.name}` : "Add device model"}</DialogTitle>
-          <DialogDescription>Customers can only sell models listed here.</DialogDescription>
+          <DialogDescription>Customers can only sell or trade in models listed here. Add new device kinds (headphones, watches…) under Exchange programmes.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
           <div className="space-y-1.5"><Label htmlFor="mn">Model name</Label><Input id="mn" value={name} onChange={(e) => setName(e.target.value)} /></div>
           <div className="space-y-1.5">
             <Label>Category</Label>
             <Select value={category} onValueChange={(x) => setCategory(x as DeviceCategory)}><SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="Smartphone">Smartphone</SelectItem><SelectItem value="Tablet">Tablet</SelectItem><SelectItem value="Laptop">Laptop</SelectItem></SelectContent></Select>
+              <SelectContent>{(types.data ?? []).map((t) => <SelectItem key={t.key} value={t.key}>{t.label}</SelectItem>)}</SelectContent></Select>
           </div>
           <div className="space-y-1.5"><Label htmlFor="mv">Variants (lowest → highest, comma separated)</Label><Input id="mv" value={variants} onChange={(e) => setVariants(e.target.value)} placeholder="128GB, 256GB, 512GB" /></div>
           <div className="space-y-1.5"><Label htmlFor="mc">Colours (comma separated)</Label><Input id="mc" value={colors} onChange={(e) => setColors(e.target.value)} placeholder="Black, Blue" /></div>
@@ -305,6 +307,183 @@ function CataloguePanel() {
   )
 }
 
+// ── Exchange programmes ────────────────────────────────────────────────
+
+const ICON_CHOICES: DeviceIcon[] = ["phone", "tablet", "laptop", "headphones", "earbuds", "watch", "speaker", "camera", "console", "other"]
+
+function TypeDialog({ type, open, onClose }: { type: ExchangeDeviceType | null; open: boolean; onClose: () => void }) {
+  const save = useSaveExchangeType()
+  const [f, setF] = useState({ label: "", icon: "other" as DeviceIcon, needsImei: false, hasScreen: false, hasBattery: true, hasCamera: false })
+  useEffect(() => {
+    if (!open) return
+    setF(type ? { label: type.label, icon: type.icon, needsImei: type.needsImei, hasScreen: type.hasScreen, hasBattery: type.hasBattery, hasCamera: type.hasCamera } : { label: "", icon: "other", needsImei: false, hasScreen: false, hasBattery: true, hasCamera: false })
+  }, [open, type])
+  const flags: Array<[keyof typeof f, string, string]> = [
+    ["needsImei", "Has an IMEI", "Phones and tablets: the customer enters a checked IMEI. Otherwise an optional serial number."],
+    ["hasScreen", "Has a screen", "Ask about screen scratches and a replaced screen."],
+    ["hasBattery", "Has a battery", "Ask about battery condition."],
+    ["hasCamera", "Has a camera / fingerprint", "Ask about camera and Face ID / fingerprint faults."],
+  ]
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{type ? `Edit ${type.label}` : "Add old-device type"}</DialogTitle>
+          <DialogDescription>The kind of device a customer can trade in. The app asks only the questions that make sense for it.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-3">
+          <div className="space-y-1.5"><Label htmlFor="tl">Name</Label><Input id="tl" value={f.label} disabled={!!type} onChange={(e) => setF({ ...f, label: e.target.value })} placeholder="Camera" /></div>
+          <div className="space-y-1.5">
+            <Label>Icon shown in the app</Label>
+            <Select value={f.icon} onValueChange={(x) => setF({ ...f, icon: x as DeviceIcon })}><SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>{ICON_CHOICES.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent></Select>
+          </div>
+          {flags.map(([k, label, hint]) => (
+            <div key={k} className="flex items-start gap-3"><Switch id={`f-${k}`} checked={f[k] as boolean} onCheckedChange={(v) => setF({ ...f, [k]: v })} /><div><Label htmlFor={`f-${k}`}>{label}</Label><p className="text-xs text-muted-foreground">{hint}</p></div></div>
+          ))}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button disabled={f.label.trim().length < 2 || save.isPending} onClick={() => save.mutate({ key: type?.key, body: { ...f, label: f.label.trim() } }, { onSuccess: onClose })}>{save.isPending ? "Saving…" : "Save type"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function ProgramDialog({ program, open, onClose }: { program: ExchangeProgram | null; open: boolean; onClose: () => void }) {
+  const save = useSaveExchangeProgram()
+  const types = useExchangeTypes()
+  const cats = useCategories()
+  const [name, setName] = useState("")
+  const [deviceTypes, setDeviceTypes] = useState<string[]>([])
+  const [categoryIds, setCategoryIds] = useState<string[]>([])
+  const [pct, setPct] = useState(100)
+  const [search, setSearch] = useState("")
+  useEffect(() => {
+    if (!open) return
+    setName(program?.name ?? ""); setDeviceTypes(program?.deviceTypes ?? []); setCategoryIds(program?.categoryIds ?? []); setPct(program?.maxValuePct ?? 100); setSearch("")
+  }, [open, program])
+  const toggle = (arr: string[], v: string) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v])
+  const all = (cats.data ?? []).filter((c) => c.is_active)
+  const name_of = (id: string | null) => all.find((c) => c.id === id)?.name
+  const shown = all.filter((c) => !search || c.name.toLowerCase().includes(search.toLowerCase()))
+  const valid = name.trim().length > 1 && deviceTypes.length > 0 && categoryIds.length > 0 && pct > 0 && pct <= 100
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>{program ? "Edit exchange programme" : "New exchange programme"}</DialogTitle>
+          <DialogDescription>Products in the chosen categories show an exchange offer on their page, for the old devices you accept here.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <div className="space-y-1.5"><Label htmlFor="pn">Programme name</Label><Input id="pn" value={name} onChange={(e) => setName(e.target.value)} placeholder="Headphone exchange" /></div>
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">Old devices we accept</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(types.data ?? []).filter((t) => t.isActive).map((t) => (
+                <label key={t.key} className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                  <input type="checkbox" checked={deviceTypes.includes(t.key)} onChange={() => setDeviceTypes((d) => toggle(d, t.key))} />{t.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">Applies to products in <span className="text-muted-foreground">({categoryIds.length} selected, sub-categories included)</span></legend>
+            <Input placeholder="Search categories" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <div className="max-h-48 overflow-y-auto rounded-lg border p-1">
+              {shown.map((c) => (
+                <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted">
+                  <input type="checkbox" checked={categoryIds.includes(c.id)} onChange={() => setCategoryIds((d) => toggle(d, c.id))} />
+                  <span>{c.name}</span>{c.parent_id && <span className="text-xs text-muted-foreground">in {name_of(c.parent_id) ?? "…"}</span>}
+                </label>
+              ))}
+              {!shown.length && <p className="p-3 text-center text-xs text-muted-foreground">No categories match.</p>}
+            </div>
+          </fieldset>
+          <NumField id="pp" label="Most credit a customer can get" unit="% of the new product's price" hint="₹1,000 headphones at 60% give at most ₹600 off, however valuable the old device." value={pct} onChange={setPct} />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button disabled={!valid || save.isPending} onClick={() => save.mutate({ id: program?.id, body: { name: name.trim(), deviceTypes, categoryIds, maxValuePct: pct } }, { onSuccess: onClose })}>{save.isPending ? "Saving…" : "Save programme"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function ExchangeProgramsPanel() {
+  const programs = useExchangePrograms()
+  const types = useExchangeTypes()
+  const save = useSaveExchangeProgram()
+  const saveType = useSaveExchangeType()
+  const del = useDeleteExchangeProgram()
+  const [editing, setEditing] = useState<ExchangeProgram | null>(null)
+  const [open, setOpen] = useState(false)
+  const [editType, setEditType] = useState<ExchangeDeviceType | null>(null)
+  const [typeOpen, setTypeOpen] = useState(false)
+  const label = (k: string) => (types.data ?? []).find((t) => t.key === k)?.label ?? k
+
+  if (programs.isError) return <QueryErrorBlock error={programs.error} onRetry={() => programs.refetch()} />
+  if (programs.isLoading || types.isLoading) return <LoadingSkeleton variant="stat-card" count={3} />
+  return (
+    <div className="space-y-6">
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div><h2 className="text-sm font-semibold">Exchange programmes</h2><p className="text-xs text-muted-foreground">Which products can be bought with a trade-in, and which old devices are accepted. A product with no programme shows no exchange.</p></div>
+          <Button size="sm" onClick={() => { setEditing(null); setOpen(true) }}><Plus /> New programme</Button>
+        </div>
+        <div className="overflow-x-auto rounded-xl border bg-card">
+          <table className="w-full min-w-[720px] text-sm">
+            <thead><tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">{["Programme", "Accepts", "On products in", "Max credit", "Active", ""].map((h) => <th key={h} className="px-3 py-2.5 font-medium">{h}</th>)}</tr></thead>
+            <tbody>
+              {(programs.data ?? []).map((p) => (
+                <tr key={p.id} className="border-b last:border-0">
+                  <td className="px-3 py-2.5 font-medium">{p.name}</td>
+                  <td className="px-3 py-2.5 text-xs">{p.deviceTypes.map(label).join(", ")}</td>
+                  <td className="px-3 py-2.5 text-xs text-muted-foreground">{p.categories.map((c) => c.name).join(", ") || "—"}{p.products.length ? ` + ${p.products.length} product(s)` : ""}</td>
+                  <td className="px-3 py-2.5 tabular-nums">{p.maxValuePct}%</td>
+                  <td className="px-3 py-2.5"><Switch aria-label={`Activate ${p.name}`} checked={p.isActive} disabled={save.isPending} onCheckedChange={(v) => save.mutate({ id: p.id, body: { isActive: v } })} /></td>
+                  <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                    <Button variant="ghost" size="icon" aria-label={`Edit ${p.name}`} onClick={() => { setEditing(p); setOpen(true) }}><Pencil /></Button>
+                    <Button variant="ghost" size="icon" aria-label={`Delete ${p.name}`} disabled={del.isPending} onClick={() => { if (confirm(`Remove “${p.name}”? Products in it will stop showing an exchange offer.`)) del.mutate(p.id) }}><Trash2 /></Button>
+                  </td>
+                </tr>
+              ))}
+              {!programs.data?.length && <tr><td colSpan={6} className="px-3 py-8 text-center text-sm text-muted-foreground">No programmes yet — customers see no exchange offer anywhere. Create one to start.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div><h2 className="text-sm font-semibold">Old-device types</h2><p className="text-xs text-muted-foreground">Add a type, then add its models under “Device catalogue” with their typical resale price.</p></div>
+          <Button size="sm" variant="outline" onClick={() => { setEditType(null); setTypeOpen(true) }}><Plus /> Add type</Button>
+        </div>
+        <div className="overflow-x-auto rounded-xl border bg-card">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead><tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">{["Type", "Icon", "Asks about", "Accepted", ""].map((h) => <th key={h} className="px-3 py-2.5 font-medium">{h}</th>)}</tr></thead>
+            <tbody>
+              {(types.data ?? []).map((t) => (
+                <tr key={t.key} className="border-b last:border-0">
+                  <td className="px-3 py-2.5 font-medium">{t.label}</td>
+                  <td className="px-3 py-2.5 text-xs">{t.icon}</td>
+                  <td className="px-3 py-2.5 text-xs text-muted-foreground">{[t.needsImei && "IMEI", t.hasScreen && "screen", t.hasBattery && "battery", t.hasCamera && "camera / fingerprint"].filter(Boolean).join(", ") || "condition only"}</td>
+                  <td className="px-3 py-2.5"><Switch aria-label={`Accept ${t.label}`} checked={t.isActive} disabled={saveType.isPending} onCheckedChange={(v) => saveType.mutate({ key: t.key, body: { isActive: v } })} /></td>
+                  <td className="px-3 py-2.5 text-right"><Button variant="ghost" size="icon" aria-label={`Edit ${t.label}`} onClick={() => { setEditType(t); setTypeOpen(true) }}><Pencil /></Button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <ProgramDialog program={editing} open={open} onClose={() => setOpen(false)} />
+      <TypeDialog type={editType} open={typeOpen} onClose={() => setTypeOpen(false)} />
+    </div>
+  )
+}
+
 export default function SellSettingsPage() {
   const { can } = usePermissions()
   return (
@@ -316,8 +495,9 @@ export default function SellSettingsPage() {
         <p role="alert" className="rounded-lg border p-6 text-center text-sm text-muted-foreground">You need the “sell_requests.settings” permission to change these.</p>
       ) : (
         <Tabs defaultValue="rules">
-          <TabsList><TabsTrigger value="rules">Valuation rules</TabsTrigger><TabsTrigger value="catalogue">Device catalogue</TabsTrigger><TabsTrigger value="journey">Selling journey</TabsTrigger></TabsList>
+          <TabsList><TabsTrigger value="rules">Valuation rules</TabsTrigger><TabsTrigger value="programs">Exchange programmes</TabsTrigger><TabsTrigger value="catalogue">Device catalogue</TabsTrigger><TabsTrigger value="journey">Selling journey</TabsTrigger></TabsList>
           <TabsContent value="rules"><RulesPanel /></TabsContent>
+          <TabsContent value="programs"><ExchangeProgramsPanel /></TabsContent>
           <TabsContent value="catalogue"><CataloguePanel /></TabsContent>
           <TabsContent value="journey"><JourneyPanelSettings /></TabsContent>
         </Tabs>

@@ -1,6 +1,6 @@
 "use client"
 
-import { Laptop, Smartphone, Tablet } from "lucide-react"
+import { Headphones, Laptop, Smartphone, Speaker, Tablet, Watch } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import type { DeviceCategory, DeviceCondition, SellRequestStatus, SellRequestType } from "@/services/sell-requests.service"
@@ -42,10 +42,10 @@ export function TypePill({ type }: { type: SellRequestType }) {
   return <span className={cn("inline-block rounded-md px-2 py-0.5 text-xs font-medium", m.className)}>{m.label}</span>
 }
 
-const ICONS: Record<DeviceCategory, typeof Smartphone> = { Smartphone, Tablet, Laptop }
+const ICONS: Record<string, typeof Smartphone> = { Smartphone, Tablet, Laptop, Headphones, Smartwatch: Watch, Speaker: Speaker }
 
 export function DeviceThumb({ category, className }: { category: DeviceCategory; className?: string }) {
-  const Icon = ICONS[category]
+  const Icon = ICONS[category] ?? Smartphone
   return (
     <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 dark:from-slate-800 dark:to-slate-700 dark:text-slate-300", className)}>
       <Icon className="h-5 w-5" aria-hidden />
