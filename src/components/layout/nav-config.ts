@@ -46,6 +46,7 @@ import {
   PiggyBank,
   PackageSearch,
   ShoppingCart,
+  Flame,
   type LucideIcon,
 } from "lucide-react"
 
@@ -137,6 +138,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Products", href: "/products", icon: Package, badgeKey: "pendingListings" },
       { label: "Categories", href: "/categories", icon: Tags },
+      { label: "Deals & Merchandising", href: "/merchandising", icon: Flame },
       { label: "Product Sections", href: "/product-sections", icon: LayoutGrid },
       { label: "Price & Stock Control", href: "/price-control", icon: SlidersHorizontal },
       { label: "QC Management", href: "/qc", icon: ShieldCheck },
@@ -252,6 +254,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   campaigns: "Campaigns",
   "price-control": "Price & Stock Control",
   "product-sections": "Product Sections",
+  merchandising: "Deals & Merchandising",
   invoices: "Invoices",
   commission: "Commission & Charges",
   wallet: "Customer Wallet",

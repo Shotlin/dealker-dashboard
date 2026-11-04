@@ -433,6 +433,14 @@ export interface ReorderSectionsPayload {
 export interface UpdateSectionMerchPayload {
   category_ids?: string[]
   product_ids?: string[]
+  /** Products hidden from this section even if a category/feed would fill them. */
+  exclude_ids?: string[]
+  /** Filter + sort rules (price, discount, brand, rating…) — see ProductRules. */
+  rules?: object | null
+  /** Promo campaign (deal) that fills this section while active. */
+  campaign_id?: string
+  /** Top up from the section's normal feed after pinned / deal / rule products. */
+  auto_fill?: boolean
   tags?: string[]
   limit?: number
   source?: "category" | "tag" | "manual"
