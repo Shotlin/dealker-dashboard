@@ -41,12 +41,15 @@ export function NoteDialog({ open, title, description, label, confirm, required 
 
 /** Choose the service centre that will repair the device. */
 export function AssignDialog({ open, title, confirm, currentId, pending, onClose, onSubmit }: {
-  open: boolean; title: string; confirm: string; currentId?: string | null; pending?: boolean; onClose: () => void; onSubmit: (vendorId: string) => void
+  open: boolean; title: string; confirm: string; currentId?: string | null; pending?: boolean; onClose: () => void; onSubmit: (vendorId: string, price?: number) => void
 }) {
   const vendors = useMarketplaceVendors({ limit: 100 })
   const list = (vendors.data?.data ?? []).filter((v) => ["ACTIVE", "VERIFIED"].includes(v.status))
   const [id, setId] = useState<string>("")
   const value = id || currentId || ""
+  const [price, setPrice] = useState("")
+  const amount = price.trim() === "" ? undefined : Number(price)
+  const bad = amount !== undefined && (!Number.isFinite(amount) || amount <= 0)
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogContent>
@@ -58,9 +61,14 @@ export function AssignDialog({ open, title, confirm, currentId, pending, onClose
             <SelectContent>{list.map((v) => <SelectItem key={v.id} value={v.id}>{v.name || v.legal_name || v.email}</SelectItem>)}</SelectContent>
           </Select>
         </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="agreed-price">Agreed repair price (₹, incl. tax)</Label>
+          <Input id="agreed-price" inputMode="decimal" placeholder="e.g. 2500" value={price} onChange={(e) => setPrice(e.target.value)} aria-invalid={bad} />
+          <p className="text-xs text-muted-foreground">What the customer pays this shop. The shop confirms it after inspecting the phone, so set it here or the shop cannot confirm a price.</p>
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button disabled={!value || pending} onClick={() => onSubmit(value)}>{confirm}</Button>
+          <Button disabled={!value || pending || bad} onClick={() => onSubmit(value, amount)}>{confirm}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

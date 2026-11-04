@@ -293,7 +293,7 @@ function RepairDetail({ id }: { id: string }) {
 
       {note && <NoteDialog open title={noteCfg[note].title} label={noteCfg[note].label} confirm={noteCfg[note].confirm} destructive={noteCfg[note].destructive} pending={act.isPending} onClose={() => setNote(null)} onSubmit={(t) => { noteCfg[note].call(t); setNote(null) }} />}
       {assign && <AssignDialog open title={assign === "accept" ? "Accept & assign service centre" : "Assign service centre"} confirm={assign === "accept" ? "Accept request" : "Assign"} currentId={r.serviceCenterId} pending={act.isPending}
-        onClose={() => setAssign(null)} onSubmit={(vendorId) => { run(assign === "accept" ? "accept" : "assign", { vendorId }); setAssign(null) }} />}
+        onClose={() => setAssign(null)} onSubmit={(vendorId, price) => { run(assign === "accept" ? "accept" : "assign", { vendorId, ...(price ? { price } : {}) }); setAssign(null) }} />}
       <QuoteDialog repair={r} open={quote} pending={act.isPending} onClose={() => setQuote(false)} onSubmit={(lines, n) => act.mutate({ type: "quote", id: r.id, lines, note: n }, { onSuccess: () => setQuote(false) })} />
       <QcDialog repair={r} open={qc} pending={act.isPending} onClose={() => setQc(false)} onSubmit={(results) => act.mutate({ type: "qc", id: r.id, results }, { onSuccess: () => setQc(false) })} />
       <PaymentDialog repair={r} open={pay} pending={act.isPending} onClose={() => setPay(false)} onSubmit={(p) => act.mutate({ type: "pay", id: r.id, ...p }, { onSuccess: () => setPay(false) })} />
