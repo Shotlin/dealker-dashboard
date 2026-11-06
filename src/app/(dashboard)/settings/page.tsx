@@ -78,6 +78,7 @@ const GROUPS: SettingsGroup[] = [
       { key: "gst_rate", label: "GST Rate (Analytics report)", type: "number", suffix: "%" },
       { key: "support_phone", label: "Support Phone", type: "text" },
       { key: "support_email", label: "Support Email", type: "text" },
+      { key: "support_hours", label: "Support Hours (shown in the apps)", type: "text" },
     ],
   },
   {
