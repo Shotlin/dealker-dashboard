@@ -123,8 +123,8 @@ export default function AuctionControlRoom() {
               <p className="text-xs text-muted-foreground">{live?.min_next_bid ? `Next bid ≥ ${formatINR(live.min_next_bid)}` : `Started at ${formatINR(a.start_price)}`}</p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">{["LIVE", "PAUSED", "SCHEDULED"].includes(status) ? "Ends in" : "Ended"}</p>
-              <p className="text-2xl font-semibold"><Countdown endsAt={endsAt} serverTime={live?.server_time ?? a.server_time} /></p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">{["LIVE", "PAUSED", "SCHEDULED"].includes(status) ? "Ends in" : status === "CANCELLED" ? "Cancelled" : "Ended"}</p>
+              <p className="text-2xl font-semibold">{status === "CANCELLED" ? "—" : <Countdown endsAt={endsAt} serverTime={live?.server_time ?? a.server_time} />}</p>
               <p className="text-xs text-muted-foreground">{dt(endsAt)}{a.extension_count > 0 && ` · extended ${live?.extension_count ?? a.extension_count}×`}</p>
             </div>
             <div>
