@@ -312,7 +312,7 @@ export default function CategoriesPage() {
                 id="cat-name"
                 value={form.name}
                 onChange={(e) => set("name", e.target.value)}
-                placeholder="e.g. Fruits & Vegetables"
+                placeholder="e.g. Mobiles & Tablets"
                 required
                 maxLength={100}
               />

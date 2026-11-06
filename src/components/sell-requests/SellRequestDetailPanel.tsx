@@ -172,7 +172,7 @@ export function SellRequestDetailPanel({ id, kind }: { id: string | null; kind: 
             <dl>
               {!isExchange && <Row label="Request Type">{TYPE_META[r.type].label}</Row>}
               <Row label={isExchange ? "Customer expects" : "Expected Price"}>{formatINR(r.expectedPrice)}</Row>
-              <Row label={isExchange ? "Trade-in value" : "System Quote"}>{formatINR(r.quote)}</Row>
+              <Row label={isExchange ? "Old device value (quote)" : "System Quote"}>{formatINR(r.quote)}</Row>
               <Row label={isExchange ? "Old device IMEI" : "Device IMEI"}><span className="font-mono text-xs">{r.device.imei}</span></Row>
               <Row label="Description"><span className="font-normal">{r.description || "—"}</span></Row>
               {r.assignedVendor && <Row label="Vendor">{r.assignedVendor}</Row>}
@@ -183,7 +183,7 @@ export function SellRequestDetailPanel({ id, kind }: { id: string | null; kind: 
                 <p className="mb-1 font-semibold">New purchase</p>
                 <div className="flex justify-between"><span className="text-muted-foreground">New product</span><span>{r.exchange.newProduct}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">New price</span><span>{formatINR(r.exchange.newProductPrice)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Trade-in value</span><span className="text-emerald-600">− {formatINR(r.exchange.tradeInValue)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{r.exchange.tradeInValue < r.quote ? "Trade-in credit applied (capped)" : "Trade-in credit applied"}</span><span className="text-emerald-600">− {formatINR(r.exchange.tradeInValue)}</span></div>
                 <div className="mt-1 flex justify-between border-t pt-1 font-semibold"><span>Customer pays</span><span>{formatINR(r.exchange.payable)}</span></div>
                 {r.exchangeOrder ? (
                   <p className="mt-2 flex items-center gap-1.5 rounded-md bg-background/70 p-2 text-xs"><Link2 className="h-3.5 w-3.5 text-violet-600" aria-hidden />Order <b>{r.exchangeOrder.orderNumber}</b> · {r.exchangeOrder.status.replace(/_/g, " ").toLowerCase()}{r.exchangeOrder.total != null && <> · {formatINR(r.exchangeOrder.total)}</>}</p>

@@ -27,7 +27,15 @@ import { ROUTE_LABELS } from "./nav-config"
 
 const UUID_RE = /^[0-9a-f]{8}-|^\d+$/i
 
-function labelFor(segment: string) {
+// Nested routes whose last segment would otherwise borrow a top-level label (e.g. /ads/wallet ≠ Customer Wallet).
+const NESTED_LABELS: Record<string, string> = {
+  "ads/wallet": "Ad wallet & billing",
+  "ads/settings": "Pricing rules",
+  "ads/new": "New campaign",
+}
+
+function labelFor(segment: string, parent?: string) {
+  if (parent && NESTED_LABELS[`${parent}/${segment}`]) return NESTED_LABELS[`${parent}/${segment}`]
   if (ROUTE_LABELS[segment]) return ROUTE_LABELS[segment]
   if (UUID_RE.test(segment)) return "Details"
   return segment.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
@@ -67,10 +75,10 @@ export function Header() {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   {isLast ? (
-                    <BreadcrumbPage>{labelFor(seg)}</BreadcrumbPage>
+                    <BreadcrumbPage>{labelFor(seg, segments[i - 1])}</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
-                      <Link href={href}>{labelFor(seg)}</Link>
+                      <Link href={href}>{labelFor(seg, segments[i - 1])}</Link>
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>

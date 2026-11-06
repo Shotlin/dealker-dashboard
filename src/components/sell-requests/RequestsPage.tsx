@@ -163,7 +163,7 @@ export function RequestsPage({ kind }: { kind: RequestKind }) {
                 <tr className="border-y bg-muted/40 text-left text-xs font-medium text-muted-foreground">
                   <th className="w-10 px-4 py-2.5"><Checkbox aria-label="Select all" checked={allChecked} onCheckedChange={(v) => setChecked(v ? new Set(rows.map((r) => r.id)) : new Set())} /></th>
                   {(isExchange
-                    ? ["ID", "Customer", "Old device (trade-in)", "New device", "Trade-in value", "Customer pays", "Order", "Status", "Date", "Action"]
+                    ? ["ID", "Customer", "Old device (trade-in)", "New device", "Old device value", "Customer pays", "Order", "Status", "Date", "Action"]
                     : ["ID", "Customer", "Product", "Condition", "Estimated Price", "Request Type", "Status", "Date", "Action"]
                   ).map((h) => <th key={h} className="px-3 py-2.5 font-medium">{h}</th>)}
                 </tr>

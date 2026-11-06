@@ -173,7 +173,7 @@ export default function MerchandisingPage() {
                 ))}
               </ol>
               {hiddenTotal > 0 && <p className="flex items-center gap-1 text-xs text-muted-foreground"><EyeOff className="h-3 w-3" />{hiddenTotal} hidden</p>}
-              <p className="rounded-lg bg-muted/50 p-2 text-[11px] text-muted-foreground">Changes save instantly and reach the app within about a minute. Rule-based filling, deals with timers and vendor entries are coming next.</p>
+              <p className="rounded-lg bg-muted/50 p-2 text-[11px] text-muted-foreground">Changes save instantly and reach the app within about a minute. Use the Rules and Deal tabs for rule-based filling and timed deals.</p>
             </>
           ) : <p className="text-xs text-muted-foreground">Select a section.</p>}
         </aside>

@@ -69,7 +69,7 @@ export function CustomerSegmentDialog({ open, onClose, segment }: CustomerSegmen
             <Label htmlFor="segment-name">Segment Name *</Label>
             <Input
               id="segment-name"
-              placeholder="e.g. VIP Grocery Customers"
+              placeholder="e.g. VIP Phone Buyers"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
