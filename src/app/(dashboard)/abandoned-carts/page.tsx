@@ -428,7 +428,7 @@ function AbandonedCartsContent() {
               </TableHead>
               <TableHead>Customer</TableHead>
               <TableHead className="text-right">Cart Value</TableHead>
-              <TableHead className="text-center">Items</TableHead>
+              <TableHead>Products</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Idle For</TableHead>
@@ -511,8 +511,17 @@ function AbandonedCartsContent() {
                     <TableCell className="text-right font-semibold text-sm">
                       {formatINR(cart.cartValue)}
                     </TableCell>
-                    <TableCell className="text-center text-sm text-muted-foreground">
-                      {cart.itemCount}
+                    <TableCell>
+                      <p className="text-sm text-foreground">{cart.itemCount} item{cart.itemCount === 1 ? "" : "s"}</p>
+                      {cart.topProducts?.length > 0 && (
+                        <p
+                          className="text-[11px] text-muted-foreground truncate max-w-[220px]"
+                          title={cart.topProducts.map((p) => `${p.name} ×${p.quantity}`).join(", ")}
+                        >
+                          {cart.topProducts.map((p) => p.name).join(", ")}
+                          {cart.itemCount > cart.topProducts.length ? ` +${cart.itemCount - cart.topProducts.length} more` : ""}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge

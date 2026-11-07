@@ -10,6 +10,8 @@ export interface AbandonedCart {
   channel: AbandonedCartChannel
   /** Names of every vendor that has an item in this cart. */
   vendorNames: string[]
+  /** The (up to 3) highest-value products in the cart. */
+  topProducts: { name: string; quantity: number; thumbnail: string | null }[]
   /** Reminders sent by vendors about their own items. */
   vendorReminderCount: number
   userId: string
