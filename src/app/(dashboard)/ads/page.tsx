@@ -183,6 +183,11 @@ export default function AdsPage() {
                 { id: "s", header: "Status", cell: (r) => (
                   <span className="flex items-center gap-2">
                     <CampaignStatusBadge status={r.status} />
+                    {r.status === "ACTIVE" && Number(r.wallet_balance ?? 0) < 3 && (
+                      <span className="mt-1 block text-xs font-medium text-amber-600">
+                        Not showing to customers — ad wallet is {rupees(Number(r.wallet_balance ?? 0))}. It starts by itself once the ad wallet is funded.
+                      </span>
+                    )}
                     {r.status === "PENDING_REVIEW" && can("ads.moderate") && (
                       <Button size="sm" variant="outline" disabled={act.isPending} onClick={() => act.mutate({ id: r.id, name: "approve" })}>
                         <CheckCircle2 /> Approve

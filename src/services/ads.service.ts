@@ -62,6 +62,8 @@ export interface Campaign {
   product_count?: number
   keyword_count?: number
   spent_today: number
+  /** Advertiser ad-wallet balance (campaigns need a funded wallet to be shown). */
+  wallet_balance?: number
   impressions_30d?: number
   clicks_30d?: number
   spend_30d?: number

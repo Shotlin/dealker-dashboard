@@ -45,6 +45,12 @@ function useShopKey(): string {
   return mode === "HQ_MODE" ? "ALL" : activeShopId ?? NONE_SHOP_KEY
 }
 
+/** The server's own reason (e.g. "Wallet balance limit exceeded") instead of axios' generic "status code 400". */
+function serverMessage(err: unknown, fallback: string): string {
+  const data = (err as { response?: { data?: { message?: string } } })?.response?.data
+  return data?.message || (err as Error)?.message || fallback
+}
+
 export function useWalletStats() {
   const shopKey = useShopKey()
   return useQuery({
@@ -108,7 +114,7 @@ export function useAdminCredit() {
       qc.invalidateQueries({ queryKey: ["customers"] })
     },
     onError: (err: Error) => {
-      toast.error(err.message || "Failed to credit wallet")
+      toast.error(serverMessage(err, "Failed to credit wallet"))
     },
   })
 }
@@ -125,7 +131,7 @@ export function useAdminDebit() {
       qc.invalidateQueries({ queryKey: ["customers"] })
     },
     onError: (err: Error) => {
-      toast.error(err.message || "Failed to debit wallet")
+      toast.error(serverMessage(err, "Failed to debit wallet"))
     },
   })
 }
