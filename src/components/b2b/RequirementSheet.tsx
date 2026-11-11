@@ -178,7 +178,7 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
                         )}
                         {(o.awb || o.dispute_reason || o.fulfilment_type === "PICKUP" || o.cancel_reason || o.payment_method) && (
                           <div className="mt-2 space-y-1 border-t pt-2 text-xs text-muted-foreground">
-                            {o.payment_method && <p>Paid via {o.payment_method === "WALLET" ? "Dealker wallet (debited from the buyer's ledger)" : "payment recorded by admin"}</p>}
+                            {o.payment_method && <p>Paid via {o.payment_method === "WALLET" ? "Dealkr wallet (debited from the buyer's ledger)" : "payment recorded by admin"}</p>}
                             {o.fulfilment_type === "PICKUP" && o.pickup_at && <p className="flex items-center gap-1.5"><Store className="h-3.5 w-3.5" />Pickup {dateTime(o.pickup_at)}{o.pickup_note ? ` · ${o.pickup_note}` : ""}{o.received_quantity != null && ` · buyer received ${o.received_quantity}/${o.quantity}`}</p>}
                             {o.awb && <p className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" />{o.courier_name} · AWB {o.awb}{o.received_quantity != null && ` · buyer received ${o.received_quantity}/${o.quantity}`}</p>}
                             {o.cancel_reason && <p className="text-red-600">Cancelled: {o.cancel_reason}</p>}
@@ -195,7 +195,7 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
                         <span>Buyer payment due: <span className="font-semibold tabular-nums">{formatINR(due)}</span> — held in escrow until delivery.</span>
                         <div className="flex gap-2">
-                          {r.buyer_name !== "Dealker" && <Button size="sm" disabled={pay.isPending} onClick={() => pay.mutate({ id: r.id, method: "WALLET" })}>Charge buyer’s wallet</Button>}
+                          {r.buyer_name !== "Dealkr" && <Button size="sm" disabled={pay.isPending} onClick={() => pay.mutate({ id: r.id, method: "WALLET" })}>Charge buyer’s wallet</Button>}
                           <Button size="sm" variant="outline" disabled={pay.isPending} onClick={() => pay.mutate({ id: r.id, method: "ONLINE" })}>Record payment taken outside</Button>
                         </div>
                       </div>
@@ -203,7 +203,7 @@ export function RequirementSheet({ id, onClose }: { id: string | null; onClose: 
                   })()}
                   {data.payment && (
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Buyer paid <span className="font-medium text-foreground">{formatINR(data.payment.amount)}</span> into escrow on {dateShort(data.payment.paid_at)} via {data.payment.method === "WALLET" ? "their Dealker wallet" : "a payment recorded by admin"} (ref {data.payment.reference}).
+                      Buyer paid <span className="font-medium text-foreground">{formatINR(data.payment.amount)}</span> into escrow on {dateShort(data.payment.paid_at)} via {data.payment.method === "WALLET" ? "their Dealkr wallet" : "a payment recorded by admin"} (ref {data.payment.reference}).
                     </p>
                   )}
                 </section>

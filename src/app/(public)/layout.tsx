@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 export const metadata: Metadata = {
-  title: { default: "Dealker", template: "%s · Dealker" },
-  description: "Dealker — buy, sell, repair and auction phones and electronics.",
+  title: { default: "Dealkr", template: "%s · Dealkr" },
+  description: "Dealkr — buy, sell, repair and auction phones and electronics.",
 }
 
 const links = [
@@ -19,7 +19,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <header className="border-b border-slate-200">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
           <Link href="/about" className="text-xl font-extrabold tracking-tight text-indigo-900">
-            Dealker
+            Dealkr
           </Link>
           <nav className="flex gap-5 text-sm">
             {links.map((l) => (

@@ -70,7 +70,7 @@ export function PaymentCard({ d }: { d: OrderOverview }) {
             <div className="mt-2 space-y-1.5 rounded-lg border p-3">
               <p className="text-xs font-medium text-muted-foreground">Paid using</p>
               {b.points_value > 0 && <Row label={`Reward points (${b.points_used} pts)`} value={money(b.points_value)} />}
-              {b.wallet_used > 0 && <Row label="Dealker wallet" value={money(b.wallet_used)} />}
+              {b.wallet_used > 0 && <Row label="Dealkr wallet" value={money(b.wallet_used)} />}
               <Row label={p.method === "COD" ? "Cash to courier" : "Card / UPI / net banking"} value={money(paidOnline)} />
             </div>
           )}
@@ -96,7 +96,7 @@ export function OffersCard({ d }: { d: OrderOverview }) {
             <p className="flex items-center gap-2 font-medium"><Ticket className="h-4 w-4 text-primary" /><span className="font-mono">{coupon.code}</span><span className="ml-auto text-emerald-600">saved {money(coupon.saved)}</span></p>
             {text && <p className="mt-1 text-xs text-muted-foreground">{text.description ?? (text.discount_type === "PERCENTAGE" ? `${Number(text.discount_value)}% off` : `₹${Number(text.discount_value)} off`)}
               {text.max_discount ? ` (up to ${money(Number(text.max_discount))})` : ""}{text.min_order_amount && Number(text.min_order_amount) > 0 ? ` on orders above ${money(Number(text.min_order_amount))}` : ""}.
-              {" "}The {text.absorber === "PLATFORM" ? "discount is paid by Dealker" : "seller pays for this discount"}.</p>}
+              {" "}The {text.absorber === "PLATFORM" ? "discount is paid by Dealkr" : "seller pays for this discount"}.</p>}
           </div>
         )}
         {b.points_value > 0 && <p className="flex items-center gap-2"><Gift className="h-4 w-4 text-muted-foreground" />Customer used <b>{b.points_used}</b> reward points worth <b>{money(b.points_value)}</b>.</p>}
@@ -136,7 +136,7 @@ export function InvoiceCard({ d }: { d: OrderOverview }) {
   return (
     <Card className="shadow-none">
       <CardContent className="flex items-center justify-between gap-3 p-4">
-        <div><p className="text-sm font-medium">Dealker invoice for the customer</p><p className="text-xs text-muted-foreground">Covers the whole order — all parcels together.</p></div>
+        <div><p className="text-sm font-medium">Dealkr invoice for the customer</p><p className="text-xs text-muted-foreground">Covers the whole order — all parcels together.</p></div>
         <Button size="sm" variant="outline" onClick={() => openInvoice(d.order.id)}><ReceiptText className="mr-1.5 h-3.5 w-3.5" />View</Button>
       </CardContent>
     </Card>

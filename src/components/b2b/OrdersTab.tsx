@@ -40,7 +40,7 @@ export function ResolveDialog({ order, onClose }: { order: B2bOrder | null; onCl
         <RadioGroup value={decision} onValueChange={(v) => setDecision(v as typeof decision)} className="space-y-2">
           {([["RELEASE", "Release full payment to seller", `Seller receives ${formatINR(order.seller_payable)} after ${order.commission_percent}% commission.`],
              ["PARTIAL", "Release for fewer units, refund the rest", "Use when only part of the order was delivered properly."],
-             ["REFUND", "Refund the buyer in full", order.payment_method === "WALLET" ? "The seller is not paid. The amount is credited back to the buyer's Dealker wallet." : "The seller is not paid. This payment was recorded outside the app, so return the money to the buyer yourself."]] as const).map(([v, t, d]) => (
+             ["REFUND", "Refund the buyer in full", order.payment_method === "WALLET" ? "The seller is not paid. The amount is credited back to the buyer's Dealkr wallet." : "The seller is not paid. This payment was recorded outside the app, so return the money to the buyer yourself."]] as const).map(([v, t, d]) => (
             <Label key={v} htmlFor={`d-${v}`} className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 font-normal has-[:checked]:border-primary has-[:checked]:bg-primary/5">
               <RadioGroupItem id={`d-${v}`} value={v} className="mt-1" />
               <span><span className="block text-sm font-medium">{t}</span><span className="text-xs text-muted-foreground">{d}</span></span>
@@ -111,7 +111,7 @@ export function OrdersTab({ initialStatus = "" }: { initialStatus?: string }) {
                 <TableCell className="text-right text-sm tabular-nums">{o.quantity} × {formatINR(o.unit_price)}</TableCell>
                 <TableCell className="text-right font-medium tabular-nums">{formatINR(o.subtotal)}</TableCell>
                 <TableCell className="text-right text-xs tabular-nums text-muted-foreground">{formatINR(o.commission_amount)} <span>({o.commission_percent}%)</span></TableCell>
-                <TableCell><PayState status={o.payment_status} />{o.payment_method && <span className="block text-[11px] text-muted-foreground">{o.payment_method === "WALLET" ? "Dealker wallet" : "Recorded by admin"}</span>}</TableCell>
+                <TableCell><PayState status={o.payment_status} />{o.payment_method && <span className="block text-[11px] text-muted-foreground">{o.payment_method === "WALLET" ? "Dealkr wallet" : "Recorded by admin"}</span>}</TableCell>
                 <TableCell><OrderStatusBadge status={o.status} /></TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   {o.fulfilment_type === "PICKUP" && o.pickup_at ? <span className="flex items-center gap-1"><Store className="h-3 w-3" />Pickup {new Date(o.pickup_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</span>

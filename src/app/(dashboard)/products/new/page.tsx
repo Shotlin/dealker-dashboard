@@ -12,7 +12,7 @@ export default function NewListingPage() {
         <Button variant="ghost" size="icon" asChild><Link href="/products" aria-label="Back"><ArrowLeft className="h-4 w-4" /></Link></Button>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Add product</h1>
-          <p className="text-sm text-muted-foreground">Add a product for Dealker or on behalf of a vendor — goes live immediately. Listings that vendors add themselves wait for your approval.</p>
+          <p className="text-sm text-muted-foreground">Add a product for Dealkr or on behalf of a vendor — goes live immediately. Listings that vendors add themselves wait for your approval.</p>
         </div>
       </div>
       <ListingForm />

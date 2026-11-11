@@ -13,26 +13,26 @@ import type { B2bOrder, B2bRequirement } from "@/types/b2b.admin.types"
 import { formatINR } from "@/lib/utils"
 import { COND_LABEL } from "./shared"
 
-const DEALKER = "__dealker__"
+const DEALKR = "__dealker__"
 const COURIERS = ["Delhivery", "Blue Dart", "DTDC", "Ecom Express", "XpressBees", "Shiprocket", "Porter", "Self delivery"]
 
 function F({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return <div className={className}><Label className="mb-1.5 block text-sm">{label}</Label>{children}</div>
 }
 
-/** Post a requirement on behalf of a vendor (or for Dealker itself). */
+/** Post a requirement on behalf of a vendor (or for Dealkr itself). */
 export function NewRequirementDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const vendors = useB2bVendors()
   const cats = useCategories()
   const { createRequirement } = useB2bMutations()
   const inOneWeek = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 16)
-  const [f, setF] = useState({ buyer: DEALKER, productName: "", brand: "", categoryId: "", quantity: "", targetPrice: "", targetPriceMax: "", storage: "", minBattery: "", displayPref: "ANY", fulfilmentPref: "ANY", urgent: "no", conditionPref: "ANY", deliveryCity: "", deliveryPincode: "", responseDeadline: inOneWeek, description: "" })
+  const [f, setF] = useState({ buyer: DEALKR, productName: "", brand: "", categoryId: "", quantity: "", targetPrice: "", targetPriceMax: "", storage: "", minBattery: "", displayPref: "ANY", fulfilmentPref: "ANY", urgent: "no", conditionPref: "ANY", deliveryCity: "", deliveryPincode: "", responseDeadline: inOneWeek, description: "" })
   const set = (k: keyof typeof f, v: string) => setF((s) => ({ ...s, [k]: v }))
   const rangeBad = f.targetPrice !== "" && f.targetPriceMax !== "" && Number(f.targetPriceMax) < Number(f.targetPrice)
   const ready = f.productName.trim().length >= 2 && Number(f.quantity) > 0 && f.responseDeadline && !rangeBad
   const submit = () =>
     createRequirement.mutate({
-      buyerVendorId: f.buyer === DEALKER ? null : f.buyer, productName: f.productName.trim(), brand: f.brand || undefined, categoryId: f.categoryId || undefined,
+      buyerVendorId: f.buyer === DEALKR ? null : f.buyer, productName: f.productName.trim(), brand: f.brand || undefined, categoryId: f.categoryId || undefined,
       quantity: Number(f.quantity), targetPrice: f.targetPrice ? Number(f.targetPrice) : null, targetPriceMax: f.targetPriceMax ? Number(f.targetPriceMax) : null,
       storage: f.storage || undefined, minBatteryHealth: f.minBattery ? Number(f.minBattery) : null, displayPref: f.displayPref, fulfilmentPref: f.fulfilmentPref, isUrgent: f.urgent === "yes",
       conditionPref: f.conditionPref, deliveryCity: f.deliveryCity || undefined,
@@ -46,7 +46,7 @@ export function NewRequirementDialog({ open, onClose }: { open: boolean; onClose
           <F label="Buyer" className="sm:col-span-2">
             <Select value={f.buyer} onValueChange={(v) => set("buyer", v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value={DEALKER}>Dealker (admin)</SelectItem>{(vendors.data ?? []).map((v) => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}</SelectContent>
+              <SelectContent><SelectItem value={DEALKR}>Dealkr (admin)</SelectItem>{(vendors.data ?? []).map((v) => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}</SelectContent>
             </Select>
           </F>
           <F label="Product *" className="sm:col-span-2"><Input value={f.productName} onChange={(e) => set("productName", e.target.value)} placeholder="Apple iPhone 16 (128GB)" /></F>
@@ -201,7 +201,7 @@ export function CancelOrderDialog({ order, onClose }: { order: B2bOrder | null; 
           <DialogTitle>Cancel {order.order_number} and refund the buyer</DialogTitle>
           <DialogDescription>
             {order.buyer_name} gets {order.quantity} × {formatINR(order.unit_price)} back
-            {order.payment_method === "WALLET" ? " in their Dealker wallet" : " — this payment was recorded outside the app, so settle it with them directly"}.
+            {order.payment_method === "WALLET" ? " in their Dealkr wallet" : " — this payment was recorded outside the app, so settle it with them directly"}.
             The units go back on the requirement and sellers can quote again.
           </DialogDescription>
         </DialogHeader>

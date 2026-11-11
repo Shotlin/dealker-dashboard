@@ -1,5 +1,5 @@
 /**
- * Marketplace hooks — TanStack Query bindings for Dealker surfaces.
+ * Marketplace hooks — TanStack Query bindings for Dealkr surfaces.
  * Pattern matches the existing services/ + hooks/ layering.
  */
 

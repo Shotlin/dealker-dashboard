@@ -42,9 +42,15 @@ export interface CatalogModel {
   category: DeviceCategory
   variants: string[]
   colors: string[]
-  /** Base resale value (₹) for the top variant in mint condition. */
-  basePrice: number
+  /** Base resale value (₹) for the top variant in mint condition. null = no catalogue price (the seller names his price). */
+  basePrice: number | null
   isActive?: boolean
+  brand?: string | null
+  brandLogoUrl?: string | null
+  series?: string | null
+  saleEnabled?: boolean
+  repairEnabled?: boolean
+  displayOrder?: number
 }
 
 export interface VendorOffer {
@@ -156,8 +162,13 @@ export interface ModelInput {
   category: DeviceCategory
   variants: string[]
   colors: string[]
-  basePrice: number
+  basePrice?: number | null
   isActive?: boolean
+  brand?: string | null
+  series?: string | null
+  saleEnabled?: boolean
+  repairEnabled?: boolean
+  displayOrder?: number
 }
 
 export interface TimelineEvent {
@@ -511,4 +522,21 @@ export function evidenceApi(kind: RequestKind) {
       api.post(`${BASE}/${id}/qc/decision`, body).then((r) => r.data.data),
     qcReopen: (id: string, reason: string) => api.post(`${BASE}/${id}/qc/reopen`, { reason }).then((r) => r.data.data),
   }
+}
+
+// ── Device brands (logo, order, popular, on/off) — shared by Sell, Repair, Exchange and the vendor app ──
+export interface DeviceBrand {
+  id: string
+  name: string
+  slug: string
+  logoUrl: string | null
+  popular: boolean
+  sortOrder: number
+  isActive: boolean
+  models: number
+}
+export const deviceBrandsApi = {
+  list: () => api.get<ApiResponse<DeviceBrand[]>>("/admin/devices/brands").then((r) => r.data.data),
+  update: (id: string, body: Partial<Pick<DeviceBrand, "logoUrl" | "popular" | "isActive" | "sortOrder">>) =>
+    api.patch<ApiResponse<DeviceBrand>>(`/admin/devices/brands/${id}`, body).then((r) => r.data.data),
 }

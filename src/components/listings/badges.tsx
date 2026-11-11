@@ -18,7 +18,7 @@ export function ConditionBadge({ condition }: { condition: ListingCondition }) {
 
 export function OwnerBadge({ type, name }: { type: "ADMIN" | "VENDOR"; name: string }) {
   return type === "ADMIN" ? (
-    <Badge className="gap-1 bg-primary/10 text-[11px] font-medium text-primary hover:bg-primary/10">Dealker</Badge>
+    <Badge className="gap-1 bg-primary/10 text-[11px] font-medium text-primary hover:bg-primary/10">Dealkr</Badge>
   ) : (
     <span className="inline-flex max-w-[160px] items-center truncate text-sm">{name}</span>
   )

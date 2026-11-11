@@ -12,7 +12,7 @@
  *
  * The page title is suffixed with the app name so the browser tab and
  * window list keep a stable trailer regardless of which surface is
- * focused — `Shops · Dealker Admin`, `Inventory · Dealker Admin`, etc.
+ * focused — `Shops · Dealkr Admin`, `Inventory · Dealkr Admin`, etc.
  *
  * Requirements: 13.1 (per-route `<title>`), 16.5 (consistent app chrome).
  */
@@ -20,10 +20,10 @@
 import { useEffect } from "react"
 
 /** App name appended to every page title. Kept in sync with `RootLayout`. */
-const APP_NAME = "Dealker Admin"
+const APP_NAME = "Dealkr Admin"
 
 /**
- * Set `document.title` to `"<title> · Dealker Admin"` for the lifetime of
+ * Set `document.title` to `"<title> · Dealkr Admin"` for the lifetime of
  * the calling component.
  *
  * The previous title is captured on mount and restored on unmount so a

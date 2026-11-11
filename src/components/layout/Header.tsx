@@ -64,7 +64,7 @@ export function Header() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/dashboard">Dealker</Link>
+              <Link href="/dashboard">Dealkr</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           {segments.map((seg, i) => {

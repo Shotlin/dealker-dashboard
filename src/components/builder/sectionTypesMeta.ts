@@ -234,7 +234,7 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     useCase: "A cleaner, icon-only category rail.",
   },
 
-  // ── Product Grid — always two columns (the Dealker card is a tall card), with an optional
+  // ── Product Grid — always two columns (the Dealkr card is a tall card), with an optional
   // "View All" button under the grid.
   {
     id: "category_product_grid",
@@ -701,7 +701,7 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     type: "deal_of_day",
     label: "Deal of the Day",
     icon: Timer,
-    description: "Festive deals strip: background art, a live countdown and Dealker product cards with a Grab Deal button. Add as many as you like, in any store.",
+    description: "Festive deals strip: background art, a live countdown and Dealkr product cards with a Grab Deal button. Add as many as you like, in any store.",
     maxPerTab: 6,
     defaultConfig: { ...DEALER_BLOCK_DEFAULTS.deal_of_day },
     accentClassName: "bg-amber-100 text-amber-700 border-amber-200",
@@ -729,7 +729,7 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     type: "collection_showcase",
     label: "Collection Showcase",
     icon: Sparkles,
-    description: "Festival / theme collection: your title artwork, a line of text, text tabs (each filled by categories and products), the Dealker product box and a See All button. Use it for Rakhi, Diwali, Top Electronics, anything.",
+    description: "Festival / theme collection: your title artwork, a line of text, text tabs (each filled by categories and products), the Dealkr product box and a See All button. Use it for Rakhi, Diwali, Top Electronics, anything.",
     maxPerTab: 6,
     defaultConfig: JSON.parse(JSON.stringify(COLLECTION_DEFAULTS)),
     accentClassName: "bg-amber-100 text-amber-800 border-amber-200",
@@ -757,7 +757,7 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     type: "price_shop",
     label: "Shop by Price",
     icon: Tags,
-    description: "“Under ₹499 / ₹999 …” price boxes; tapping one shows the products up to that price as Dealker product boxes with a See all button.",
+    description: "“Under ₹499 / ₹999 …” price boxes; tapping one shows the products up to that price as Dealkr product boxes with a See all button.",
     maxPerTab: 4,
     defaultConfig: JSON.parse(JSON.stringify(PRICE_SHOP_DEFAULTS)),
     accentClassName: "bg-indigo-100 text-indigo-700 border-indigo-200",
@@ -785,7 +785,7 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     type: "banner_rail",
     label: "Banner Rail",
     icon: PanelTop,
-    description: "Header artwork that fades into a tinted panel with Dealker product boxes and a See All button.",
+    description: "Header artwork that fades into a tinted panel with Dealkr product boxes and a See All button.",
     maxPerTab: 6,
     defaultConfig: { ...DEALER_BLOCK_DEFAULTS.banner_rail },
     accentClassName: "bg-sky-100 text-sky-700 border-sky-200",
@@ -813,7 +813,7 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     type: "price_sale",
     label: "Price Sale Banner",
     icon: Megaphone,
-    description: "A sale banner with combo artwork on both sides and a “flat ₹199” price that slides when a price box is picked, then price boxes and Dealker product boxes (they cross-fade).",
+    description: "A sale banner with combo artwork on both sides and a “flat ₹199” price that slides when a price box is picked, then price boxes and Dealkr product boxes (they cross-fade).",
     maxPerTab: 4,
     defaultConfig: JSON.parse(JSON.stringify(PRICE_SALE_DEFAULTS)),
     accentClassName: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -841,7 +841,7 @@ export const sectionTypesMeta: SectionTypeMeta[] = [
     type: "category_deals",
     label: "Category Deals",
     icon: Shapes,
-    description: "Title with a See All button, a row of category picture tiles (the picked one turns mint), and that category's products as Dealker boxes.",
+    description: "Title with a See All button, a row of category picture tiles (the picked one turns mint), and that category's products as Dealkr boxes.",
     maxPerTab: 4,
     defaultConfig: JSON.parse(JSON.stringify(CATEGORY_DEALS_DEFAULTS)),
     accentClassName: "bg-teal-100 text-teal-700 border-teal-200",

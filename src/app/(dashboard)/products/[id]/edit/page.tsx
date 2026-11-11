@@ -15,7 +15,7 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
         <Button variant="ghost" size="icon" asChild><Link href="/products" aria-label="Back"><ArrowLeft className="h-4 w-4" /></Link></Button>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Edit product</h1>
-          <p className="text-sm text-muted-foreground">{data?.owner_type === "VENDOR" ? `Listed by ${data.owner_name}` : "Listed by Dealker"}</p>
+          <p className="text-sm text-muted-foreground">{data?.owner_type === "VENDOR" ? `Listed by ${data.owner_name}` : "Listed by Dealkr"}</p>
         </div>
       </div>
       {isLoading ? (

@@ -438,7 +438,7 @@ export function NavButtonDialog({
                 />
                 <p className="text-xs text-muted-foreground">
                   Opens full-screen inside the app, like an in-app browser — the
-                  customer never leaves Dealker.
+                  customer never leaves Dealkr.
                 </p>
               </div>
               <div className="flex items-center gap-3 rounded-md border p-3">

@@ -40,7 +40,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Marketplace overview</h1>
           <p className="text-sm text-muted-foreground">
-            Everything across Dealker, for {p}. Updates every 30 seconds{isFetching ? " · refreshing…" : ""}.
+            Everything across Dealkr, for {p}. Updates every 30 seconds{isFetching ? " · refreshing…" : ""}.
           </p>
         </div>
         <Tabs value={period} onValueChange={(v) => setPeriod(v as CcPeriod)}>
@@ -82,7 +82,7 @@ export default function DashboardPage() {
           <Tile id="customer-wallet" label="Customer wallet" loading={l} href="/wallet" value={d && compactInr(d.wallets.customer.balance)} sub={d && `${num(d.wallets.customer.holders)} customers hold a balance`} />
           <Tile id="vendor-wallet" label="Vendor wallet" loading={l} href="/vendor-wallet" value={d && compactInr(d.wallets.vendor.balance)}
             sub={d && `${compactInr(d.wallets.vendor.pendingPayouts)} payouts pending${d.wallets.vendor.vendorsOnHold ? ` · ${d.wallets.vendor.vendorsOnHold} on hold` : ""}`} />
-          <Tile id="vendor-commission" label="Vendor commission" loading={l} href="/commission" value={d && compactInr(d.money.vendorCommission.value)} trend={d?.money.vendorCommission.change} sub="Earned by Dealker" />
+          <Tile id="vendor-commission" label="Vendor commission" loading={l} href="/commission" value={d && compactInr(d.money.vendorCommission.value)} trend={d?.money.vendorCommission.change} sub="Earned by Dealkr" />
           <Tile id="platform-charges" label="Platform charges" loading={l} href="/commission" value={d && compactInr(d.money.platformCharges.value)} trend={d?.money.platformCharges.change} />
           <Tile id="tax" label="Tax / GST" loading={l} href="/settings/fees" value={d && compactInr(d.money.tax.total)} sub={d && `${inr(d.money.tax.salesTax)} on sales · ${inr(d.money.tax.feeTax)} on fees`} />
         </div>

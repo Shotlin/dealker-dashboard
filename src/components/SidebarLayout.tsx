@@ -244,7 +244,7 @@ export function SidebarLayout() {
           </div>
           {!isCollapsed && (
             <span className="truncate text-base font-semibold text-foreground">
-              Dealker
+              Dealkr
             </span>
           )}
           <Button

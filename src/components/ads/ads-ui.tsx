@@ -102,7 +102,7 @@ export function Field({ label, hint, children }: { label: string; hint?: React.R
 
 export const ENTRY_LABEL: Record<string, string> = {
   TOPUP_SETTLEMENT: "Top-up from settlement",
-  TOPUP_ADMIN: "Top-up (credited by Dealker)",
+  TOPUP_ADMIN: "Top-up (credited by Dealkr)",
   PROMO_CREDIT: "Promotional credit",
   CLICK_CHARGE: "Ad click",
   CLICK_REFUND: "Invalid click refund",

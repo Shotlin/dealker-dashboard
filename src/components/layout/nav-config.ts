@@ -73,7 +73,7 @@ export interface NavSection {
   items: NavItem[]
 }
 
-/** Dealker marketplace navigation — platform-level, vendor-centric. */
+/** Dealkr marketplace navigation — platform-level, vendor-centric. */
 export const NAV_SECTIONS: NavSection[] = [
   {
     section: "Overview",

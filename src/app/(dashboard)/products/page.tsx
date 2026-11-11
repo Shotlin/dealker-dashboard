@@ -70,14 +70,14 @@ function ProductsInner() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
-          <p className="text-sm text-muted-foreground">Every listing on Dealker — added by your team or by vendors. Each listing has its own photos, condition and price.</p>
+          <p className="text-sm text-muted-foreground">Every listing on Dealkr — added by your team or by vendors. Each listing has its own photos, condition and price.</p>
         </div>
         <Button asChild><Link href="/products/new"><Plus className="mr-1.5 h-4 w-4" />Add product</Link></Button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Kpi label="All listings" value={s?.total} active={!hasFilters} onClick={() => setFilters({})} />
-        <Kpi label="Listed by Dealker" value={s?.admin} active={filters.owner === "ADMIN"} onClick={() => set({ owner: "ADMIN", vendorId: "" })} />
+        <Kpi label="Listed by Dealkr" value={s?.admin} active={filters.owner === "ADMIN"} onClick={() => set({ owner: "ADMIN", vendorId: "" })} />
         <Kpi label="Listed by vendors" value={s?.vendor} active={filters.owner === "VENDOR"} onClick={() => set({ owner: "VENDOR" })} />
         <Kpi label="Pending review" value={s?.pending} tone="text-amber-600" active={filters.approval === "PENDING"} onClick={() => set({ approval: "PENDING" })} />
         <Kpi label="Used & refurbished" value={s?.used} active={filters.condition === "USED"} onClick={() => set({ condition: "USED" })} />
@@ -94,7 +94,7 @@ function ProductsInner() {
             <SelectTrigger className="lg:w-[150px]"><SelectValue placeholder="Listed by" /></SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>Listed by: All</SelectItem>
-              <SelectItem value="ADMIN">Dealker (admin)</SelectItem>
+              <SelectItem value="ADMIN">Dealkr (admin)</SelectItem>
               <SelectItem value="VENDOR">Vendors</SelectItem>
             </SelectContent>
           </Select>

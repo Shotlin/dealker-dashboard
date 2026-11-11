@@ -150,7 +150,7 @@ export default function NewAuctionPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{product.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {hasVendor ? `Vendor: ${product.vendor_name ?? "—"}` : "Dealker's own listing"} · list price {formatINR(Number(product.sale_price ?? product.price))} · {product.stock_quantity} in stock
+                    {hasVendor ? `Vendor: ${product.vendor_name ?? "—"}` : "Dealkr's own listing"} · list price {formatINR(Number(product.sale_price ?? product.price))} · {product.stock_quantity} in stock
                   </p>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => setProduct(null)}>Change</Button>
@@ -171,7 +171,7 @@ export default function NewAuctionPage() {
                         {p.thumbnail_url ? <img src={p.thumbnail_url} alt="" className="h-10 w-10 rounded object-cover" /> : <div className="h-10 w-10 rounded bg-muted" />}
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">{p.name}</span>
-                          <span className="text-xs text-muted-foreground">{p.owner_type === "VENDOR" ? p.vendor_name : "Dealker own"} · {formatINR(Number(p.sale_price ?? p.price))} · stock {p.stock_quantity}</span>
+                          <span className="text-xs text-muted-foreground">{p.owner_type === "VENDOR" ? p.vendor_name : "Dealkr own"} · {formatINR(Number(p.sale_price ?? p.price))} · stock {p.stock_quantity}</span>
                         </span>
                       </button>
                     </li>

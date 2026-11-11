@@ -57,7 +57,7 @@ export function DecisionButtons({ c, size = "default", className }: { c: RefundC
               <Label>Where should the money go?</Label>
               <RadioGroup value={dest} onValueChange={(v) => setDest(v as "wallet" | "original")} className="gap-2">
                 {[
-                  { v: "wallet", t: "Customer’s Dealker wallet", d: "Arrives instantly." },
+                  { v: "wallet", t: "Customer’s Dealkr wallet", d: "Arrives instantly." },
                   { v: "original", t: "Original payment method", d: "Takes 5–7 working days." },
                 ].map((o) => (
                   <label key={o.v} className={cn("flex cursor-pointer items-start gap-3 rounded-lg border p-3", dest === o.v && "border-primary bg-primary/5")}>

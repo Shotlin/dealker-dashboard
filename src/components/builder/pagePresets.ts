@@ -35,7 +35,7 @@ export const PAGE_THEME_PRESETS: PageThemePreset[] = [
   {
     id: "clean-grocery",
     label: "Clean Grocery",
-    description: "Light neutral skin with airy whitespace and Dealker blue.",
+    description: "Light neutral skin with airy whitespace and Dealkr blue.",
     themeDataPatch: {
       topBar: { backgroundColor: "#88D4FE", textColor: "#0F172A" },
       storeSelector: { backgroundColor: "#88D4FE", activeChipColor: "#B1EAFF" },

@@ -29,7 +29,7 @@ export const CONDITION: Record<string, string> = { NEW: "New", OPEN_BOX: "Open b
 export function payMethodText(method: string, gatewayMethod?: string | null, plan?: string) {
   if (plan === "PARTIAL") return "Partial payment — an advance was paid online, the rest is collected on delivery"
   if (method === "COD") return "Cash on delivery — the customer pays the courier when the parcel arrives"
-  if (method === "WALLET") return "Paid from the customer’s Dealker wallet"
+  if (method === "WALLET") return "Paid from the customer’s Dealkr wallet"
   const via = gatewayMethod ? { upi: "UPI", card: "debit / credit card", netbanking: "net banking", wallet: "a mobile wallet" }[gatewayMethod] ?? gatewayMethod : null
   return `Paid online${via ? ` by ${via}` : ""}`
 }

@@ -22,7 +22,7 @@ export interface WaConversation {
   profile_name: string | null
   source: "ORGANIC" | "META_AD" | "IMPORT" | "APP"
   marketing_consent: MarketingConsent
-  /** Existing Dealker customer, or null when the number/username is not matched. */
+  /** Existing Dealkr customer, or null when the number/username is not matched. */
   customer_id: string | null
   customer_name: string | null
   assigned_name: string | null

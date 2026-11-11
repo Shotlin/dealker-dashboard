@@ -13,7 +13,7 @@ function ProductGridPreview({
   products,
 }: PreviewProps) {
   const config = section.config as Record<string, unknown>
-  // Always two columns (the Dealker card is a tall card), like the app.
+  // Always two columns (the Dealkr card is a tall card), like the app.
   const columns = 2
   const showViewAll = config.show_view_all_button !== false
   const viewAllLabel =

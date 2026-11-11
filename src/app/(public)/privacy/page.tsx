@@ -6,8 +6,8 @@ export default function PrivacyPage() {
       <h1>Privacy Policy</h1>
       <p className="text-slate-500">Last updated: 14 October 2026</p>
       <p>
-        This policy explains what personal information Dealker (&quot;we&quot;, &quot;us&quot;) collects when you
-        use the Dealker app and website, why we collect it, and the choices you have.
+        This policy explains what personal information Dealkr (&quot;we&quot;, &quot;us&quot;) collects when you
+        use the Dealkr app and website, why we collect it, and the choices you have.
       </p>
 
       <h2>Information we collect</h2>
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
       </p>
 
       <h2>Children</h2>
-      <p>Dealker is not meant for anyone under 18 and we do not knowingly collect their information.</p>
+      <p>Dealkr is not meant for anyone under 18 and we do not knowingly collect their information.</p>
 
       <h2>Changes</h2>
       <p>If we change this policy we will update the date above and, for significant changes, tell you in the app.</p>

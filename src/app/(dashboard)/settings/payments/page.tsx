@@ -77,10 +77,10 @@ const TOGGLES: ToggleConfig[] = [
   {
     key: "wallet_enabled",
     icon: Wallet,
-    label: "Dealker Wallet",
+    label: "Dealkr Wallet",
     description: "Pay from the customer's in-app wallet balance.",
     enableTitle: "Enable Wallet Payment?",
-    enableBody: "Customers will see Dealker Wallet as a payment option at checkout.",
+    enableBody: "Customers will see Dealkr Wallet as a payment option at checkout.",
     disableTitle: "Disable Wallet Payment?",
     disableBody:
       "Wallet payment will be hidden from checkout immediately. Customers will need to pay with COD or online instead.",

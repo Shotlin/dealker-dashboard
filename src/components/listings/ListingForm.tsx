@@ -94,12 +94,12 @@ export function ListingForm({ initial }: { initial?: ListingDetail }) {
   return (
     <form onSubmit={submit} className="mx-auto max-w-4xl space-y-5 pb-24">
       <Card className="shadow-none">
-        <CardHeader><CardTitle className="text-base">Listed by</CardTitle><CardDescription>Add this product under Dealker, or on behalf of a vendor. Listings you add go live immediately.</CardDescription></CardHeader>
+        <CardHeader><CardTitle className="text-base">Listed by</CardTitle><CardDescription>Add this product under Dealkr, or on behalf of a vendor. Listings you add go live immediately.</CardDescription></CardHeader>
         <CardContent>
           <Select value={f.ownerVendorId || "__dealker__"} disabled={editing} onValueChange={(v) => set("ownerVendorId", v === "__dealker__" ? "" : v)}>
             <SelectTrigger className="sm:w-80"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="__dealker__">Dealker (admin)</SelectItem>
+              <SelectItem value="__dealker__">Dealkr (admin)</SelectItem>
               {(vendorOptions.data ?? []).map((v) => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -147,7 +147,7 @@ export function ListingForm({ initial }: { initial?: ListingDetail }) {
           {(electronics || f.batteryHealth) && f.condition !== "NEW" && (
             <Field label="Battery health (%)"><Input type="number" min={1} max={100} value={f.batteryHealth} onChange={(e) => set("batteryHealth", e.target.value)} /></Field>
           )}
-          <Field label="Serial number" hint="Private — only visible to Dealker."><Input value={f.serialNumber} onChange={(e) => set("serialNumber", e.target.value)} /></Field>
+          <Field label="Serial number" hint="Private — only visible to Dealkr."><Input value={f.serialNumber} onChange={(e) => set("serialNumber", e.target.value)} /></Field>
           <Field label="IMEI" hint="15 digits, for phones and tablets. Checked during QC."><Input inputMode="numeric" value={f.imei} onChange={(e) => set("imei", e.target.value)} /></Field>
           <div className="flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
             <div><p className="text-sm font-medium">Purchase invoice available</p><p className="text-xs text-muted-foreground">Buyers trust listings that come with a bill.</p></div>

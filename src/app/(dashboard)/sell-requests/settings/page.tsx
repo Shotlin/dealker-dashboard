@@ -15,10 +15,11 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useDeleteExchangeProgram, useExchangePrograms, useExchangeTypes, useSaveExchangeProgram, useSaveExchangeType, useSaveSellModel, useSellModels, useSellSettings, useUpdateSellSettings } from "@/hooks/useSellRequests"
+import { useDeleteExchangeProgram, useExchangePrograms, useExchangeTypes, useSaveExchangeProgram, useSaveExchangeType, useDeviceBrands, useSaveDeviceBrand, useSaveSellModel, useSellModels, useSellSettings, useUpdateSellSettings } from "@/hooks/useSellRequests"
 import { useCategories } from "@/hooks/useCategories"
 import { usePermissions } from "@/hooks/usePermissions"
 import { formatINR } from "@/lib/utils"
+import { uploadImage } from "@/services/uploads.service"
 import type { CatalogModel, DeviceCategory, DeviceIcon, ExchangeDeviceType, ExchangeProgram } from "@/services/sell-requests.service"
 
 type RuleMeta = { key: string; label: string; unit: string; hint?: string }
@@ -183,12 +184,12 @@ function JourneyPanelSettings() {
   if (q.isLoading) return <LoadingSkeleton />
   if (q.isError || !q.data) return <QueryErrorBlock error={q.error} onRetry={() => q.refetch()} />
   const toggles: Array<[string, string, string]> = [
-    ["requireVendorFunding", "Buyer pays before pickup", "The buyer's payment is held by Dealker before the courier is booked, so the customer is always paid."],
+    ["requireVendorFunding", "Buyer pays before pickup", "The buyer's payment is held by Dealkr before the courier is booked, so the customer is always paid."],
     ["pickupEnabled", "Offer home pickup", "Customers can ask for pickup from their address."],
     ["dropoffEnabled", "Offer drop-off at the store", "Customers can bring the phone to the buyer's shop."],
     ["payoutUpiEnabled", "Pay out by UPI", "Finance sends it and marks it paid with the bank reference."],
     ["payoutBankEnabled", "Pay out by bank transfer", "Finance sends it and marks it paid with the bank reference."],
-    ["payoutWalletEnabled", "Pay out to the Dealker wallet", "Instant, but only when the amount fits the wallet balance limit (Settings → Wallet)."],
+    ["payoutWalletEnabled", "Pay out to the Dealkr wallet", "Instant, but only when the amount fits the wallet balance limit (Settings → Wallet)."],
   ]
   return (
     <div className="space-y-4">
@@ -222,42 +223,55 @@ function ModelDialog({ model, open, onClose }: { model: CatalogModel | null; ope
   const types = useExchangeTypes()
   const [name, setName] = useState("")
   const [category, setCategory] = useState<DeviceCategory>("Smartphone")
+  const [brand, setBrand] = useState("")
+  const [series, setSeries] = useState("")
   const [variants, setVariants] = useState("")
   const [colors, setColors] = useState("")
   const [price, setPrice] = useState("")
+  const [saleEnabled, setSaleEnabled] = useState(true)
+  const [repairEnabled, setRepairEnabled] = useState(true)
 
   useEffect(() => {
     if (!open) return
-    setName(model?.name ?? ""); setCategory(model?.category ?? "Smartphone")
-    setVariants(model?.variants.join(", ") ?? ""); setColors(model?.colors.join(", ") ?? ""); setPrice(model ? String(model.basePrice) : "")
+    setName(model?.name ?? ""); setCategory(model?.category ?? "Smartphone"); setBrand(model?.brand ?? ""); setSeries(model?.series ?? "")
+    setVariants(model?.variants.join(", ") ?? ""); setColors(model?.colors.join(", ") ?? "Black, White, Blue, Green, Red, Silver, Gold, Purple, Pink, Grey")
+    setPrice(model?.basePrice != null ? String(model.basePrice) : ""); setSaleEnabled(model?.saleEnabled !== false); setRepairEnabled(model?.repairEnabled !== false)
   }, [open, model])
 
   const v = list(variants), c = list(colors)
   const dup = new Set(v).size !== v.length || new Set(c).size !== c.length
-  const valid = name.trim().length > 1 && v.length > 0 && c.length > 0 && Number(price) > 0 && !dup
+  const valid = name.trim().length > 1 && v.length > 0 && c.length > 0 && (price === "" || Number(price) > 0) && !dup
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{model ? `Edit ${model.name}` : "Add device model"}</DialogTitle>
-          <DialogDescription>Customers can only sell or trade in models listed here. Add new device kinds (headphones, watches…) under Exchange programmes.</DialogDescription>
+          <DialogDescription>One catalogue for Sell, Repair, Exchange and the vendor app. Storage sizes feed the storage pickers; repair never forces storage.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
           <div className="space-y-1.5"><Label htmlFor="mn">Model name</Label><Input id="mn" value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label htmlFor="mb">Brand</Label><Input id="mb" value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Samsung" /></div>
+            <div className="space-y-1.5"><Label htmlFor="ms">Series</Label><Input id="ms" value={series} onChange={(e) => setSeries(e.target.value)} placeholder="Galaxy S Series" /></div>
+          </div>
           <div className="space-y-1.5">
             <Label>Category</Label>
             <Select value={category} onValueChange={(x) => setCategory(x as DeviceCategory)}><SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>{(types.data ?? []).map((t) => <SelectItem key={t.key} value={t.key}>{t.label}</SelectItem>)}</SelectContent></Select>
           </div>
-          <div className="space-y-1.5"><Label htmlFor="mv">Variants (lowest → highest, comma separated)</Label><Input id="mv" value={variants} onChange={(e) => setVariants(e.target.value)} placeholder="128GB, 256GB, 512GB" /></div>
+          <div className="space-y-1.5"><Label htmlFor="mv">Storage sizes (lowest → highest, comma separated)</Label><Input id="mv" value={variants} onChange={(e) => setVariants(e.target.value)} placeholder="128GB, 256GB, 512GB" /></div>
           <div className="space-y-1.5"><Label htmlFor="mc">Colours (comma separated)</Label><Input id="mc" value={colors} onChange={(e) => setColors(e.target.value)} placeholder="Black, Blue" /></div>
-          <div className="space-y-1.5"><Label htmlFor="mp">Base price (₹) — top variant, mint condition</Label><Input id="mp" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>
-          {dup && <p role="alert" className="text-xs text-red-600">Variants and colours must each be unique.</p>}
+          <div className="space-y-1.5"><Label htmlFor="mp">Base price (₹) — top storage, mint condition. Leave empty when there is no catalogue price: the seller then names his price.</Label><Input id="mp" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ""))} /></div>
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2 text-sm"><Switch checked={saleEnabled} onCheckedChange={setSaleEnabled} /> Sell enabled</label>
+            <label className="flex items-center gap-2 text-sm"><Switch checked={repairEnabled} onCheckedChange={setRepairEnabled} /> Repair enabled</label>
+          </div>
+          {dup && <p role="alert" className="text-xs text-red-600">Storage sizes and colours must each be unique.</p>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button disabled={!valid || save.isPending} onClick={() => save.mutate({ id: model?.id, body: { name: name.trim(), category, variants: v, colors: c, basePrice: Number(price) } }, { onSuccess: onClose })}>
+          <Button disabled={!valid || save.isPending} onClick={() => save.mutate({ id: model?.id, body: { name: name.trim(), category, variants: v, colors: c, basePrice: price === "" ? null : Number(price), brand: brand.trim() || null, series: series.trim() || null, saleEnabled, repairEnabled } }, { onSuccess: onClose })}>
             {save.isPending ? "Saving…" : "Save model"}
           </Button>
         </DialogFooter>
@@ -266,43 +280,112 @@ function ModelDialog({ model, open, onClose }: { model: CatalogModel | null; ope
   )
 }
 
+function BrandsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const q = useDeviceBrands()
+  const save = useSaveDeviceBrand()
+  const [busy, setBusy] = useState<string | null>(null)
+  const upload = async (id: string, file: File) => {
+    setBusy(id)
+    try { const img = await uploadImage(file, undefined, "icon"); save.mutate({ id, body: { logoUrl: img.url } }) } finally { setBusy(null) }
+  }
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Brands</DialogTitle>
+          <DialogDescription>Logo, popularity and on/off for every brand. Customers and vendors see these in the Sell, Repair, Exchange and Add-product pickers.</DialogDescription>
+        </DialogHeader>
+        {q.isLoading ? <LoadingSkeleton variant="stat-card" count={3} /> : (
+          <div className="divide-y rounded-lg border">
+            {(q.data ?? []).map((b) => (
+              <div key={b.id} className="flex items-center gap-3 px-3 py-2">
+                <div className="flex h-10 w-20 items-center justify-center rounded bg-muted/40">
+                  {b.logoUrl ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={b.logoUrl} alt={b.name} className="max-h-8 max-w-[72px] object-contain" /> : <span className="text-xs text-muted-foreground">No logo</span>}
+                </div>
+                <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{b.name}</p><p className="text-xs text-muted-foreground">{b.models} models</p></div>
+                <label className="cursor-pointer text-xs text-primary hover:underline">
+                  {busy === b.id ? "Uploading…" : "Change logo"}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(b.id, f); e.target.value = "" }} />
+                </label>
+                <label className="flex items-center gap-1.5 text-xs"><Switch checked={b.popular} onCheckedChange={(x) => save.mutate({ id: b.id, body: { popular: x } })} /> Popular</label>
+                <label className="flex items-center gap-1.5 text-xs"><Switch checked={b.isActive} onCheckedChange={(x) => save.mutate({ id: b.id, body: { isActive: x } })} /> Shown</label>
+              </div>
+            ))}
+          </div>
+        )}
+        <DialogFooter><Button variant="outline" onClick={onClose}>Close</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const PAGE = 40
+
 function CataloguePanel() {
   const q = useSellModels()
   const save = useSaveSellModel()
   const [editing, setEditing] = useState<CatalogModel | null>(null)
   const [open, setOpen] = useState(false)
+  const [brandsOpen, setBrandsOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const [brand, setBrand] = useState("all")
+  const [page, setPage] = useState(0)
+  const rows = useMemo(() => q.data ?? [], [q.data])
+  const brands = useMemo(() => Array.from(new Set(rows.map((m) => m.brand).filter(Boolean) as string[])).sort(), [rows])
+  const filtered = useMemo(() => {
+    const t = search.trim().toLowerCase()
+    return rows.filter((m) => (brand === "all" || m.brand === brand) && (!t || `${m.brand ?? ""} ${m.name} ${m.series ?? ""}`.toLowerCase().includes(t)))
+  }, [rows, search, brand])
+  useEffect(() => { setPage(0) }, [search, brand])
 
   if (q.isError) return <QueryErrorBlock error={q.error} onRetry={() => q.refetch()} />
   if (q.isLoading) return <LoadingSkeleton variant="stat-card" count={3} />
-  const rows = q.data ?? []
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE))
+  const shown = filtered.slice(page * PAGE, page * PAGE + PAGE)
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{rows.filter((m) => m.isActive !== false).length} of {rows.length} models accepted</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="mr-auto text-sm text-muted-foreground">{rows.filter((m) => m.isActive !== false).length} of {rows.length} models accepted · {brands.length} brands</p>
+        <Input className="h-9 w-56" placeholder="Search brand, model, series" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Select value={brand} onValueChange={setBrand}><SelectTrigger className="h-9 w-40"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All brands</SelectItem>{brands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select>
+        <Button size="sm" variant="outline" onClick={() => setBrandsOpen(true)}>Brands &amp; logos</Button>
         <Button size="sm" onClick={() => { setEditing(null); setOpen(true) }}><Plus /> Add model</Button>
       </div>
       <div className="overflow-x-auto rounded-xl border bg-card">
-        <table className="w-full min-w-[700px] text-sm">
+        <table className="w-full min-w-[900px] text-sm">
           <thead><tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-            {["Model", "Category", "Variants", "Colours", "Base price", "Accepted", ""].map((h) => <th key={h} className="px-3 py-2.5 font-medium">{h}</th>)}
+            {["Brand", "Model", "Series", "Storage", "Base price", "Sell", "Repair", "Accepted", ""].map((h) => <th key={h} className="px-3 py-2.5 font-medium">{h}</th>)}
           </tr></thead>
           <tbody>
-            {rows.map((m) => (
+            {shown.map((m) => (
               <tr key={m.id} className="border-b last:border-0">
+                <td className="px-3 py-2.5">{m.brand ?? "—"}</td>
                 <td className="px-3 py-2.5 font-medium">{m.name}</td>
-                <td className="px-3 py-2.5">{m.category}</td>
+                <td className="px-3 py-2.5 text-xs text-muted-foreground">{m.series ?? "—"}</td>
                 <td className="px-3 py-2.5 text-xs">{m.variants.join(" · ")}</td>
-                <td className="px-3 py-2.5 text-xs text-muted-foreground">{m.colors.join(", ")}</td>
-                <td className="px-3 py-2.5 tabular-nums">{formatINR(m.basePrice)}</td>
-                <td className="px-3 py-2.5"><Switch aria-label={`Accept ${m.name}`} checked={m.isActive !== false} disabled={save.isPending} onCheckedChange={(v) => save.mutate({ id: m.id, body: { isActive: v } })} /></td>
+                <td className="px-3 py-2.5 tabular-nums">{m.basePrice != null ? formatINR(m.basePrice) : <span className="text-xs text-muted-foreground">Seller sets</span>}</td>
+                <td className="px-3 py-2.5"><Switch aria-label={`Sell ${m.name}`} checked={m.saleEnabled !== false} disabled={save.isPending} onCheckedChange={(x) => save.mutate({ id: m.id, body: { saleEnabled: x } })} /></td>
+                <td className="px-3 py-2.5"><Switch aria-label={`Repair ${m.name}`} checked={m.repairEnabled !== false} disabled={save.isPending} onCheckedChange={(x) => save.mutate({ id: m.id, body: { repairEnabled: x } })} /></td>
+                <td className="px-3 py-2.5"><Switch aria-label={`Accept ${m.name}`} checked={m.isActive !== false} disabled={save.isPending} onCheckedChange={(x) => save.mutate({ id: m.id, body: { isActive: x } })} /></td>
                 <td className="px-3 py-2.5 text-right"><Button variant="ghost" size="icon" aria-label={`Edit ${m.name}`} onClick={() => { setEditing(m); setOpen(true) }}><Pencil /></Button></td>
               </tr>
             ))}
+            {shown.length === 0 && <tr><td colSpan={9} className="px-3 py-8 text-center text-sm text-muted-foreground">No model matches.</td></tr>}
           </tbody>
         </table>
       </div>
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>{filtered.length} models</span>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</Button>
+          <span>Page {page + 1} of {pages}</span>
+          <Button size="sm" variant="outline" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>Next</Button>
+        </div>
+      </div>
       <ModelDialog model={editing} open={open} onClose={() => setOpen(false)} />
+      <BrandsDialog open={brandsOpen} onClose={() => setBrandsOpen(false)} />
     </section>
   )
 }

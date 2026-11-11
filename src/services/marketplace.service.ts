@@ -1,5 +1,5 @@
 /**
- * Marketplace service — Dealker-specific surfaces (vendors, seller orders,
+ * Marketplace service — Dealkr-specific surfaces (vendors, seller orders,
  * seller listings, loyalty, referrals, settlements, shipping).
  *
  * All endpoints hit the dealker-backend marketplace modules registered in

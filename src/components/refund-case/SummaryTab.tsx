@@ -32,7 +32,7 @@ export function SummaryTab({ c }: { c: RefundCase }) {
   const deliveredAt = o?.order.delivered_at ?? null
   const daysAfter = deliveredAt ? Math.max(0, Math.round((new Date(r.created_at).getTime() - new Date(deliveredAt).getTime()) / 86400000)) : null
   const disputed = c.products.filter((p) => p.disputed)
-  // What the seller would give back: the returned items' value minus Dealker's commission.
+  // What the seller would give back: the returned items' value minus Dealkr's commission.
   const sellerLoss = (o?.sellers ?? []).reduce((t, s) => t + s.items.filter((i) => r.scope === "ALL" || disputed.some((d) => d.id === i.id)).reduce((x, i) => x + i.subtotal, 0) * (1 - s.money.commission_percent / 100), 0)
 
   return (
@@ -145,7 +145,7 @@ export function SummaryTab({ c }: { c: RefundCase }) {
           </div>
           <div>
             <Row k="Taken back from the seller" v={inr(sellerLoss)} />
-            <p className="text-xs text-muted-foreground">If we approve, this is deducted from the seller’s balance (item price minus Dealker’s commission).</p>
+            <p className="text-xs text-muted-foreground">If we approve, this is deducted from the seller’s balance (item price minus Dealkr’s commission).</p>
           </div>
         </div>
       </Section>

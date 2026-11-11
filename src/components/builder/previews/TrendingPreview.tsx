@@ -350,7 +350,7 @@ function TrendingPlaceholder({ index }: { index: number }) {
 }
 
 
-/** Builder-preview replica of the app's Dealker product card (sizes are proportions of the card width). */
+/** Builder-preview replica of the app's Dealkr product card (sizes are proportions of the card width). */
 function DealkerCard({ product }: { product: Product }) {
   const W = 190
   const u = W / 968

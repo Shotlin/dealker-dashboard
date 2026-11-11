@@ -90,7 +90,7 @@ export default function AdWalletPage() {
           <li>• <strong className="text-foreground">GST {r ? `${r.gst_pct}%` : ""}</strong> is added to every click charge and shown on each statement line.</li>
           <li>• Your <strong className="text-foreground">daily budget is a hard cap</strong> (net of GST) — we stop showing the ad once it&apos;s reached.</li>
           <li>• Repeat clicks by the same shopper within a short window, and clicks by your own staff, are free.</li>
-          <li>• Clicks Dealker finds invalid are refunded to this wallet, GST included.</li>
+          <li>• Clicks Dealkr finds invalid are refunded to this wallet, GST included.</li>
         </ul>
       </section>
 
@@ -182,7 +182,7 @@ function TopUpDialog({ onClose, wallet, gst }: { onClose: () => void; wallet: { 
         <div className="flex flex-wrap gap-2">
           {[500, 1000, 2500, 5000].filter((x) => x <= max).map((x) => <Button key={x} size="sm" variant="outline" onClick={() => setAmount(String(x))}>{rupees(x, 0)}</Button>)}
         </div>
-        {wallet.settlement_balance < wallet.min_topup && <p className="text-xs text-amber-700 dark:text-amber-300">Your settlement balance is below the minimum top-up. Earn from sales first, or ask Dealker support.</p>}
+        {wallet.settlement_balance < wallet.min_topup && <p className="text-xs text-amber-700 dark:text-amber-300">Your settlement balance is below the minimum top-up. Earn from sales first, or ask Dealkr support.</p>}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button disabled={bad || topUp.isPending} onClick={() => topUp.mutate({ amount: n, key }, { onSuccess: onClose })}>Add {n ? rupees(n, 0) : "money"}</Button>

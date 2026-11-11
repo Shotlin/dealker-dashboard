@@ -18,13 +18,13 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   // Title template lets per-route layouts override only the page label
-  // (e.g. `<title>Inventory · Dealker Admin</title>`) while
+  // (e.g. `<title>Inventory · Dealkr Admin</title>`) while
   // keeping a consistent suffix across the app (Req 13.7, 16.5).
   title: {
-    default: "Dealker Admin",
-    template: "%s · Dealker Admin",
+    default: "Dealkr Admin",
+    template: "%s · Dealkr Admin",
   },
-  description: "Dealker marketplace admin — vendors, orders, catalog, shipping, finance",
+  description: "Dealkr marketplace admin — vendors, orders, catalog, shipping, finance",
 };
 
 export default function RootLayout({

@@ -6,7 +6,7 @@
  * Sonner ships with `<section aria-live="polite" aria-atomic="false">`
  * (see `node_modules/sonner/dist/index.mjs`), which is appropriate for
  * informational toasts but does not satisfy task 14.2's stricter contract:
- * the Dealker dashboard surfaces failure states (network errors, payment
+ * the Dealkr dashboard surfaces failure states (network errors, payment
  * declines, low-stock socket events) where assertive announcements are
  * required so the operator hears the toast immediately.
  *

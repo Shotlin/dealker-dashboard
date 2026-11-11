@@ -74,7 +74,7 @@ export interface BankOffersTheme {
   bannerImageUrls: string[]
 }
 
-/** Colours for the Dealker home look. All optional; the app falls back to
+/** Colours for the Dealkr home look. All optional; the app falls back to
  *  these defaults (the design's colours) for anything not set. */
 export interface HomeLookTheme {
   canvasColor?: string

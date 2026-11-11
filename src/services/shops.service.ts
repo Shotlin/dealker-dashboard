@@ -88,7 +88,7 @@ export const shopsService = {
     return shopsService.list({ is_active: true, limit: MAX_LIMIT })
   },
 
-  /** The platform (official) shop — Dealker is a single store; admins work inside it. */
+  /** The platform (official) shop — Dealkr is a single store; admins work inside it. */
   async platform(): Promise<Shop> {
     const { data } = await api.get<ApiResponse<Shop>>("/shops/platform")
     return data.data

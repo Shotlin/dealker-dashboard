@@ -24,7 +24,7 @@ interface ProductConfigEditorProps {
 // in lock-step with `_ManifestHorizontalProductSection` in the Flutter app.
 const SECTION_WIDTH_PT = 366
 const PIXEL_DENSITY = 3
-// The Dealker product card: 234 pt wide (60% of 390) × 1300/968 tall, plus 28 pt for its shadow.
+// The Dealkr product card: 234 pt wide (60% of 390) × 1300/968 tall, plus 28 pt for its shadow.
 const CARD_ROW_HEIGHT_PT = 342
 const DEFAULT_TOP_SPACE = 96
 const DEFAULT_BOTTOM_SPACE = 14
@@ -134,7 +134,7 @@ export default function ProductConfigEditor({
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
         <div className="text-sm font-medium text-slate-900">Product card</div>
         <p className="mt-0.5 text-xs text-slate-500">
-          All product sections use the Dealker product card (picture, name, variant, seller,
+          All product sections use the Dealkr product card (picture, name, variant, seller,
           price, discount, rating, delivery, Add to Cart). There is nothing to choose — the
           card shows each row only when the product has that information.
         </p>

@@ -131,7 +131,7 @@ export function ParcelCard({ s, orderId, index, total }: { s: OverviewSeller; or
           <h3 className="text-sm font-semibold">Money for this parcel</h3>
           <dl className="space-y-1.5 rounded-xl border p-4 text-sm">
             <div className="flex justify-between"><dt className="text-muted-foreground">Items sold</dt><dd className="tabular-nums">{money(s.money.subtotal)}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">Dealker commission ({s.money.commission_percent}%)</dt><dd className="tabular-nums">− {money(s.money.commission)}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted-foreground">Dealkr commission ({s.money.commission_percent}%)</dt><dd className="tabular-nums">− {money(s.money.commission)}</dd></div>
             {s.money.platform_charge > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Platform charge</dt><dd className="tabular-nums">− {money(s.money.platform_charge)}</dd></div>}
             {s.money.fee_tax > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Tax on platform fees</dt><dd className="tabular-nums">− {money(s.money.fee_tax)}</dd></div>}
             {s.money.shipping > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Delivery cost</dt><dd className="tabular-nums">− {money(s.money.shipping)}</dd></div>}

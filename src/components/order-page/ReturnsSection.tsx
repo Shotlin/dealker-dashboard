@@ -89,12 +89,12 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
         <div className="rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Amount to refund</p>
           <p className="text-xl font-semibold tabular-nums">{money(r.resolved_amount ?? refundNow)}</p>
-          <p className="text-xs text-muted-foreground">{approved ? `Sent to ${r.refund_destination === "WALLET" ? "the customer’s Dealker wallet (instantly)" : "the original payment method (5–7 working days)"}` : "Goes back to the customer once you approve."}</p>
+          <p className="text-xs text-muted-foreground">{approved ? `Sent to ${r.refund_destination === "WALLET" ? "the customer’s Dealkr wallet (instantly)" : "the original payment method (5–7 working days)"}` : "Goes back to the customer once you approve."}</p>
         </div>
         <div className="rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">What the seller loses</p>
           <p className="text-xl font-semibold tabular-nums">{approved ? money(r.seller_reversal) : "—"}</p>
-          <p className="text-xs text-muted-foreground">{approved ? "Taken back from the seller’s balance (their sale minus Dealker’s commission)." : "When approved, the seller’s earnings for these items are reversed."}</p>
+          <p className="text-xs text-muted-foreground">{approved ? "Taken back from the seller’s balance (their sale minus Dealkr’s commission)." : "When approved, the seller’s earnings for these items are reversed."}</p>
         </div>
       </div>
 
@@ -121,7 +121,7 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
             <div className="space-y-3 rounded-lg bg-muted/40 p-4">
               <p className="text-sm font-medium">Where should the {money(refundNow)} go?</p>
               <RadioGroup value={dest} onValueChange={(v) => setDest(v as typeof dest)} className="space-y-2">
-                {([["wallet", "Dealker wallet", "Instant. The customer can use it on their next order."], ["original", "Original payment method", "Back to the card / UPI they paid with. Takes 5–7 working days."]] as const).map(([v, t, d]) => (
+                {([["wallet", "Dealkr wallet", "Instant. The customer can use it on their next order."], ["original", "Original payment method", "Back to the card / UPI they paid with. Takes 5–7 working days."]] as const).map(([v, t, d]) => (
                   <Label key={v} htmlFor={`${r.id}-${v}`} className="flex cursor-pointer items-start gap-3 rounded-lg border bg-white p-3 font-normal has-[:checked]:border-primary">
                     <RadioGroupItem id={`${r.id}-${v}`} value={v} className="mt-1" /><span><span className="block text-sm font-medium">{t}</span><span className="text-xs text-muted-foreground">{d}</span></span>
                   </Label>
@@ -191,7 +191,7 @@ function StartReturnDialog({ d, open, onClose }: { d: OrderOverview; open: boole
           <div className="space-y-1.5">
             <Label>Refund to</Label>
             <RadioGroup value={dest} onValueChange={(v) => setDest(v as typeof dest)} className="grid grid-cols-2 gap-2">
-              {([["WALLET", "Dealker wallet"], ["RAZORPAY", "Original payment"]] as const).map(([v, t]) => (
+              {([["WALLET", "Dealkr wallet"], ["RAZORPAY", "Original payment"]] as const).map(([v, t]) => (
                 <Label key={v} htmlFor={`ds-${v}`} className="flex cursor-pointer items-center gap-2 rounded-lg border p-3 font-normal has-[:checked]:border-primary has-[:checked]:bg-primary/5"><RadioGroupItem id={`ds-${v}`} value={v} />{t}</Label>
               ))}
             </RadioGroup>

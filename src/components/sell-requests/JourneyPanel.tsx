@@ -22,7 +22,7 @@ const STAGE_LABEL: Record<string, string> = {
 }
 const FUNDING: Record<string, { label: string; tone: string }> = {
   NONE: { label: "Not required", tone: "text-muted-foreground" }, PENDING: { label: "Waiting for the buyer to pay", tone: "text-amber-700" },
-  SUBMITTED: { label: "Buyer says paid — confirm receipt", tone: "text-violet-700" }, HELD: { label: "Held by Dealker", tone: "text-emerald-700" },
+  SUBMITTED: { label: "Buyer says paid — confirm receipt", tone: "text-violet-700" }, HELD: { label: "Held by Dealkr", tone: "text-emerald-700" },
   REFUNDING: { label: "Refund to buyer pending", tone: "text-amber-700" }, REFUNDED: { label: "Refunded to buyer", tone: "text-muted-foreground" },
 }
 

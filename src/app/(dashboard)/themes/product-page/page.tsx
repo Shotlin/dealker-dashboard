@@ -38,7 +38,7 @@ const HINTS: Record<string, string> = {
   gallery: "Photos, swipe + thumbnails",
   title_price: "Name, rating, seller, price, delivery facts",
   condition: "Grade selector, skin, battery, usage — used items only",
-  qc: "Dealker QC score card that opens the full report — used items only",
+  qc: "Dealkr QC score card that opens the full report — used items only",
   in_box: "Accessories and invoice that come with the device",
   highlights: "Key selling points",
   specs: "Product details table",

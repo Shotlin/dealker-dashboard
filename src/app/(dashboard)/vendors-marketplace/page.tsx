@@ -126,7 +126,7 @@ function B2bPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Vendors marketplace</h1>
-          <p className="text-sm text-muted-foreground">Vendors post what they need, matching sellers are alerted and quote, the buyer splits the order and pays from their Dealker wallet, and the money stays in escrow until delivery. The Wholesale shelf shows the stock vendors can also buy directly from each other. You can see and run every step from here.</p>
+          <p className="text-sm text-muted-foreground">Vendors post what they need, matching sellers are alerted and quote, the buyer splits the order and pays from their Dealkr wallet, and the money stays in escrow until delivery. The Wholesale shelf shows the stock vendors can also buy directly from each other. You can see and run every step from here.</p>
         </div>
         <Button onClick={() => setCreating(true)}><Plus className="mr-1.5 h-4 w-4" />New requirement</Button>
       </div>

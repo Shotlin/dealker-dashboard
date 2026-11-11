@@ -203,7 +203,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <ShoppingBag className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate text-base font-semibold tracking-tight">Dealker</span>
+                  <span className="truncate text-base font-semibold tracking-tight">Dealkr</span>
                   <span className="truncate text-xs text-muted-foreground">Marketplace Admin</span>
                 </div>
               </Link>

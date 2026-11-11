@@ -69,9 +69,9 @@ export default function CampaignDetailPage() {
       </PageHeader>
 
       {c.status === "REJECTED" && c.rejected_reason && <Notice tone="red" title="Rejected">{c.rejected_reason} — edit the campaign and submit it again.</Notice>}
-      {c.status === "SUSPENDED" && <Notice tone="red" title="Suspended by Dealker">{c.suspended_reason}</Notice>}
+      {c.status === "SUSPENDED" && <Notice tone="red" title="Suspended by Dealkr">{c.suspended_reason}</Notice>}
       {c.status === "PAUSED" && c.paused_reason && <Notice tone="amber" title="Paused">{PAUSE_REASONS[c.paused_reason] ?? c.paused_reason}{c.paused_reason === "OUT_OF_FUNDS" && <> <Link href="/ads/wallet" className="underline">Add money</Link></>}</Notice>}
-      {c.status === "PENDING_REVIEW" && <Notice tone="amber" title="In review">Dealker is reviewing this campaign. It goes live as soon as it&apos;s approved.</Notice>}
+      {c.status === "PENDING_REVIEW" && <Notice tone="amber" title="In review">Dealkr is reviewing this campaign. It goes live as soon as it&apos;s approved.</Notice>}
 
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">Performance</h2>
@@ -228,7 +228,7 @@ function KeywordsTab({ c, canManage, report }: { c: CampaignDetail; canManage: b
     <>
       {c.targeting === "AUTO" && (
         <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-          This is an automatic campaign — Dealker matches your products to relevant searches. Add negative keywords below to block searches you don&apos;t want.
+          This is an automatic campaign — Dealkr matches your products to relevant searches. Add negative keywords below to block searches you don&apos;t want.
         </p>
       )}
       {canManage && (

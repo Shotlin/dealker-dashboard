@@ -292,7 +292,7 @@ function ThemeBuilderPageContent() {
   const [requestedTabKey, setRequestedTabKey] = useState<string | null>(() =>
     searchParams.get("tab")
   )
-  // Dealker has a single storefront audience.
+  // Dealkr has a single storefront audience.
   const audience: ThemeAudience = "B2C"
 
   const { activeStoreKey, setActiveStoreKey, storeConfig } = useStoreContext()

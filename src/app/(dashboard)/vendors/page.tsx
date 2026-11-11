@@ -41,7 +41,7 @@ export default function VendorsPage() {
     <div className="mx-auto w-full max-w-[1500px] space-y-5">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Vendors & KYC</h1>
-        <p className="text-sm text-muted-foreground">Review every vendor’s documents, approve or send back applications, and control who can sell on Dealker.</p>
+        <p className="text-sm text-muted-foreground">Review every vendor’s documents, approve or send back applications, and control who can sell on Dealkr.</p>
       </div>
 
       <Card className="shadow-none">

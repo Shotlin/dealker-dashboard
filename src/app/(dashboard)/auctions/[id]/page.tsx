@@ -77,7 +77,7 @@ export default function AuctionControlRoom() {
   return (
     <div className="space-y-6">
       <Link href="/auctions" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-3.5 w-3.5" /> All auctions</Link>
-      <PageHeader title={a.title} subtitle={`${a.auction_number} · ${a.owner_type === "ADMIN" ? "Dealker listing" : a.seller_name ?? "Vendor"} · created ${dt(a.created_at)}`}>
+      <PageHeader title={a.title} subtitle={`${a.auction_number} · ${a.owner_type === "ADMIN" ? "Dealkr listing" : a.seller_name ?? "Vendor"} · created ${dt(a.created_at)}`}>
         <div className="flex flex-wrap items-center gap-2">
           <AuctionStatusBadge status={status} />
           {["LIVE", "PAUSED"].includes(status) && (

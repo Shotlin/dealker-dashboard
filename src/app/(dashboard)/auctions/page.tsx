@@ -176,7 +176,7 @@ export default function AuctionsPage() {
                     <span className="min-w-0"><span className="block max-w-[220px] truncate text-sm font-medium">{r.title}</span>
                       <span className="text-xs text-muted-foreground">{r.auction_number}{r.audience === "B2B" ? ` · B2B lot ×${r.quantity}` : ""}</span></span>
                   </Link>) },
-                { id: "s", header: "Seller", cell: (r) => <span className="text-sm">{r.owner_type === "ADMIN" ? "Dealker (own)" : r.seller_name ?? "Vendor"}</span> },
+                { id: "s", header: "Seller", cell: (r) => <span className="text-sm">{r.owner_type === "ADMIN" ? "Dealkr (own)" : r.seller_name ?? "Vendor"}</span> },
                 { id: "p", header: "Price", cell: (r) => (
                   <span className="text-sm tabular-nums"><span className="font-semibold">{formatINR(r.bid_count > 0 ? r.current_price : r.start_price)}</span>
                     <span className="block text-xs text-muted-foreground">from {formatINR(r.start_price)}</span></span>) },

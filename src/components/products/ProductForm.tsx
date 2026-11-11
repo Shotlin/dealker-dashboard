@@ -187,7 +187,7 @@ const UNIT_LABELS: Record<string, string> = {
 const CERT_OPTIONS = ["Organic", "FSSAI", "ISO", "Vegan", "Gluten-Free"];
 const DEFAULT_NUTRITION_KEYS = ["Calories", "Protein", "Fat", "Carbs", "Fiber"];
 
-// GST-standard Unit Quantity Codes (subset covering Dealker's product units).
+// GST-standard Unit Quantity Codes (subset covering Dealkr's product units).
 const UQC_OPTIONS = [
   "KGS",
   "GMS",
@@ -1305,7 +1305,7 @@ export function ProductForm({
                   id="vendorName"
                   value={form.vendorName}
                   onChange={(e) => set("vendorName", e.target.value)}
-                  placeholder="e.g. Dealker Textiles Pvt. Ltd."
+                  placeholder="e.g. Dealkr Textiles Pvt. Ltd."
                   maxLength={200}
                 />
               </div>

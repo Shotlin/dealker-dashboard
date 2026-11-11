@@ -439,7 +439,7 @@ function ThemeListContent() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Storefront themes</h1>
           <p className="text-sm text-muted-foreground">
-            Design how Dealker looks in the app. Activate a theme to publish it to every customer instantly.
+            Design how Dealkr looks in the app. Activate a theme to publish it to every customer instantly.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

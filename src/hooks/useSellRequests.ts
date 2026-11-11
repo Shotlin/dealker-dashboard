@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
   apiMessage,
+  deviceBrandsApi,
   evidenceApi,
   exchangeProgramsApi,
   type ExchangeDeviceType,
@@ -262,6 +263,18 @@ export function useDeleteExchangeProgram() {
   return useMutation({
     mutationFn: exchangeProgramsApi.deleteProgram,
     onSuccess: () => { qc.invalidateQueries({ queryKey: xKeys.programs }); toast.success("Programme removed") },
+    onError: (e) => toast.error(apiMessage(e)),
+  })
+}
+
+export function useDeviceBrands() {
+  return useQuery({ queryKey: ["device-brands"], queryFn: deviceBrandsApi.list, staleTime: 60_000 })
+}
+export function useSaveDeviceBrand() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (v: { id: string; body: Parameters<typeof deviceBrandsApi.update>[1] }) => deviceBrandsApi.update(v.id, v.body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["device-brands"] }); qc.invalidateQueries({ queryKey: requestKeys.models }); toast.success("Brand saved") },
     onError: (e) => toast.error(apiMessage(e)),
   })
 }

@@ -110,7 +110,7 @@ export function ScopePicker({ value, onChange }: { value: PricingScope; onChange
                 <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ANY}>Anyone</SelectItem>
-                  <SelectItem value="ADMIN">Dealker only</SelectItem>
+                  <SelectItem value="ADMIN">Dealkr only</SelectItem>
                   <SelectItem value="VENDOR">Vendors only</SelectItem>
                 </SelectContent>
               </Select>

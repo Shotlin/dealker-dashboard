@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/25">
             <ShoppingBag className="h-5 w-5" />
           </span>
-          <span className="text-xl font-semibold tracking-tight">Dealker</span>
+          <span className="text-xl font-semibold tracking-tight">Dealkr</span>
         </div>
         <div className="relative max-w-md space-y-8">
           <div className="space-y-3">
@@ -38,7 +38,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             ))}
           </ul>
         </div>
-        <p className="relative text-xs text-white/60">© {new Date().getFullYear()} Dealker. All rights reserved.</p>
+        <p className="relative text-xs text-white/60">© {new Date().getFullYear()} Dealkr. All rights reserved.</p>
       </aside>
       <main className="flex items-center justify-center bg-[var(--surface-bg)] px-4 py-12">
         <div className="w-full max-w-[420px]">{children}</div>

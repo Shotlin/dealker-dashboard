@@ -285,7 +285,7 @@ export function CampaignDialog({ open, onOpenChange, mode }: Props) {
               <div className="rounded-lg bg-background border p-3 space-y-1 shadow-sm max-w-xs">
                 <div className="flex items-center gap-2">
                   <div className="h-5 w-5 rounded bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">B</div>
-                  <span className="text-[11px] text-muted-foreground">Dealker</span>
+                  <span className="text-[11px] text-muted-foreground">Dealkr</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">now</span>
                 </div>
                 <p className="text-sm font-semibold truncate">{title}</p>

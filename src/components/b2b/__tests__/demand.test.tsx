@@ -84,7 +84,7 @@ describe("Cancel & refund", () => {
     api.cancelOrder.mockResolvedValue({ refunded: 353400 })
     const onClose = vi.fn()
     wrap(<CancelOrderDialog order={order()} onClose={onClose} />)
-    expect(screen.getByText(/in their Dealker wallet/)).toBeInTheDocument()
+    expect(screen.getByText(/in their Dealkr wallet/)).toBeInTheDocument()
     const btn = screen.getByRole("button", { name: "Cancel & refund" })
     expect(btn).toBeDisabled()
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "Seller ran out of stock" } })

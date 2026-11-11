@@ -231,7 +231,7 @@ function LoginPageContent() {
         </div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Welcome back</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Sign in to the Dealker admin console
+          Sign in to the Dealkr admin console
         </p>
       </CardHeader>
 

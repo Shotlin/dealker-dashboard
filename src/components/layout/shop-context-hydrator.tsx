@@ -158,7 +158,7 @@ export function ShopContextHydrator(): null {
     }
   }, [user])
 
-  // Effect 3 — single-store: Dealker is ONE store, so a super admin always works
+  // Effect 3 — single-store: Dealkr is ONE store, so a super admin always works
   // inside the official (platform) shop. Without this they sat in "All shops" mode
   // and every shop-scoped page (Banners, Products, Coupons...) asked them to pick a
   // shop that no one can create. Vendors are untouched (their shop is locked).

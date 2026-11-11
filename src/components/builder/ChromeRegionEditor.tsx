@@ -350,7 +350,7 @@ function RegionFields({
           <LookColor label="Badge color (NEW…)" field="productBadgeColor" look={look} patchLook={patchLook} />
           <LookColor label="In-stock color" field="productStockColor" look={look} patchLook={patchLook} />
           <p className="text-xs text-slate-500">
-            Applies to sections whose Card style is “Dealker Marketplace Box”.
+            Applies to sections whose Card style is “Dealkr Marketplace Box”.
           </p>
         </div>
       )
@@ -447,7 +447,7 @@ function RegionFields({
           <LookColor label="Inactive icon / label color" field="navLabelColor" look={look} patchLook={patchLook} />
           <ThemeImageUploader
             label="Repair button picture"
-            hint="Image only — the app adds no text. Upload a wide banner, ratio 12:5 (e.g. 1200 × 500 px, PNG/JPG/WebP). It sits at the right end of the footer and opens the repair flow. Leave empty to use the built-in Dealker repair banner."
+            hint="Image only — the app adds no text. Upload a wide banner, ratio 12:5 (e.g. 1200 × 500 px, PNG/JPG/WebP). It sits at the right end of the footer and opens the repair flow. Leave empty to use the built-in Dealkr repair banner."
             value={look.repairBannerUrl ? look.repairBannerUrl : null}
             onChange={(url) => patchLook({ repairBannerUrl: url ?? "" })}
           />
