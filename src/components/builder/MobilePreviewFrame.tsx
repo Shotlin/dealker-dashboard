@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core"
 import { DEFAULT_HOME_LOOK, type SectionManifest, type ThemeData, type ThemeTab } from "@/types/theme.types"
+import { useBuilderPreview } from "@/hooks/useBuilderPreview"
 import {
   usePreviewData,
   resolveProductsForSection,
@@ -91,6 +92,7 @@ export function MobilePreviewFrame({
   const { activeStoreKey } = useStoreContext()
 
   const deferredSections = useDeferredValue(sections)
+  const livePreview = useBuilderPreview(deferredSections)
   const isStale = deferredSections !== sections
 
   // Flutter contract: visible=false sections collapse to SizedBox.shrink() — zero height.
@@ -197,10 +199,11 @@ export function MobilePreviewFrame({
                   {orderedSections.map((section, index) => {
                     const PreviewComponent =
                       previewRegistry[section.section_type]
-                    const sectionProducts = resolveProductsForSection(
-                      products,
-                      section
-                    )
+                    // Server-resolved (same code as the app, ads first); the old client-side guess
+                    // over 30 catalogue products is only a fallback while it loads or if it fails.
+                    const sectionProducts =
+                      livePreview.data?.products?.[section.id] ??
+                      resolveProductsForSection(products, section)
                     return (
                       <div
                         key={section.id}

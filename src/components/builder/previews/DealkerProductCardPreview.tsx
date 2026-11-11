@@ -121,7 +121,8 @@ export function DealkerProductCardPreview({
   const imgs = ((p.images as string[] | undefined) ?? []).filter((i) => i && i.trim())
   const imageUrl = p.thumbnail_url || imgs[0] || null
   const badges = (p.custom_badges as string[] | null | undefined) ?? []
-  const badge = badges[0]?.trim() ? badges[0].trim().toUpperCase() : p.is_new_arrival ? "NEW" : null
+  const isAd = Boolean((p as { is_sponsored?: boolean }).is_sponsored)
+  const badge = isAd ? "AD" : badges[0]?.trim() ? badges[0].trim().toUpperCase() : p.is_new_arrival ? "NEW" : null
   const { avg, count } = ratingOf(p)
   const hasRating = avg > 0 && count > 0
   const inStock = Number(p.stock_quantity) > 0 && p.is_active !== false
@@ -151,7 +152,7 @@ export function DealkerProductCardPreview({
         {badge && (
           <div style={{
             position: "absolute", left: 0, top: px(4), height: px(62, 22), padding: `0 ${px(32, 10)}px`,
-            background: GREEN_BADGE, borderRadius: px(31, 11), display: "grid", placeItems: "center",
+            background: isAd ? "#F59E0B" : GREEN_BADGE, borderRadius: px(31, 11), display: "grid", placeItems: "center",
             boxShadow: `0 ${px(6, 2)}px ${px(16, 5)}px rgba(18,176,71,0.3)`,
             fontFamily: JAKARTA, fontSize: px(33, 10), fontWeight: 800, color: "#fff", letterSpacing: 0.4, lineHeight: 1,
           }}>{badge}</div>
