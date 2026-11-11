@@ -39,7 +39,11 @@ const RULE_GROUPS: Array<{ title: string; rules: RuleMeta[] }> = [
       { key: "notPoweringOn", label: "Does not power on", unit: "%" },
       { key: "minorScratches", label: "Minor screen scratches", unit: "%" },
       { key: "majorScratches", label: "Major screen scratches", unit: "%" },
-      { key: "bodyDents", label: "Body dents / damage", unit: "%" },
+      { key: "bodyDents", label: "Body minor scuffs / dents", unit: "%" },
+      { key: "bentFrame", label: "Bent frame / cracked back", unit: "%", hint: "Set by the inspector (physical condition Poor)" },
+      { key: "faceIdIssue", label: "Face ID / fingerprint / True Tone fault", unit: "%" },
+      { key: "cameraIssue", label: "Camera fault", unit: "%" },
+      { key: "functionFault", label: "Other failed function (each)", unit: "%", hint: "Inspection checklist item marked not working" },
       { key: "screenReplaced", label: "Screen replaced", unit: "%" },
       { key: "skinReplaced", label: "Skin / back panel replaced", unit: "%" },
     ],
@@ -48,7 +52,9 @@ const RULE_GROUPS: Array<{ title: string; rules: RuleMeta[] }> = [
     title: "Battery",
     rules: [
       { key: "batteryHealthFloor", label: "No deduction at or above", unit: "% health" },
-      { key: "batteryPctPerPoint", label: "Deduction per point below", unit: "%" },
+      { key: "batteryMidFloor", label: "Mid band starts at", unit: "% health", hint: "Between this and the line above" },
+      { key: "batteryMidPct", label: "Mid band deduction", unit: "%" },
+      { key: "batteryLowPct", label: "Below mid band deduction", unit: "%" },
     ],
   },
   {
@@ -57,6 +63,8 @@ const RULE_GROUPS: Array<{ title: string; rules: RuleMeta[] }> = [
       { key: "noBill", label: "No bill", unit: "%" },
       { key: "noBox", label: "No box", unit: "%" },
       { key: "noCharger", label: "No charger", unit: "%" },
+      { key: "billBoxBonus", label: "Valid bill + original box bonus", unit: "% added", hint: "Raises the price (3–5%)" },
+      { key: "billBoxBonusMinBase", label: "Bonus only for phones worth at least", unit: "₹" },
     ],
   },
   {
