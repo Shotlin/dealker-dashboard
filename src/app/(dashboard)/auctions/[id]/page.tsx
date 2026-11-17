@@ -73,6 +73,7 @@ export default function AuctionControlRoom() {
   const settled = (fees.FEE_APPLIED_TO_ORDER ?? 0) + (fees.FEE_REFUNDED ?? 0) + (fees.FEE_FORFEIT_PLATFORM ?? 0) + (fees.FEE_FORFEIT_VENDOR ?? 0)
   const balanced = Math.abs((fees.FEE_CHARGED ?? 0) - settled - held) < 0.01
   const winner = registrations.find((r) => r.user_id && r.user_id === a.winner_id)
+  const leaderName = registrations.find((r) => r.alias === live?.leader_alias)?.username ?? live?.leader_alias
 
   return (
     <div className="space-y-6">
@@ -129,7 +130,7 @@ export default function AuctionControlRoom() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Leader</p>
-              <p className="text-lg font-semibold">{live?.leader_alias ?? (a.leader_id ? "Hidden" : "No bids yet")}</p>
+              <p className="text-lg font-semibold">{leaderName ?? (a.leader_id ? "Hidden" : "No bids yet")}</p>
               <p className="text-xs">
                 <span className={cn("rounded px-1.5 py-0.5", reserve === "MET" ? "bg-green-100 text-green-800" : reserve === "NOT_MET" ? "bg-amber-100 text-amber-800" : "bg-muted text-muted-foreground")}>
                   {reserve === "NONE" ? "No reserve" : reserve === "MET" ? "Reserve met" : "Reserve not met"}
@@ -198,7 +199,7 @@ export default function AuctionControlRoom() {
         <section className="rounded-xl border border-violet-300 bg-violet-50/50 p-5 dark:bg-violet-950/20" aria-label="Winner and payment">
           <h2 className="mb-1 text-sm font-semibold">{status === "SOLD" ? "Sold" : "Waiting for the winner to pay"}{a.offer_round > 1 && " · second-chance offer"}</h2>
           <dl className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-4">
-            <Kv k="Winner" v={winner ? (winner.name ?? winner.alias) : "—"} />
+            <Kv k="Winner" v={winner ? (winner.username ?? winner.name ?? winner.alias) : "—"} />
             <Kv k="Winning bid" v={formatINR(a.winning_bid)} />
             <Kv k="Fee credited" v={`− ${formatINR(a.fee_credit ?? 0)}`} />
             <Kv k="Winner pays" v={formatINR(a.amount_due ?? 0)} />
@@ -228,7 +229,7 @@ export default function AuctionControlRoom() {
         <TabsContent value="bids">
           <DataList rows={bids} rowKey={(b) => String(b.seq)} emptyMessage="No bids yet." columns={[
             { id: "n", header: "#", cell: (b) => <span className="tabular-nums text-muted-foreground">{b.seq}</span> },
-            { id: "w", header: "Bidder", cell: (b) => <span className="text-sm">{b.alias}</span> },
+            { id: "w", header: "Bidder", cell: (b) => <span className="text-sm">{b.username ?? b.alias}</span> },
             { id: "a", header: "Price", cell: (b) => <span className="font-medium tabular-nums">{formatINR(b.amount)}</span> },
             { id: "t", header: "Type", cell: (b) => <span className="text-xs text-muted-foreground">{b.type === "AUTO" ? "Auto (proxy)" : b.type === "BUY_NOW" ? "Buy now" : "Manual"}</span> },
             ...(platform ? [
@@ -241,7 +242,7 @@ export default function AuctionControlRoom() {
 
         <TabsContent value="regs">
           <DataList rows={registrations} rowKey={(r) => r.id} emptyMessage="Nobody has registered yet." columns={[
-            { id: "n", header: "Bidder", cell: (r) => <span className="text-sm"><b>{r.alias}</b>{platform && r.name && <span className="block text-xs text-muted-foreground">{r.name} · {r.phone}</span>}</span> },
+            { id: "n", header: "Bidder", cell: (r) => <span className="text-sm"><b>{r.username ?? r.alias}</b>{platform && r.name && <span className="block text-xs text-muted-foreground">{r.name} · {r.phone}</span>}</span> },
             { id: "f", header: "Fee", cell: (r) => <span className="tabular-nums">{formatINR(r.fee_amount)}</span> },
             { id: "s", header: "Escrow status", cell: (r) => <span className="text-xs font-medium">{r.status === "ACTIVE" ? "Held" : r.status === "APPLIED" ? "Applied to order" : r.status === "REFUNDED" ? `Refunded ${formatINR(r.refund_amount)}` : `Forfeited ${formatINR(r.forfeited_amount)}`}</span> },
             { id: "h", header: "Highest bid", cell: (r) => <span className="tabular-nums">{r.highest_bid ? formatINR(r.highest_bid) : "—"}</span> },

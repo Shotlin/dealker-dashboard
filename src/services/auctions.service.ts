@@ -75,6 +75,7 @@ export interface AuctionRegistration {
   id: string
   bidder_no: number
   alias: string
+  username?: string | null
   user_id: string | null
   name: string | null
   phone: string | null
@@ -96,6 +97,7 @@ export interface AuctionBid {
   is_leading: boolean
   at: string
   alias: string
+  username?: string | null
   max_amount?: number
   ip?: string
   user_id?: string
