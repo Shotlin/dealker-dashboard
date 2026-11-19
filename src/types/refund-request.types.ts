@@ -15,6 +15,7 @@ export interface RefundRequest {
   id: string
   order_id: string
   order_number: string
+  order_created_at: string | null
   user_id: string
   customer_name: string | null
   customer_phone: string | null

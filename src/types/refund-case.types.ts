@@ -55,6 +55,7 @@ export interface CaseConversation {
   started_at: string
   assignee: string | null
   linked_to_request: boolean
+  by_seller: boolean
   messages: CaseMessage[]
 }
 

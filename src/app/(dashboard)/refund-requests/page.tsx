@@ -348,6 +348,7 @@ function RefundRequestsContent() {
                   <TableRow key={request.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="font-medium text-sm">
                       <Link href={`/refund-requests/${request.id}`} className="hover:underline">#{request.order_number}</Link>
+                      {request.order_created_at && <p className="mt-0.5 text-xs font-normal text-muted-foreground">Purchased {format(new Date(request.order_created_at), "dd MMM yyyy")}</p>}
                     </TableCell>
                     <TableCell>
                       <div>

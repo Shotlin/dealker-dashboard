@@ -26,6 +26,6 @@ export const supportApi = {
     api.patch<{ data: SupportDetail }>(`/admin/support/tickets/${id}`, patch).then((r) => r.data.data),
   assign: (id: string, assigneeId: string | null) =>
     api.post<{ data: SupportDetail }>(`/admin/support/tickets/${id}/assign`, { assigneeId }).then((r) => r.data.data),
-  start: (ctx: { orderId?: string; refundRequestId?: string }) =>
+  start: (ctx: { orderId?: string; refundRequestId?: string; vendorId?: string }) =>
     api.post<{ data: SupportDetail }>("/admin/support/tickets/start", ctx).then((r) => r.data.data),
 }

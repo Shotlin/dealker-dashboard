@@ -42,10 +42,10 @@ function Thread({ conv, canReply }: { conv: CaseConversation; canReply: boolean 
       {canReply && (
         <div className={cn("space-y-2 rounded-lg border p-2", priv && "border-yellow-300 bg-yellow-50/50")}>
           <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0"
-            placeholder={priv ? "Private note — the customer will NOT see this" : closed ? "This chat is closed. Replying will reopen it." : "Write a message to the customer…"}
+            placeholder={priv ? "Private note — the recipient will not see this" : closed ? "This chat is closed. Replying will reopen it." : `Write a message to the ${conv.by_seller ? "vendor" : "customer"}…`}
             onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && text.trim()) send.mutate({ body: text.trim(), internal: priv }, { onSuccess: () => setText("") }) }} />
           <div className="flex items-center justify-between">
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={priv} onChange={(e) => setPriv(e.target.checked)} />Private note (customer can’t see)</label>
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={priv} onChange={(e) => setPriv(e.target.checked)} />Private team note</label>
             <Button size="sm" disabled={!text.trim() || send.isPending} onClick={() => send.mutate({ body: text.trim(), internal: priv }, { onSuccess: () => setText("") })}><Send className="mr-1.5 h-3.5 w-3.5" />{priv ? "Save note" : "Send"}</Button>
           </div>
         </div>
@@ -54,10 +54,10 @@ function Thread({ conv, canReply }: { conv: CaseConversation; canReply: boolean 
   )
 }
 
-function ConversationCard({ conv, index, total, canReply }: { conv: CaseConversation; index: number; total: number; canReply: boolean }) {
+function ConversationCard({ conv, index, canReply }: { conv: CaseConversation; index: number; canReply: boolean }) {
   const [open, setOpen] = useState(index === 0)
   const last = conv.messages[conv.messages.length - 1]
-  const label = total === 1 ? "Chat with the customer" : index === 0 ? "Latest conversation" : index === 1 ? "Earlier conversation" : `Conversation ${total - index}`
+  const label = `Chat with the ${conv.by_seller ? "vendor" : "customer"}`
   return (
     <Card className="shadow-none">
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center justify-between gap-3 p-4 text-left">
@@ -104,16 +104,27 @@ export function TalksTab({ c, onCall, onNote }: { c: RefundCase; onCall: () => v
     <div className="space-y-6">
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div><h2 className="text-base font-semibold">Chat with the customer</h2><p className="text-sm text-muted-foreground">Everything you and the customer wrote to each other.</p></div>
+          <div><h2 className="text-base font-semibold">Private conversations</h2><p className="text-sm text-muted-foreground">Customer and vendor conversations are separate.</p></div>
           {open && convs.length > 0 && <Button size="sm" variant="outline" disabled={start.isPending} onClick={() => start.mutate({ refundRequestId: c.request.id }, { onSuccess: () => qc.invalidateQueries({ queryKey: ["refund-requests", "case"] }) })}><MessageCircle className="mr-1.5 h-3.5 w-3.5" />Open chat again</Button>}
         </div>
+        {open && c.sellers.some((s) => s.id) && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/30 p-3">
+            <span className="text-sm text-muted-foreground">Private chat with a vendor (the customer cannot see it):</span>
+            {c.sellers.filter((s) => s.id).map((s) => (
+              <Button key={s.id} size="sm" variant="outline" disabled={start.isPending}
+                onClick={() => start.mutate({ refundRequestId: c.request.id, vendorId: s.id! }, { onSuccess: () => qc.invalidateQueries({ queryKey: ["refund-requests", "case"] }) })}>
+                <MessageCircle className="mr-1.5 h-3.5 w-3.5" />Chat with {s.name ?? "vendor"}
+              </Button>
+            ))}
+          </div>
+        )}
         {convs.length === 0 ? (
           <Card className="shadow-none"><CardContent className="flex flex-col items-center gap-3 p-8 text-center">
             <MessageCircle className="h-8 w-8 text-muted-foreground" />
             <div><p className="font-medium">You haven’t chatted with the customer yet</p><p className="text-sm text-muted-foreground">Start a chat to ask for photos or to explain what happens next.</p></div>
             {open && <Button disabled={start.isPending} onClick={() => start.mutate({ refundRequestId: c.request.id }, { onSuccess: () => qc.invalidateQueries({ queryKey: ["refund-requests", "case"] }) })}>Start a chat</Button>}
           </CardContent></Card>
-        ) : convs.map((cv, i) => <ConversationCard key={cv.id} conv={cv} index={i} total={convs.length} canReply={open} />)}
+        ) : convs.map((cv, i) => <ConversationCard key={cv.id} conv={cv} index={i} canReply={open} />)}
       </section>
 
       <section className="space-y-3">

@@ -80,7 +80,7 @@ export function useMarkRead() {
 export function useStartConversation() {
   const invalidate = useInvalidate()
   return useMutation({
-    mutationFn: (ctx: { orderId?: string; refundRequestId?: string }) => supportApi.start(ctx),
+    mutationFn: (ctx: { orderId?: string; refundRequestId?: string; vendorId?: string }) => supportApi.start(ctx),
     onSuccess: invalidate,
     onError: (e) => toast.error(errMsg(e)),
   })
