@@ -56,7 +56,7 @@ function PickupBlock({ refundId, journey, open }: { refundId: string; journey: R
 
   const form = (
     <div className="space-y-3 rounded-lg bg-muted/40 p-4">
-      <p className="text-xs text-muted-foreground">Book the reverse pickup in your Shiprocket / Porter panel, then note it here. The customer sees it as “Return approved” with a pickup tracker. Status updates come from the courier automatically once its webhook is set up; you can also refresh or set them yourself.</p>
+      <p className="text-xs text-muted-foreground">Book the pickup in your Shiprocket / Porter panel, then type the details here. The customer will see “Return approved” and can track the pickup.</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5"><Label>Pickup partner</Label>
           <select className={cn(SELECT, "w-full")} value={provider} onChange={(e) => setProvider(e.target.value as PickupProvider)}>{PROVIDERS.map((x) => <option key={x.value} value={x.value}>{x.label}</option>)}</select></div>
@@ -78,7 +78,7 @@ function PickupBlock({ refundId, journey, open }: { refundId: string; journey: R
   return (
     <div className="space-y-3 rounded-xl border p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-2 text-sm font-semibold"><Truck className="h-4 w-4" />Return pickup</p>
+        <p className="flex items-center gap-2 text-sm font-semibold"><Truck className="h-4 w-4" />Pickup</p>
         {p && <Badge variant="outline">{STATUS_LABEL[p.status]}</Badge>}
       </div>
       {!p && !open && <p className="text-sm text-muted-foreground">No pickup was arranged for this return.</p>}
@@ -130,7 +130,7 @@ function QcBlock({ refundId, journey, open, originalPrice }: { refundId: string;
   return (
     <div className="space-y-3 rounded-xl border p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-2 text-sm font-semibold"><ClipboardCheck className="h-4 w-4" />Quality check &amp; price</p>
+        <p className="flex items-center gap-2 text-sm font-semibold"><ClipboardCheck className="h-4 w-4" />Check the item</p>
         {q && <Badge variant="outline">{q.price_status === "PROPOSED" ? "Waiting for the customer" : q.price_status === "ACCEPTED" ? "Customer accepted the new price" : q.price_status === "CLARIFICATION" ? "Customer asked a question" : "Passed — no price change"}</Badge>}
       </div>
 
@@ -153,7 +153,7 @@ function QcBlock({ refundId, journey, open, originalPrice }: { refundId: string;
 
       {open && (editing || (!q)) && (
         <div className="space-y-3 rounded-lg bg-muted/40 p-4">
-          <p className="text-xs text-muted-foreground">Check the returned item and mark each part. If it is worse than the customer described, enter a lower refund price — the customer must accept it before any money moves.</p>
+          <p className="text-xs text-muted-foreground">When the item arrives, mark each part OK or not OK. If it is worse than the customer said, type a lower price — the customer must agree before any money is sent.</p>
           <div className="space-y-2">
             {checks.map((c, i) => (
               <div key={i} className="grid grid-cols-[1fr_auto_auto] items-center gap-2">

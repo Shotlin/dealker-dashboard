@@ -14,8 +14,10 @@ import { cn } from "@/lib/utils"
 import { useOrderReturnActions } from "@/hooks/useOrderReturns"
 import { useReturnJourney } from "@/hooks/useReturnJourney"
 import { ReturnJourneyPanel } from "./ReturnJourneyPanel"
+import { ReturnHistory, ReturnStatus } from "./ReturnStages"
+import { useRefundCase } from "@/hooks/useRefundCase"
 import type { OrderOverview } from "@/types/order-overview.types"
-import { day, dayTime, money } from "./helpers"
+import { day, money } from "./helpers"
 
 type Refund = OrderOverview["problems"]["refunds"][number]
 
@@ -27,17 +29,6 @@ const STATE: Record<string, { label: string; cls: string; icon: React.ElementTyp
   CANCELLED: { label: "Cancelled", cls: "bg-slate-100 text-slate-700 border-slate-200", icon: X, help: "The customer withdrew this request." },
 }
 
-function Step({ done, active, label, sub }: { done: boolean; active?: boolean; label: string; sub?: string }) {
-  return (
-    <li className="flex items-start gap-3">
-      <span className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2", done ? "border-primary bg-primary text-primary-foreground" : active ? "border-primary bg-white" : "border-border bg-white")}>
-        {done && <Check className="h-3 w-3" />}
-      </span>
-      <span><span className={cn("block text-sm", done || active ? "font-medium" : "text-muted-foreground")}>{label}</span>{sub && <span className="block text-xs text-muted-foreground">{sub}</span>}</span>
-    </li>
-  )
-}
-
 function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
   const { approve, reject } = useOrderReturnActions()
   const [mode, setMode] = useState<"approve" | "reject" | null>(null)
@@ -46,11 +37,13 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
   const st = STATE[r.status] ?? STATE.PENDING
   const open = ["PENDING", "PROCESSING"].includes(r.status)
   const approved = r.status === "APPROVED"
-  const closed = ["REJECTED", "CANCELLED"].includes(r.status)
   void orderId
   const journeyQ = useReturnJourney(r.id)
+  const caseQ = useRefundCase(r.id)
   const qc = journeyQ.data?.qc ?? null
   const refundNow = qc?.price_status === "ACCEPTED" && qc.revised_price != null ? qc.revised_price : r.computed_amount
+  const stageProps = { status: r.status, createdAt: r.created_at, resolvedAt: r.resolved_at, refundedAt: r.refunded_at, amount: r.resolved_amount ?? refundNow,
+    toWallet: r.refund_destination === "WALLET", declineNote: r.admin_notes, journey: journeyQ.data, timeline: caseQ.data?.timeline }
   const priceBlocked = qc != null && (qc.price_status === "PROPOSED" || qc.price_status === "CLARIFICATION")
 
   return (
@@ -62,6 +55,8 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
         </div>
         <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium", st.cls)}><st.icon className="h-3.5 w-3.5" />{st.label}</span>
       </div>
+
+      <ReturnStatus {...stageProps} />
 
       <div className="rounded-lg bg-muted/50 p-3 text-sm">
         <p className="text-xs font-medium text-muted-foreground">Why the customer wants to return it</p>
@@ -98,14 +93,10 @@ function RefundCard({ r, orderId }: { r: Refund; orderId: string }) {
         </div>
       </div>
 
+      <ReturnHistory {...stageProps} />
+
       <ReturnJourneyPanel refundId={r.id} journey={journeyQ.data} open={open} originalPrice={r.computed_amount} />
 
-      <ol className="space-y-3 border-l-2 border-dashed pl-4 [&>li]:relative">
-        <Step done label="Return requested" sub={dayTime(r.created_at)} />
-        <Step done={approved || closed} active={open} label={open ? "Waiting for your decision" : approved ? "Approved" : r.status === "REJECTED" ? "Declined" : "Cancelled"}
-          sub={r.resolved_at ? `${dayTime(r.resolved_at)}${r.resolved_by_name ? ` by ${r.resolved_by_name}` : ""}` : undefined} />
-        <Step done={approved} label={approved ? "Money returned to the customer" : "Money returned"} sub={r.refunded_at ? dayTime(r.refunded_at) : undefined} />
-      </ol>
       {r.admin_notes && <p className="rounded-lg bg-muted/50 p-3 text-sm"><span className="text-xs font-medium text-muted-foreground">Your team’s note: </span>{r.admin_notes}</p>}
 
       {open && (
